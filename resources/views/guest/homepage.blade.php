@@ -213,8 +213,8 @@
                 </ul>
                 <div class="auth-buttons d-flex align-items-center ms-3">
                     <span class="me-3"><i class="fas fa-phone"></i> +62 123 456 789</span>
-                    <a href="#" class="btn btn-outline-primary">Masuk</a>
-                    <a href="#" class="btn btn-primary">Daftar</a>
+                    <a href="{{ url('/login') }}" class="btn btn-outline-primary">Login</a>
+                    <a href="{{ url('/register') }}" class="btn btn-primary">Register</a>
                 </div>
             </div>
         </div>
@@ -234,16 +234,6 @@
                                 <div class="input-group">
                                     <input type="text" class="form-control" placeholder="Cari domain Anda...">
                                     <button class="btn" type="button">Cari</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-lg-12">
-                                <div class="d-flex justify-content-center">
-                                    <span class="me-3"><strong>.com</strong> Rp 120.000/tahun</span>
-                                    <span class="me-3"><strong>.net</strong> Rp 130.000/tahun</span>
-                                    <span class="me-3"><strong>.org</strong> Rp 110.000/tahun</span>
-                                    <span><strong>.id</strong> Rp 90.000/tahun</span>
                                 </div>
                             </div>
                         </div>
@@ -289,56 +279,6 @@
                 </div>
             </div>
             
-            <div class="row mt-5">
-                <div class="col-lg-12 text-center">
-                    <h2 class="mb-4">Paket Hosting yang Tersedia</h2>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Personal</h5>
-                            <h3 class="card-title text-primary">Rp 50.000/bulan</h3>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>5 GB Storage</li>
-                                <li>100 GB Bandwidth</li>
-                                <li>1 Domain</li>
-                                <li>5 Email Accounts</li>
-                            </ul>
-                            <button type="button" class="btn btn-outline-primary">Pilih Paket</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <div class="card h-100 border-primary">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Bisnis</h5>
-                            <h3 class="card-title text-primary">Rp 150.000/bulan</h3>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>20 GB Storage</li>
-                                <li>500 GB Bandwidth</li>
-                                <li>5 Domain</li>
-                                <li>20 Email Accounts</li>
-                            </ul>
-                            <button type="button" class="btn btn-primary">Pilih Paket</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Enterprise</h5>
-                            <h3 class="card-title text-primary">Rp 500.000/bulan</h3>
-                            <ul class="list-unstyled mt-3 mb-4">
-                                <li>100 GB Storage</li>
-                                <li>Unlimited Bandwidth</li>
-                                <li>Unlimited Domain</li>
-                                <li>Unlimited Email</li>
-                            </ul>
-                            <button type="button" class="btn btn-outline-primary">Pilih Paket</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -358,7 +298,7 @@
                 </div>
                 <div class="col-lg-4 mb-4">
                     <h5 class="mb-3">Hubungi Kami</h5>
-                    <p><i class="fas fa-map-marker-alt me-2"></i> Jakarta, Indonesia</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Bengkalis, Riau, Indonesia</p>
                     <p><i class="fas fa-phone me-2"></i> +62 123 456 789</p>
                     <p><i class="fas fa-envelope me-2"></i> info@domain.com</p>
                 </div>
