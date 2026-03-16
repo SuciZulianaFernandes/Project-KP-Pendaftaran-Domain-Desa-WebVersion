@@ -35,14 +35,13 @@
 
                 <div x-data="{ open: false }">
                     <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                        <span class="text-sm font-medium">Layanan Domain</span>
+                        <span class="text-sm font-medium">Manajemen Domain</span>
                         <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
                     <div x-show="open" x-cloak x-transition class="mt-1 space-y-1 bg-red-950/30 rounded-lg overflow-hidden">
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Daftar Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Pendaftaran Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Verifikasi Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Perpanjangan Masa Aktif Domain</a>
+                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Daftar Domain Terdaftar</a>
+                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Pengajuan Domain</a>
+                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Verifikasi Dokumen</a>
                     </div>
                 </div>
 
