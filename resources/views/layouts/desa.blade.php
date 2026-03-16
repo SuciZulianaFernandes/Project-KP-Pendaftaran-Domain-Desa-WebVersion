@@ -60,7 +60,7 @@ font-family: 'Poppins', sans-serif;
 
 <p class="text-red-200 uppercase text-xs tracking-wider mb-2">Dashboard</p>
 
-<a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-600 transition">
+<a href="{{ url('/desa/dashboard') }}" class="flex items-center gap-3 p-3 rounded-lg hover:bg-red-600 transition {{ request()->is('desa/dashboard*') ? 'bg-red-700' : '' }}">
 <i class="fas fa-chart-pie w-5"></i> Overview
 </a>
 
@@ -138,7 +138,7 @@ font-family: 'Poppins', sans-serif;
                     Dashboard
                 </button>
                 <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none">
-                    Default
+                    /  Default
                 </button>
             </div>
             
