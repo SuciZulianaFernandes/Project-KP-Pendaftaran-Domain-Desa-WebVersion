@@ -47,14 +47,6 @@ font-family: 'Poppins', sans-serif;
 <body class="bg-slate-50 text-slate-800" x-data="{ sidebarOpen: false }">
 
 <div class="flex h-screen overflow-hidden">
-
-<!-- SIDEBAR -->
-<div class="hidden md:flex md:flex-col w-64 bg-red-800 text-white">
-
-<div class="p-6 text-xl font-semibold border-b border-red-700">
-DOMAININFO
-</div>
-    <div class="flex h-screen overflow-hidden">
         
         <aside 
             :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
@@ -114,110 +106,91 @@ DOMAININFO
 <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-file-invoice w-5"></i> Faktur
 </a>
-            <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-2">
-                
-                <a href="#" class="flex items-center px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                    <span class="text-sm font-medium">Dashboard</span>
-                </a>
+            
 
-                <div x-data="{ open: false }">
-                    <button @click="open = !open" class="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                        <span class="text-sm font-medium">Layanan Domain</span>
-                        <svg class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                    <div x-show="open" x-cloak x-transition class="mt-1 space-y-1 bg-red-950/30 rounded-lg overflow-hidden">
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Daftar Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Pendaftaran Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Verifikasi Dokumen</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Perpanjangan Masa Aktif Domain</a>
+</nav>
+
+<div class="p-6 bg-red-900/50 border-t border-red-700">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">AD</div>
+        <div class="text-sm">
+            <p class="font-bold uppercase tracking-wide">Administrator</p>
+            <p class="text-red-300">Sistem Informasi</p>
+        </div>
+    </div>
+</div>
+
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <!-- HEADER -->
+    <header class="bg-white shadow-sm px-6 py-4">
+        <div class="flex items-center justify-between">
+            <!-- Mobile menu button -->
+            <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-gray-600 text-xl">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <!-- Tabs -->
+            <div class="flex space-x-1 border-b border-gray-200">
+                <button class="px-4 py-2 text-sm font-medium text-red-600 border-b-2 border-red-600 focus:outline-none">
+                    Dashboard
+                </button>
+                <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none">
+                    Default
+                </button>
+            </div>
+            
+            <!-- Search and Notifications -->
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
+                    />
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                        <i class="fas fa-search text-gray-400"></i>
                     </div>
                 </div>
-
-                <a href="#" class="flex items-center px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                    <span class="text-sm font-medium">Kontak</span>
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                    <span class="text-sm font-medium">Profil Instansi</span>
-                </a>
-                <a href="#" class="flex items-center px-4 py-3 rounded-lg hover:bg-red-800 transition-colors">
-                    <span class="text-sm font-medium">Faktur</span>
-                </a>
-
-            </nav>
-
-            <div class="p-6 bg-red-950/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded bg-red-700 flex items-center justify-center text-xs font-bold uppercase">AD</div>
-                    <div class="text-xs">
-                        <p class="font-bold uppercase tracking-wide">Administrator</p>
-                        <p class="text-red-400">Sistem Informasi</p>
+                
+                <div class="relative">
+                    <button class="p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                    </button>
+                    
+                    <!-- Notification Dropdown -->
+                    <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                        <div class="p-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900">Notifikasi</h3>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="w-2 h-2 mt-2 rounded-full bg-green-400"></div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-900">Domain anda telah aktif!</p>
+                                    <p class="text-xs text-gray-500 mt-1">Just now</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </aside>
-
-        <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-
-<!-- TOPBAR -->
-<header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-
-<div class="flex items-center gap-4">
-
-<button class="md:hidden text-gray-600 text-xl">
-<i class="fas fa-bars"></i>
-</button>
-
-<h1 class="font-semibold text-gray-700 text-lg">
-@yield('title')
-</h1>
-
-</div>
-            <header class="h-16 bg-white border-b border-slate-200 px-6 flex justify-between items-center shadow-sm">
-                <div class="flex items-center gap-4">
-                    <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded hover:bg-slate-100 md:hidden">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                    <h1 class="font-semibold text-slate-700 uppercase tracking-tight">@yield('title')</h1>
-                </div>
-
-<div class="flex items-center gap-4">
-
-<input
-type="text"
-placeholder="Search..."
-class="border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-/>
-
-<div class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm">
-<i class="fas fa-user text-gray-600"></i>
+        </div>
+    </header>
+    
+    <!-- CONTENT AREA - INI DITAMBAHKAN -->
+    <main class="flex-1 overflow-y-auto p-6">
+        @yield('content')
+    </main>
 </div>
 
 </div>
 
-</header>
-
-@yield('content')
-
-</main>
-                <div class="flex items-center gap-6">
-                    <div class="hidden sm:block">
-                        <input type="text" placeholder="Cari..." class="bg-slate-100 border-none rounded px-4 py-1.5 text-sm focus:ring-1 focus:ring-red-500 outline-none w-64">
-                    </div>
-                    <div class="flex items-center gap-2 border-l pl-6 border-slate-200 uppercase text-[10px] font-bold tracking-widest text-slate-400">
-                        Pusat Kendali Data
-                    </div>
-                </div>
-            </header>
-
-            <main class="flex-1 overflow-y-auto p-6 lg:p-10">
-                <div class="bg-white rounded-lg shadow-sm border border-slate-200 min-h-full p-6">
-                    @yield('content')
-                </div>
-            </main>
-
-</div>
-
-</div>
 @stack('scripts')
 
 <script>
@@ -233,8 +206,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-        </div>
-    </div>
 
 </body>
 </html>
