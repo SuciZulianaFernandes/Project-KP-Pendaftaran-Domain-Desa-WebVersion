@@ -34,6 +34,7 @@
              class="mx-auto w-80 opacity-70">
 
     </div>
+    
 
 </div>
 
