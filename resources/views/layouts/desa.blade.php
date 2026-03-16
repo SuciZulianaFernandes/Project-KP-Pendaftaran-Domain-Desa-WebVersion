@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - DISKOMINFO</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+<title>@yield('title') - DISKOMINFO</title>
+<script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -40,7 +39,7 @@
                     </button>
                     <div x-show="open" x-cloak x-transition class="mt-1 space-y-1 bg-red-950/30 rounded-lg overflow-hidden">
                         <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Daftar Domain</a>
-                        <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Pendaftaran Domain</a>
+                        <a href="{{ url('/desa/pengajuan') }}" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Pendaftaran Domain</a>
                         <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Verifikasi Dokumen</a>
                         <a href="#" class="block px-10 py-2 text-sm text-red-100 hover:bg-red-800">Perpanjangan Masa Aktif Domain</a>
                     </div>
@@ -94,6 +93,12 @@
                     @yield('content')
                 </div>
             </main>
+
+"></div>
+</div>
+
+</body>
+</html>
 
         </div>
     </div>

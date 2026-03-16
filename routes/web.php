@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\PengajuanController;
 
 
 Route::get('/', function () {
@@ -19,3 +20,7 @@ Route::post('/login',[LoginController::class,'login']);
 Route::get('/desa/dashboard', function () {
     return view('desa.dashboard');
 });
+
+Route::get('/desa/pengajuan', [PengajuanController::class,'index'])->name('desa.pengajuan');
+Route::post('/cek-domain', [PengajuanController::class,'cekDomain'])->name('cek.domain');
+Route::post('/api/check-domain-availability', [PengajuanController::class, 'checkAvailabilityApi'])->name('api.check.domain');
