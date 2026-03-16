@@ -15,29 +15,39 @@ class LoginController extends Controller
     }
 
     public function login(Request $request)
-{
+    {
 
-    $credentials = $request->validate([
-        'username' => 'required',
-        'password' => 'required'
-    ]);
+        $credentials = $request->validate([
+            'username' => 'required',
+            'password' => 'required'
+        ]);
 
-    if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials)) {
 
-        $request->session()->regenerate();
+            $request->session()->regenerate();
 
-        if(auth()->user()->role == 'admin'){
-            return redirect('/admin/dashboard');
+            if (auth()->user()->role == 'admin') {
+                return redirect('/admin/dashboard');
+            }
+
+            if (auth()->user()->role == 'desa') {
+                return redirect('/desa/dashboard');
+            }
+
         }
 
-        if(auth()->user()->role == 'desa'){
-            return redirect('/desa/dashboard');
-        }
-
+        return back()->withErrors([
+            'username' => 'Username atau password salah',
+        ]);
     }
 
-    return back()->withErrors([
-        'username' => 'Username atau password salah',
-    ]);
+    public function logout(Request $request)
+{
+    Auth::logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect('/');
 }
 }
