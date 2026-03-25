@@ -18,18 +18,12 @@ Route::get('/login',[LoginController::class,'showLogin'])->name('login');
 Route::post('/login',[LoginController::class,'login']);
 Route::post('/logout',[LoginController::class,'logout'])->name('logout');
 
-
 Route::middleware(['auth'])->group(function(){
     Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 });
 Route::get('/admin/profile',[ProfileController::class,'edit']);
 Route::post('/admin/profile',[ProfileController::class,'update']);
-});
-
-
-Route::get('/desa/dashboard', function () {
-    return view('desa.dashboard');
 });
 
 Route::middleware(['auth'])->group(function(){
@@ -54,4 +48,5 @@ Route::get('/', [PengajuanController::class,'index'])->name('index');
 });
 
 });
+
 
