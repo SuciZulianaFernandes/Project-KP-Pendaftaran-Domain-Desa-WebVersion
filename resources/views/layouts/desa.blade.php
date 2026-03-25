@@ -78,12 +78,13 @@ font-family: 'Poppins', sans-serif;
     
     <div id="domainDropdown" class="dropdown-content ml-8 mt-2 space-y-1 {{ request()->is('desa/pengajuan*') ? 'show' : '' }}">
         <!-- IKON TELAH DITAMBAHKAN KEMBALI -->
-        <a href="{{ url('/desa/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition {{ request()->is('desa/pengajuan*') ? 'bg-red-700' : '' }}">
+        <a href="" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition ">
             <i class="fas fa-list w-5"></i> Daftar Domain
         </a>
-        <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+        <a href="{{ url('/desa/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition {{ request()->is('desa/pengajuan*') ? 'bg-red-700' : '' }}">
             <i class="fas fa-plus-circle w-5"></i> Pendaftaran Domain
         </a>
+        
         <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
             <i class="fas fa-check-circle w-5"></i> Verifikasi Domain
         </a>
@@ -114,8 +115,8 @@ font-family: 'Poppins', sans-serif;
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">AD</div>
         <div class="text-sm">
-            <p class="font-bold uppercase tracking-wide">Administrator</p>
-            <p class="text-red-300">Sistem Informasi</p>
+            <p class="font-bold uppercase tracking-wide">Prakowi Subidodo</p>
+            <p class="text-red-300">Kelapapati</p>
         </div>
     </div>
 </div>
@@ -161,7 +162,7 @@ font-family: 'Poppins', sans-serif;
                         <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
                     </button>
                     
-                    <!-- Notification Dropdown -->
+                    <!-- Notification Dropdown
                     <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                         <div class="p-4 border-b border-gray-200">
                             <h3 class="text-lg font-medium text-gray-900">Notifikasi</h3>
@@ -177,7 +178,7 @@ font-family: 'Poppins', sans-serif;
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -190,8 +191,6 @@ font-family: 'Poppins', sans-serif;
 </div>
 
 </div>
-
-@stack('scripts')
 
 <script>
 // Dropdown functionality for Domain menu
@@ -206,6 +205,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
+@stack('scripts')
 </body>
 </html>
