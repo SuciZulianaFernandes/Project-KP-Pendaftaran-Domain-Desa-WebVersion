@@ -81,10 +81,30 @@ class PengajuanController extends Controller
     public function storeDokumenForm(Request $request)
     {
         $request->validate([
-            'surat_permohonan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'perda_pembentukan_desa' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'surat_kuasa' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
+    'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
+    'perda_pembentukan_desa' => 'required|file|mimes:pdf|max:2048',
+    'surat_kuasa' => 'required|file|mimes:pdf|max:2048',
+]);
+
+// CEK FILE TIDAK BOLEH SAMA
+$files = [
+    $request->file('surat_permohonan'),
+    $request->file('perda_pembentukan_desa'),
+    $request->file('surat_kuasa'),
+];
+
+// Ambil hash tiap file (biar akurat, bukan cuma nama)
+$hashes = [];
+
+foreach ($files as $file) {
+    $hash = md5_file($file->getRealPath());
+    if (in_array($hash, $hashes)) {
+        return back()->withErrors([
+            'file' => 'Semua file harus berbeda, tidak boleh upload file yang sama.'
+        ])->withInput();
+    }
+    $hashes[] = $hash;
+}
 
         $dokumen = [];
         $files = $request->only(['surat_permohonan', 'perda_pembentukan_desa', 'surat_kuasa']);
