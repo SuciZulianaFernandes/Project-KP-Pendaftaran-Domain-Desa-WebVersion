@@ -111,12 +111,23 @@ font-family: 'Poppins', sans-serif;
             
 
 </nav>
+<div class="p-4 border-t border-red-700">
+    <form action="{{ route('logout') }}" method="POST">
+        @csrf
+        <button type="submit" 
+            class="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg transition">
+            
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
+    </form>
+</div>
 
 <div class="p-6 bg-red-900/50 border-t border-red-700">
     <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">AD</div>
         <div class="text-sm">
-            <p class="font-bold uppercase tracking-wide">Prakowi Subidodo</p>
+            <p class="font-bold uppercase tracking-wide">Admin Desa</p>
             <p class="text-red-300">Kelapapati</p>
         </div>
     </div>
