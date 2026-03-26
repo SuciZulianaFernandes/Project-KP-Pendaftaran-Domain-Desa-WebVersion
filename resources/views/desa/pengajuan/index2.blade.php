@@ -107,8 +107,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // --- DEBUGGING: Periksa apakah script berjalan ---
-    // Buka Console Browser (F12) dan lihat apakah muncul pesan ini.
     console.log("Script Form Pengajuan berhasil dimuat.");
 
     // --- DATA WILAYAH PROVINSI RIAU ---
@@ -119,20 +117,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 "Kecamatan Marpoyan Damai": ["Kelurahan Maharatu", "Kelurahan Sidomulyo Timur", "Kelurahan Harjosari"],
                 "Kecamatan Rumbai": ["Kelurahan Umban Sari", "Kelurahan Sri Meranti", "Kelurahan Palas"]
             },
+            "Kabupaten Bengkalis": {
+                "Kecamatan Bengkalis": ["Kelurahan Bengkalis Kota", "Kelurahan Pekanbaru", "Desa Sei Nibung", "Desa Senggoro"],
+                "Kecamatan Mandau": ["Kelurahan Duri", "Kelurahan Balik Alam", "Desa Pematang Pudu", "Desa Guntung"],
+                "Kecamatan Rupat": ["Desa Tanjung Medang", "Desa Batu Panjang", "Desa Teluk Rhu", "Desa Darul Aman"],
+                "Kecamatan Siak Kecil": ["Desa Tengganau", "Desa Sungai Selari", "Desa Palkun", "Desa Jangkang"]
+            },
             "Kabupaten Kampar": {
                 "Kecamatan Bangkinang Kota": ["Desa Bangkinang Kota", "Desa Kuok", "Desa Sungai Pagar"],
-                "Kecamatan Kampar": ["Desa Kampar Kiri Hilir", "Desa Kampar Kiri Hulu", "Desa Air Tiris"],
-                "Kecamatan Siak Hulu": ["Desa Kubang Jaya", "Desa Kampar Permai", "Desa Koto Masjid"]
-            },
-            "Kabupaten Siak": {
-                "Kecamatan Siak": ["Desa Kampung Rempak", "Desa Mempura", "Desa Kampung Dalam"],
-                "Kecamatan Dayun": ["Desa Dayun", "Desa Lubuk Dalam", "Desa Melibur"],
-                "Kecamatan Koto Gasib": ["Desa Gasib Kecil", "Desa Suka Mulya", "Desa Pekan Heran"]
-            },
-            "Kabupaten Bengkalis": {
-                "Kecamatan Bengkalis": ["Kelurahan Bengkalis Kota", "Kelurahan Pekanbaru", "Desa Sei Nibung"],
-                "Kecamatan Mandau": ["Kelurahan Duri", "Kelurahan Balik Alam", "Desa Pematang Pudu"],
-                "Kecamatan Rupat": ["Desa Tanjung Medang", "Desa Batu Panjang", "Desa Teluk Rhu"]
+                "Kecamatan Kampar": ["Desa Kampar Kiri Hilir", "Desa Kampar Kiri Hulu", "Desa Air Tiris"]
             }
         }
     };
@@ -143,89 +136,105 @@ document.addEventListener('DOMContentLoaded', function () {
     const kecamatanSelect = document.getElementById('kecamatan');
     const desaSelect = document.getElementById('desa_kelurahan');
 
-    // --- PERBAIKAN: Ambil data lama dengan cara yang lebih aman ---
-    // Ini mencegah error jika data dari session bermasalah.
-    let oldData = {};
-    @if(isset($data_desa) && is_array($data_desa))
-        oldData = @json($data_desa);
-    @endif
-
     // --- FUNGSI UNTUK MENGISI DROPDOWN ---
     function populateSelect(selectElement, options, placeholder, valueToSelect = '') {
         selectElement.innerHTML = `<option value="">${placeholder}</option>`;
         if (options) {
-            if (Array.isArray(options)) {
-                options.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
-                    if (item === valueToSelect) {
-                        option.selected = true;
-                    }
-                    selectElement.appendChild(option);
-                });
-            } else {
-                Object.keys(options).forEach(key => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = key;
-                    if (key === valueToSelect) {
-                        option.selected = true;
-                    }
-                    selectElement.appendChild(option);
-                });
-            }
+            const items = Array.isArray(options) ? options : Object.keys(options);
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = item;
+                if (item === valueToSelect) {
+                    option.selected = true;
+                }
+                selectElement.appendChild(option);
+            });
         }
     }
-
-    // --- EVENT LISTENER & LOGIKA DINAMIS ---
     
-    // 1. Isi Provinsi saat halaman dimuat
-    populateSelect(provinsiSelect, addressData, '-- Pilih Provinsi --', oldData.provinsi ?? '');
-    if (oldData.provinsi) {
-        provinsiSelect.dispatchEvent(new Event('change'));
-    }
-
-    // 2. Event saat Provinsi berubah
-    provinsiSelect.addEventListener('change', function() {
-        console.log("Provinsi berubah ke:", this.value); // DEBUGGING
-        const selectedProv = this.value;
-        kotaSelect.disabled = !selectedProv;
+    // --- FUNGSI UNTUK MENGISI ULANG FORM SAAT HALAMAN DIMUAT ---
+    function repopulateForm(data) {
+        // Reset state anak-anak dropdown terlebih dahulu
+        kotaSelect.disabled = true;
         kecamatanSelect.disabled = true;
         desaSelect.disabled = true;
         kotaSelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
         kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
-        if (selectedProv && addressData[selectedProv]) {
-            populateSelect(kotaSelect, addressData[selectedProv], '-- Pilih Kota --', oldData.kota_kabupaten ?? '');
-            if (oldData.kota_kabupaten) {
-                kotaSelect.dispatchEvent(new Event('change'));
-            }
-        }
-    });
+        if (!data.provinsi || !addressData[data.provinsi]) return;
 
-    // 3. Event saat Kota/Kabupaten berubah
-    kotaSelect.addEventListener('change', function() {
-        console.log("Kota berubah ke:", this.value); // DEBUGGING
-        const selectedProv = provinsiSelect.value;
-        const selectedKota = this.value;
-        kecamatanSelect.disabled = !selectedKota;
+        // 1. Isi dan Aktifkan Kota/Kabupaten
+        const kotaOptions = addressData[data.provinsi];
+        populateSelect(kotaSelect, kotaOptions, '-- Pilih Kota --', data.kota_kabupaten ?? '');
+        kotaSelect.disabled = false;
+
+        if (!data.kota_kabupaten || !kotaOptions[data.kota_kabupaten]) return;
+
+        // 2. Isi dan Aktifkan Kecamatan
+        const kecOptions = kotaOptions[data.kota_kabupaten];
+        populateSelect(kecamatanSelect, kecOptions, '-- Pilih Kecamatan --', data.kecamatan ?? '');
+        kecamatanSelect.disabled = false;
+
+        if (!data.kecamatan || !kecOptions[data.kecamatan]) return;
+        
+        // 3. Isi dan Aktifkan Desa/Kelurahan
+        const desaOptions = kecOptions[data.kecamatan];
+        populateSelect(desaSelect, desaOptions, '-- Pilih Desa --', data.desa_kelurahan ?? '');
+        desaSelect.disabled = false;
+    }
+
+    // --- INISIALISASI SAAT HALAMAN PERTAMA KALI DIMUAT ---
+    // Isi dropdown Provinsi
+    populateSelect(provinsiSelect, Object.keys(addressData), '-- Pilih Provinsi --');
+
+    // Ambil data lama dari session
+    let oldData = {};
+    @if(isset($data_desa) && is_array($data_desa))
+        oldData = @json($data_desa);
+    @endif
+
+    // Jika ada data lama, panggil fungsi untuk mengisi ulang form
+    if (Object.keys(oldData).length > 0) {
+        console.log("Mengisi ulang form dengan data:", oldData);
+        // Pilih provinsi di dropdown
+        provinsiSelect.value = oldData.provinsi;
+        // Jalankan fungsi untuk mengisi anak-anaknya
+        repopulateForm(oldData);
+    }
+
+    // --- EVENT LISTENER UNTUK PERUBAHAN MANUAL OLEH USER ---
+    
+    // Event saat Provinsi berubah
+    provinsiSelect.addEventListener('change', function() {
+        const selectedProv = this.value;
+        kotaSelect.disabled = !selectedProv;
+        kecamatanSelect.disabled = true;
         desaSelect.disabled = true;
         kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
-        if (selectedProv && selectedKota && addressData[selectedProv][selectedKota]) {
-            populateSelect(kecamatanSelect, addressData[selectedProv][selectedKota], '-- Pilih Kecamatan --', oldData.kecamatan ?? '');
-            if (oldData.kecamatan) {
-                kecamatanSelect.dispatchEvent(new Event('change'));
-            }
+        if (selectedProv && addressData[selectedProv]) {
+            populateSelect(kotaSelect, addressData[selectedProv], '-- Pilih Kota --');
         }
     });
 
-    // 4. Event saat Kecamatan berubah
+    // Event saat Kota/Kabupaten berubah
+    kotaSelect.addEventListener('change', function() {
+        const selectedProv = provinsiSelect.value;
+        const selectedKota = this.value;
+        kecamatanSelect.disabled = !selectedKota;
+        desaSelect.disabled = true;
+        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+
+        if (selectedProv && selectedKota && addressData[selectedProv][selectedKota]) {
+            populateSelect(kecamatanSelect, addressData[selectedProv][selectedKota], '-- Pilih Kecamatan --');
+        }
+    });
+
+    // Event saat Kecamatan berubah
     kecamatanSelect.addEventListener('change', function() {
-        console.log("Kecamatan berubah ke:", this.value); // DEBUGGING
         const selectedProv = provinsiSelect.value;
         const selectedKota = kotaSelect.value;
         const selectedKec = this.value;
@@ -233,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
         if (selectedProv && selectedKota && selectedKec && addressData[selectedProv][selectedKota][selectedKec]) {
-            populateSelect(desaSelect, addressData[selectedProv][selectedKota][selectedKec], '-- Pilih Desa --', oldData.desa_kelurahan ?? '');
+            populateSelect(desaSelect, addressData[selectedProv][selectedKota][selectedKec], '-- Pilih Desa --');
         }
     });
 });
