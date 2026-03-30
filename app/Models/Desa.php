@@ -39,8 +39,8 @@ class Desa extends Model
         'id_user',
         'nama_desa',
         'klasifikasi_instansi',
-        'Telepon',
-        'Faksimili',
+        'telepon',
+        'faksimili',
         'alamat',
         'provinsi',
         'kota_kabupaten',
@@ -54,7 +54,7 @@ class Desa extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
     /**
