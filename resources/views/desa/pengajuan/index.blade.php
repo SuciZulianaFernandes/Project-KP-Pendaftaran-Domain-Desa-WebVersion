@@ -5,6 +5,8 @@
 @section('content')
 
 <div class="bg-white rounded-xl shadow p-10">
+    <div class="flex justify-center mb-12">
+</div>
 
     <h2 class="text-xl font-semibold mb-10 text-gray-700">
         Pendaftaran Domain
@@ -49,6 +51,7 @@
                         type="text"
                         id="domain-input"
                         placeholder="Nama Domain"
+                            value="{{ old('nama_domain', session('pengajuan.nama_domain')) }}" 
                         class="flex-1 px-4 py-3 focus:outline-none"
                         autocomplete="off"
                     />
@@ -70,7 +73,7 @@
                     <!-- Teks Status -->
                     <p id="domain-status" class="text-sm font-medium"></p>
                     <!-- Tombol Daftar -->
-                    <a id="btn-daftar" href="#" class="inline-block px-8 py-2 rounded-lg text-white font-medium transition-colors duration-200">
+                    <a id="btn-daftar" href="{{ url('/desa/pengajuan') }}" class="inline-block px-8 py-2 rounded-lg text-white font-medium transition-colors duration-200">
                         Daftar
                     </a>
                 </div>
