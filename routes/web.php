@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -46,7 +47,12 @@ Route::get('/', [PengajuanController::class,'index'])->name('index');
     Route::get('/tinjau', [PengajuanController::class, 'showTinjauForm'])->name('tinjau');
     Route::post('/submit', [PengajuanController::class, 'submitPengajuan'])->name('submit');
 });
-
+Route::prefix('desa/verifikasi')->name('verifikasi.')->group(function () {
+    Route::get('/', [PengajuanController::class, 'daftar'])->name('daftar');
+    Route::get('/{id}', [PengajuanController::class, 'show'])->name('detail');
+    Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
 });
 
-
+Route::put('/desa/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])
+    ->name('verifikasi.updateDokumen');
+});

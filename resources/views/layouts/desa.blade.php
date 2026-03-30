@@ -86,9 +86,10 @@ font-family: 'Poppins', sans-serif;
             <i class="fas fa-plus-circle w-5"></i> Pendaftaran Domain
         </a>
         
-        <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
-            <i class="fas fa-check-circle w-5"></i> Verifikasi Domain
-        </a>
+        <a href="{{ route('verifikasi.daftar') }}" 
+   class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+    <i class="fas fa-check-circle w-5"></i> Verifikasi Dokumen
+</a>
         <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
             <i class="fas fa-clock w-5"></i> Perpanjang Domain
         </a>
