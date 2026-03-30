@@ -133,43 +133,100 @@ foreach ($files as $file) {
     }
 
     public function submitPengajuan(Request $request)
-    {
-        $allData = session('pengajuan');
-        // Asumsikan user sudah login, jika tidak, sesuaikan
-        $idUser = auth()->id(); 
+{
+    $allData = session('pengajuan');
 
-        DB::beginTransaction();
-        try {
-            // 1. Buat data Desa
-            $desa = Desa::create(array_merge(
-                $allData['data_desa'],
-                ['id_user' => $idUser]
-            ));
+    DB::beginTransaction();
+    try {
 
-            // 2. Buat data Pengajuan, gunakan id_desa dari langkah 1
-            $pengajuan = $desa->pengajuans()->create([
-                'nama_domain' => $allData['nama_domain'],
-                'status_pengajuan' => 'ditinjau', // Status awal
-                'tgl_pengajuan' => now(),
+        // LANGSUNG SIMPAN KE PENGAJUAN (tanpa desa)
+        $pengajuan = Pengajuan::create([
+             'id_user' => auth()->id(),
+            'nama_domain' => $allData['nama_domain'],
+            'status_pengajuan' => 'ditinjau',
+            'tgl_pengajuan' => now(),
+
+            // simpan info desa ke sini aja
+              'nama_desa' => $allData['data_desa']['nama_desa'],
+    'telepon' => $allData['data_desa']['Telepon'],
+    'faksimili' => $allData['data_desa']['Faksimili'],
+    'alamat' => $allData['data_desa']['alamat'],
+    'provinsi' => $allData['data_desa']['provinsi'],
+    'kota_kabupaten' => $allData['data_desa']['kota_kabupaten'],
+    'kecamatan' => $allData['data_desa']['kecamatan'],
+    'desa_kelurahan' => $allData['data_desa']['desa_kelurahan'],
+    'kode_pos' => $allData['data_desa']['kode_pos'],
+        ]);
+
+        // SIMPAN DOKUMEN
+        foreach ($allData['data_dokumen'] as $jenis => $dok) {
+            $pengajuan->dokumenPersyaratan()->create([
+                'jenis_dokumen' => $jenis,
+                'nama_file' => $dok['nama_file'],
+                'path_file' => $dok['path_file'],
             ]);
+        }
 
-            // 3. Buat data Dokumen Persyaratan, gunakan id_pengajuan dari langkah 2
-            foreach ($allData['data_dokumen'] as $jenis => $dok) {
-                $pengajuan->dokumenPersyaratan()->create([
-                    'jenis_dokumen' => $jenis,
-                    'nama_file' => $dok['nama_file'],
-                    'path_file' => $dok['path_file'],
-                ]);
-            }
+        DB::commit();
+        session()->forget('pengajuan');
 
-            DB::commit();
-            session()->forget('pengajuan');
-            return redirect()->route('pengajuan.index')->with('success', 'Pengajuan domain berhasil dikirim!');
+        return redirect()->route('pengajuan.index')
+            ->with('success', 'Pengajuan domain berhasil dikirim!');
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // Log error untuk debugging: \Log::error($e->getMessage());
-            return redirect()->route('pengajuan.tinjau')->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        dd($e->getMessage());
         }
     }
+
+    public function daftar()
+{
+    $data = Pengajuan::where('id_user', auth()->id())
+        ->latest()
+        ->get();
+
+    return view('desa.verifikasi.daftar', compact('data'));
+}
+
+public function show($id)
+{
+    $pengajuan = Pengajuan::with('dokumenPersyaratan')->findOrFail($id);
+
+    return view('desa.verifikasi.detail', compact('pengajuan'));
+}
+
+public function destroy($id)
+{
+    $pengajuan = Pengajuan::findOrFail($id);
+
+    // hapus file juga (opsional tapi bagus)
+    foreach ($pengajuan->dokumenPersyaratan as $dok) {
+        \Storage::disk('public')->delete($dok->path_file);
+    }
+
+    $pengajuan->delete();
+
+    return back()->with('success', 'Pengajuan berhasil dihapus');
+}
+
+public function updateDokumen(Request $request, $id)
+{
+    $dok = DokumenPersyaratan::findOrFail($id);
+
+    if ($request->hasFile('file')) {
+        // hapus lama
+        \Storage::disk('public')->delete($dok->path_file);
+
+        // simpan baru
+        $path = $request->file('file')->store('pengajuan/dokumen', 'public');
+
+        $dok->update([
+            'nama_file' => $request->file('file')->getClientOriginalName(),
+            'path_file' => $path,
+        ]);
+    }
+
+    return back()->with('success', 'Dokumen berhasil diperbarui');
+}
+
 }
