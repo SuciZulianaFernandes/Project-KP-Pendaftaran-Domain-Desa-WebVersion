@@ -49,10 +49,10 @@
             </div>
             
             <!-- Form Aksi -->
-            <form action="{{ route('pengajuan.submit') }}" method="POST" class="mt-8">
+            <form action="{{ route('desa.pengajuan.submit') }}" method="POST" class="mt-8">
                 @csrf
                 <div class="flex justify-between">
-                    <a href="{{ route('pengajuan.dokumen') }}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700">Kembali</a>
+                    <a href="{{ route('desa.pengajuan.dokumen') }}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700">Kembali</a>
                     <button type="submit" class="px-8 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition duration-150">Ajukan Domain</button>
                 </div>
             </form>
