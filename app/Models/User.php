@@ -26,6 +26,7 @@ class User extends Authenticatable
         'username',
         'name',
         'email',
+        'no_hp',
         'password',
         'role'
     ];
@@ -51,5 +52,13 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relasi dengan model Desa
+     */
+    public function desa()
+    {
+        return $this->hasOne(Desa::class, 'id_user', 'id_user');
     }
 }

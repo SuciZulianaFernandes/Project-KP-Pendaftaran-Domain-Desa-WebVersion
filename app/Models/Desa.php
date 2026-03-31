@@ -20,10 +20,6 @@ class Desa extends Model
      */
     protected $primaryKey = 'id_desa';
 
-    /**
-     * Tipe primary key.
-     */
-    protected $keyType = 'bigint';
 
     /**
      * Menonaktifkan incrementing integer jika primary key bukan tipe int auto-increment.
@@ -38,8 +34,10 @@ class Desa extends Model
     protected $fillable = [
         'id_user',
         'nama_desa',
+        'nama_kepala_desa',
+        'nip_kepala_desa',
         'klasifikasi_instansi',
-        'Telepon',
+        'telepon',
         'Faksimili',
         'alamat',
         'provinsi',
@@ -54,7 +52,7 @@ class Desa extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
     /**
