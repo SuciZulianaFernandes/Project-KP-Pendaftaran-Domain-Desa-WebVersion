@@ -106,7 +106,14 @@ font-family: 'Poppins', sans-serif;
 <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-file-invoice w-5"></i> Faktur
 </a>
-            
+
+<!-- Logout Button -->
+<form action="{{ route('logout') }}" method="POST" class="mt-6">
+    @csrf
+    <button type="submit" class="flex items-center gap-3 w-full p-2 rounded hover:bg-red-700 transition text-left">
+        <i class="fas fa-sign-out-alt w-5"></i> Keluar
+    </button>
+</form>
 
 </nav>
 

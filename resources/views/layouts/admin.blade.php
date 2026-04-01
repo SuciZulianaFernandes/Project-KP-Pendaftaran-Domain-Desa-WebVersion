@@ -83,6 +83,41 @@ Verifikasi Dokumen
 
 </div>
 
+<!-- Manajemen User Menu -->
+<p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Manajemen User</p>
+
+<div x-data="{ open:false }">
+
+<button @click="open=!open"
+class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-red-700 transition">
+
+<div class="flex items-center gap-3">
+<i class="fas fa-users w-5"></i>
+<span>Manajemen User</span>
+</div>
+
+<i class="fas fa-chevron-up text-xs transition-transform"
+:class="open ? 'rotate-180' : ''"></i>
+
+</button>
+
+<div x-show="open" x-cloak x-transition
+class="ml-8 mt-2 space-y-1">
+
+<a href="{{ url('/admin/users') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<i class="fas fa-list w-5"></i>
+Daftar User
+</a>
+
+<a href="{{ url('/admin/users/create') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<i class="fas fa-plus-circle w-5"></i>
+Tambah User
+</a>
+
+</div>
+
+</div>
+
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Menu</p>
 
 <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
@@ -99,6 +134,14 @@ Profil Instansi
 <i class="fas fa-file-invoice w-5"></i>
 Faktur
 </a>
+
+<!-- Logout Button -->
+<form action="{{ route('logout') }}" method="POST" class="mt-6">
+    @csrf
+    <button type="submit" class="flex items-center gap-3 w-full p-2 rounded hover:bg-red-700 transition text-left">
+        <i class="fas fa-sign-out-alt w-5"></i> Keluar
+    </button>
+</form>
 
 </nav>
 

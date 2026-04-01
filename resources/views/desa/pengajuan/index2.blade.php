@@ -21,7 +21,7 @@
     <div class="mt-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Isi Informasi Desa</h2>
         
-        <form action="{{ route('pengajuan.informasi.store') }}" method="POST" id="formInformasi">
+        <form action="{{ route('desa.pengajuan.informasi.store') }}" method="POST" id="formInformasi">
             @csrf
             
             <!-- Baris 1: Nama Desa & Klasifikasi Instansi -->
@@ -97,8 +97,7 @@
 
             <!-- Tombol Aksi -->
             <div class="flex justify-end mt-8 space-x-4">
-                <a href="{{ route('pengajuan.index') }}" class="px-7 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition duration-150">Kembali</a>
-                <button type="submit" class="px-7 py-3 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition duration-150">Lanjutkan</button>
+<a href="{{ route('desa.pengajuan.index') }}" class="px-7 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition duration-150">Kembali</a>                <button type="submit" class="px-7 py-3 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition duration-150">Lanjutkan</button>
             </div>
         </form>
     </div>

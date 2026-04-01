@@ -67,7 +67,7 @@ class PengajuanController extends Controller
         ]);
 
         session(['pengajuan.data_desa' => $data]);
-        return redirect()->route('pengajuan.dokumen');
+        return redirect()->route('desa.pengajuan.dokumen');
     }
 
     public function showDokumenForm()
@@ -119,13 +119,13 @@ foreach ($files as $file) {
         }
 
         session(['pengajuan.data_dokumen' => $dokumen]);
-        return redirect()->route('pengajuan.tinjau');
+        return redirect()->route('desa.pengajuan.tinjau');
     }
 
     public function showTinjauForm()
     {
         if (!session('pengajuan.data_dokumen')) {
-            return redirect()->route('pengajuan.dokumen');
+            return redirect()->route('desa.pengajuan.dokumen');
         }
         
         $data = session('pengajuan');
@@ -170,7 +170,7 @@ foreach ($files as $file) {
         DB::commit();
         session()->forget('pengajuan');
 
-        return redirect()->route('pengajuan.index')
+        return redirect()->route('desa.pengajuan.index')
             ->with('success', 'Pengajuan domain berhasil dikirim!');
 
     } catch (\Exception $e) {
