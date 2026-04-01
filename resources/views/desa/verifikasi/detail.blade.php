@@ -49,7 +49,8 @@
                     <span>{{ $dok->jenis_dokumen }}</span>
 
                     <div class="flex gap-3">
-                        <a href="{{ asset('storage/' . $dokumen->path_file) }}" 
+
+                        <a href="{{ asset('storage/'.$dok->path_file) }}" 
                            target="_blank"
                            class="text-blue-600 hover:underline">
                             Lihat

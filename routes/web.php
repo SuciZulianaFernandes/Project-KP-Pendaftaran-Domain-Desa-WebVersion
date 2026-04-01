@@ -6,53 +6,74 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\UserController;
 
-
-
+// Route untuk tamu (guest)
 Route::get('/', function () {
     return view('guest.homepage');
 });
 
-Route::get('/register',[RegisterController::class,'showRegister']);
-Route::post('/register', [RegisterController::class,'register'])->name('register');
-Route::get('/login',[LoginController::class,'showLogin'])->name('login');
-Route::post('/login',[LoginController::class,'login']);
-Route::post('/logout',[LoginController::class,'logout'])->name('logout');
+// Route Autentikasi
+Route::get('/register', [RegisterController::class, 'showRegister']);
+Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::middleware(['auth'])->group(function(){
-    Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-});
-Route::get('/admin/profile',[ProfileController::class,'edit']);
-Route::post('/admin/profile',[ProfileController::class,'update']);
-});
 
-Route::middleware(['auth'])->group(function(){
-    Route::get('/desa/dashboard', function () {
-    return view('desa.dashboard');
-});
-Route::post('/cek-domain', [PengajuanController::class,'cekDomain'])->name('cek.domain');
-Route::post('/api/check-domain-availability', [PengajuanController::class, 'checkAvailabilityApi'])->name('api.check.domain');
-Route::prefix('desa/pengajuan')->name('pengajuan.')->group(function () {
-Route::get('/', [PengajuanController::class,'index'])->name('index');   
-// Langkah 2: Informasi Desa
-    Route::get('/informasi', [PengajuanController::class, 'showInformasiForm'])->name('informasi');
-    Route::post('/informasi', [PengajuanController::class, 'storeInformasiForm'])->name('informasi.store');
-
-    // Langkah 3: Upload Dokumen
-    Route::get('/dokumen', [PengajuanController::class, 'showDokumenForm'])->name('dokumen');
-    Route::post('/dokumen', [PengajuanController::class, 'storeDokumenForm'])->name('dokumen.store');
+// =====================================================
+// ROUTE UNTUK ADMIN (Memerlukan login dan role admin)
+// =====================================================
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
-    // Langkah 4: Tinjau & Submit
-    Route::get('/tinjau', [PengajuanController::class, 'showTinjauForm'])->name('tinjau');
-    Route::post('/submit', [PengajuanController::class, 'submitPengajuan'])->name('submit');
-});
-Route::prefix('desa/verifikasi')->name('verifikasi.')->group(function () {
-    Route::get('/', [PengajuanController::class, 'daftar'])->name('daftar');
-    Route::get('/{id}', [PengajuanController::class, 'show'])->name('detail');
-    Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
+
+    // Dashboard Admin
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
+
+    // Manajemen Profile Instansi
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    // --- MANAJEMEN USER ---
+    // Karena berada di dalam grup dengan prefix 'admin', route ini akan menjadi /admin/users
+    Route::resource('users', UserController::class);
 });
 
-Route::put('/desa/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])
-    ->name('verifikasi.updateDokumen');
+
+// =====================================================
+// ROUTE UNTUK DESA (Memerlukan login dan role desa)
+// =====================================================
+Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(function () {
+    
+    // Dashboard Desa
+    Route::get('/dashboard', function () {
+        return view('desa.dashboard');
+    })->name('dashboard');
+
+    // Route Pengajuan Domain
+    Route::post('/cek-domain', [PengajuanController::class, 'cekDomain'])->name('cek.domain');
+    Route::post('/api/check-domain-availability', [PengajuanController::class, 'checkAvailabilityApi'])->name('api.check.domain');
+    
+    Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+        Route::get('/', [PengajuanController::class, 'index'])->name('index');   
+        Route::get('/informasi', [PengajuanController::class, 'showInformasiForm'])->name('informasi');
+        Route::post('/informasi', [PengajuanController::class, 'storeInformasiForm'])->name('informasi.store');
+        Route::get('/dokumen', [PengajuanController::class, 'showDokumenForm'])->name('dokumen');
+        Route::post('/dokumen', [PengajuanController::class, 'storeDokumenForm'])->name('dokumen.store');
+        Route::get('/tinjau', [PengajuanController::class, 'showTinjauForm'])->name('tinjau');
+        Route::post('/submit', [PengajuanController::class, 'submitPengajuan'])->name('submit');
+    });
+    
+    // Route Verifikasi Dokumen
+    Route::prefix('verifikasi')->name('verifikasi.')->group(function () {
+        Route::get('/', [PengajuanController::class, 'daftar'])->name('daftar');
+        Route::get('/{id}', [PengajuanController::class, 'show'])->name('detail');
+        Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])
+        ->name('verifikasi.updateDokumen');
 });
+

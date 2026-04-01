@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnCari.disabled = true;
         btnCari.textContent = 'Memeriksa...';
 
-        fetch('{{ route("api.check.domain") }}', {
+        fetch('{{ route("desa.api.check.domain") }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
