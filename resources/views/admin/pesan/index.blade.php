@@ -36,13 +36,7 @@
                         Manajemen Faktur
                     </a>
 
-                    <!-- 🔥 BUAT FAKTUR LANGSUNG -->
-                    <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST">
-                        @csrf
-                        <button class="bg-blue-500 text-white px-4 py-2 rounded">
-                            Buat Faktur
-                        </button>
-                    </form>
+
 
                 </div>
             @endif
