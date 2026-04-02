@@ -11,6 +11,7 @@ class Pengajuan extends Model
 
     protected $fillable = [
     'id_user',
+    'id_pengajuan',
     'nama_domain',
     'status_pengajuan',
     'catatan_umum',
@@ -31,15 +32,26 @@ class Pengajuan extends Model
     public $timestamps = true;
 
 
-    // 🔥 RELASI KE DOKUMEN
     public function dokumenPersyaratan()
     {
         return $this->hasMany(DokumenPersyaratan::class, 'id_pengajuan');
     }
 
-    // (Opsional tapi bagus)
+    
     public function desa()
     {
         return $this->belongsTo(Desa::class, 'id_desa');
     }
+
+    public function pesan()
+{
+    return $this->hasMany(Pesan::class);
+}
+
+public function faktur()
+{
+    return $this->hasOne(Faktur::class, 'id_pengajuan');
+}
+
+
 }

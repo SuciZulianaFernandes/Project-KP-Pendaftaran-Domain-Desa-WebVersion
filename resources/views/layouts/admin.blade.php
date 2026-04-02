@@ -69,14 +69,14 @@ class="ml-8 mt-2 space-y-1">
 Daftar Domain Terdaftar
 </a>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<a href="{{ url('/admin/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-plus-circle w-5"></i>
 Pengajuan Domain
 </a>
 
 <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-check-circle w-5"></i>
-Verifikasi Dokumen
+Pengajuan Perpanjang Domain
 </a>
 
 </div>
@@ -120,9 +120,9 @@ Tambah User
 
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Menu</p>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<a href="{{ url('/admin/pesan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-envelope w-5"></i>
-Kontak
+Pesan
 </a>
 
 <a href="{{ url('/admin/profile') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
@@ -130,9 +130,9 @@ Kontak
 Profil Instansi
 </a>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<a href="{{ url('/admin/faktur') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-file-invoice w-5"></i>
-Faktur
+Manajemen Faktur
 </a>
 
 <!-- Logout Button -->
