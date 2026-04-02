@@ -170,6 +170,7 @@ foreach ($files as $file) {
         DB::commit();
         session()->forget('pengajuan');
 
+
         return redirect()->route('desa.pengajuan.index')
             ->with('success', 'Pengajuan domain berhasil dikirim!');
 
@@ -227,6 +228,44 @@ public function updateDokumen(Request $request, $id)
     }
 
     return back()->with('success', 'Dokumen berhasil diperbarui');
+}
+
+public function adminIndex()
+{
+    $data = Pengajuan::latest()->get();
+    return view('admin.pengajuan.index', compact('data'));
+}
+
+public function adminDetail($id)
+{
+    $pengajuan = Pengajuan::with('dokumenPersyaratan')->findOrFail($id);
+    return view('admin.pengajuan.detail', compact('pengajuan'));
+}
+
+public function verifikasi(Request $request, $id)
+{
+    $pengajuan = Pengajuan::findOrFail($id);
+
+    $pengajuan->status_pengajuan = $request->status;
+    $pengajuan->catatan_umum = $request->catatan;
+    $pengajuan->save();
+
+    // 🔥 kirim pesan ke desa
+    \App\Models\Pesan::create([
+        'id_user' => $pengajuan->id_user,
+        'id_pengajuan' => $pengajuan->id_pengajuan,
+        'judul' => $request->status == 'disetujui' 
+            ? 'Konfirmasi Pembayaran' 
+            : 'Perlu Perbaikan',
+        'isi' => $request->status == 'disetujui'
+            ? 'Pengajuan domain '.$pengajuan->nama_domain.' disetujui. Silakan lanjutkan pembayaran.'
+            : 'Pengajuan perlu perbaikan: '.$request->catatan,
+             'role_tujuan' => 'desa'
+            
+    ]);
+
+    return redirect()->route('admin.pengajuan.index')
+        ->with('success', 'Berhasil verifikasi');
 }
 
 }

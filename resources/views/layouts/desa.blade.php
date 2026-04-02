@@ -84,7 +84,8 @@ font-family: 'Poppins', sans-serif;
          <a href="{{ url('/desa/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition {{ request()->is('desa/pengajuan*') ? 'bg-red-700' : '' }}">
             <i class="fas fa-plus-circle w-5"></i> Pendaftaran Domain
         </a>
-        <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+
+        <a href="{{ url('/desa/verifikasi') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
             <i class="fas fa-check-circle w-5"></i> Verifikasi Domain
         </a>
         <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
@@ -95,8 +96,8 @@ font-family: 'Poppins', sans-serif;
 
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Menu</p>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
-<i class="fas fa-envelope w-5"></i> Kontak
+<a href="{{ url('/desa/pesan') }}"" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<i class="fas fa-envelope w-5"></i> Pesan
 </a>
 
 <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">

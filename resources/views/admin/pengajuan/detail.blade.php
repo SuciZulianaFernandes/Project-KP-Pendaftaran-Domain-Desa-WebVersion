@@ -1,4 +1,4 @@
-@extends('layouts.desa')
+@extends('layouts.admin')
 @section('title', 'Detail Pengajuan')
 
 @section('content')
@@ -13,7 +13,7 @@
             <strong>Status:</strong> 
             <span class="px-2 py-1 rounded text-white 
                 @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-                @elseif($pengajuan->status_pengajuan == 'perbaikan') bg-red-500
+                @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
                 @elseif($pengajuan->status_pengajuan == 'disetujui') bg-green-500
                 @endif">
                 {{ $pengajuan->status_pengajuan }}
@@ -43,35 +43,51 @@
     <div class="mb-6">
         <h3 class="font-semibold mb-3">Dokumen</h3>
 
-        <ul class="space-y-2">
-            @foreach($pengajuan->dokumenPersyaratan as $dok)
-                <li class="flex justify-between items-center bg-gray-50 p-3 rounded">
-                    <span>{{ $dok->jenis_dokumen }}</span>
+        @foreach($pengajuan->dokumenPersyaratan as $dok)
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded mb-2">
+                <span>{{ $dok->jenis_dokumen }}</span>
 
-                    <div class="flex gap-3">
-
-                        <a href="{{ asset('storage/'.$dok->path_file) }}" 
-                           target="_blank"
-                           class="text-blue-600 hover:underline">
-                            Lihat
-                        </a>
-
-                        <!-- 🔥 MUNCUL HANYA JIKA STATUS PERBAIKAN -->
-                        @if($pengajuan->status_pengajuan == 'perbaikan')
-                        <form action="{{ route('verifikasi.updateDokumen', $dok->id) }}" method="POST" enctype="multipart/form-data">
-                            @csrf
-                            @method('PUT')
-
-                            <input type="file" name="file" required class="text-sm">
-                            <button class="text-green-600 text-sm">Upload</button>
-                        </form>
-                        @endif
-
-                    </div>
-                </li>
-            @endforeach
-        </ul>
+                <a href="{{ asset('storage/'.$dok->path_file) }}" 
+                   target="_blank"
+                   class="text-blue-600 underline">
+                    Lihat
+                </a>
+            </div>
+        @endforeach
     </div>
+
+    <!-- 🔥 FORM VERIFIKASI ADMIN -->
+    <hr class="my-4">
+
+    <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
+        @csrf
+        @method('PUT')
+
+        <div class="mb-4">
+            <label class="font-semibold">Pilih Status:</label><br>
+
+            <label>
+                <input type="radio" name="status" value="disetujui" required>
+                Disetujui (kirim konfirmasi pembayaran)
+            </label>
+
+            <br>
+
+            <label>
+                <input type="radio" name="status" value="perlu_perbaikan">
+                Perlu Perbaikan
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label class="font-semibold">Catatan (opsional)</label>
+            <textarea name="catatan" class="w-full border p-2 rounded"></textarea>
+        </div>
+
+        <button class="bg-green-600 text-white px-4 py-2 rounded">
+            Simpan
+        </button>
+    </form>
 
 </div>
 @endsection

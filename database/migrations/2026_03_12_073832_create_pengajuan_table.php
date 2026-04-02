@@ -15,6 +15,17 @@ return new class extends Migration
     $table->text('catatan_umum')->nullable();
     $table->dateTime('tgl_pengajuan')->nullable();
     $table->dateTime('tgl_verifikasi')->nullable();
+
+    $table->string('nama_desa')->nullable();
+        $table->string('telepon', 50)->nullable();
+        $table->string('faksimili', 50)->nullable();
+        $table->text('alamat')->nullable();
+        $table->string('provinsi')->nullable();
+        $table->string('kota_kabupaten')->nullable();
+        $table->string('kecamatan')->nullable();
+        $table->string('desa_kelurahan')->nullable();
+        $table->string('kode_pos', 10)->nullable();
+        
     $table->timestamps();
 });
     }
