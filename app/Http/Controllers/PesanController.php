@@ -12,7 +12,7 @@ class PesanController extends Controller
     public function index()
     {
        $data = Pesan::where('id_user', auth()->id())
-    ->where('role_tujuan', 'desa') // 🔥 TAMBAH INI
+    ->where('role_tujuan', 'desa') 
     ->latest()
     ->get();
         return view('desa.pesan.index', compact('data'));
@@ -20,7 +20,7 @@ class PesanController extends Controller
 
     public function adminIndex()
 {
-     $data = Pesan::where('role_tujuan', 'admin') // 🔥 FILTER
+     $data = Pesan::where('role_tujuan', 'admin')
     ->latest()
     ->get();
 
@@ -34,7 +34,7 @@ class PesanController extends Controller
     // tandai pesan lama sebagai sudah diproses
     Pesan::where('id_pengajuan', $id)
         ->where('id_user', auth()->id())
-        ->update(['is_read' => 1]); // 🔥 penting
+        ->update(['is_read' => 1]);
 
 
 
