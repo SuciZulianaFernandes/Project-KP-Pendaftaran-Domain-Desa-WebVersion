@@ -1,72 +1,92 @@
 @extends('layouts.desa')
-@section('title', 'Status Domain')
 
 @section('content')
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- Kolom Kiri: Komponen Status Box -->
-    <div class="lg:col-span-1">
-        <x-status-box :status="$faktur->status" />
-    </div>
+@include('components.inv-styles')
 
-    <!-- Kolom Kanan: Konten Utama Faktur -->
-    <div class="lg:col-span-3">
-        <div class="bg-white p-6 rounded-xl shadow">
-            <h2 class="text-2xl font-bold mb-4">Status Domain</h2>
-            
-            <!-- Info Faktur -->
-            <div class="mb-6">
-                <p class="text-gray-500 text-sm">Invoice</p>
-                <p class="font-bold text-lg">#{{ $faktur->no_invoice }}</p>
-                <p class="font-semibold">{{ $faktur->nama_desa }}</p>
-            </div>
-
-            <!-- Detail Domain -->
-            <div class="space-y-2 mb-6">
-                <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">Domain</span>
-                    <span class="font-medium">{{ $faktur->nama_domain }}.desa.id</span>
-                </div>
-                <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">Aplikasi</span>
-                    <span class="font-medium">Registrasi</span>
-                </div>
-                <div class="flex justify-between py-2 border-b">
-                    <span class="text-gray-600">Masa Aktif</span>
-                    <span class="font-medium">1 Tahun</span>
-                </div>
-                <div class="flex justify-between py-2">
-                    <span class="text-gray-600">Harga</span>
-                    <span class="font-bold text-lg">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
-                </div>
-            </div>
-
-            <!-- Petunjuk Pembayaran -->
-            <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 class="font-semibold mb-2">Petunjuk Pembayaran</h3>
-                <p class="text-sm text-gray-700 mb-2">Silakan lakukan pembayaran ke rekening berikut:</p>
-                <div class="text-sm space-y-1">
-                    <p><strong>Penerima:</strong> PANDI (Pengelola Nama Domain Internet Indonesia)</p>
-                    <p><strong>Bank:</strong> Bank BCA KCU Sudirman</p>
-                    <p><strong>No. Rekening:</strong> 888-88-8888</p>
-                </div>
-            </div>
-
-            <!-- Form Upload Bukti Pembayaran -->
-            <form action="{{ route('desa.faktur.konfirmasi', $faktur->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="mb-4">
-                    <label for="bukti_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Bukti Pembayaran *</label>
-                    <input type="file" name="bukti_pembayaran" id="bukti_pembayaran" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" required>
-                    @error('bukti_pembayaran')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-                
-                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
-                    Kirim
-                </button>
-            </form>
+<div class="container-fluid" style="padding:0 24px;max-width:1400px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div>
+            <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">Daftar Faktur</h1>
+            <p style="font-size:14px;color:#64748b;margin:4px 0 0">Kelola semua faktur domain Anda</p>
         </div>
     </div>
+
+    <div class="inv-card">
+        @if(session('success'))
+            <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert inv-alert inv-alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @include('components.inv-search-filter')
+
+        <div style="overflow-x:auto">
+            <table class="inv-table" id="invTable">
+                <thead>
+                    <tr>
+                        <th>No. Invoice</th>
+                        <th>Tanggal Invoice</th>
+                        <th>Jatuh Tempo</th>
+                        <th>Total</th>
+                        <th style="text-align:center">Status Pembayaran</th>
+                        <th style="text-align:center">Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($fakturs as $i => $item)
+                    <tr data-status="{{ $item->status }}" style="animation-delay:{{$i*0.05}}s">
+                        <td><span class="inv-id">#{{ $item->no_invoice }}</span></td>
+                        <td><span class="inv-date">{{ $item->created_at?->format('d/m/Y') ?? '-' }}</span></td>
+                        <td><span class="inv-date">{{ $item->expired_at?->format('d/m/Y') ?? '-' }}</span></td>
+                        <td><span class="inv-amount">Rp {{ number_format($item->total, 0, ',', '.') }}</span></td>
+                        <td style="text-align:center">
+                            @if($item->status == 'belum_bayar')
+                                <span class="inv-badge badge-red"><span class="d"></span>Belum Dibayar</span>                            @elseif($item->status == 'sudah_bayar')
+                                <span class="inv-badge badge-green"><span class="d"></span>Sudah Dibayar</span>
+                            @else
+                                <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>{{ ucfirst($item->status) }}</span>
+                            @endif
+                        </td>
+                        <td style="text-align:center">
+                            <a href="{{ route('desa.faktur.show', $item->id) }}" class="inv-btn-d"><i class="fas fa-eye"></i> Lihat</a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i>Tidak ada data faktur</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @include('components.inv-pagination')
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('invSearch'),
+        f=document.getElementById('invFilter'),
+        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
+        empty=document.querySelector('.inv-empty');
+
+    function filter(){
+        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
+        rows.forEach(function(r){
+            var show=(!q||r.textContent.toLowerCase().includes(q))&&(!v||r.dataset.status===v);
+            r.style.display=show?'':'none';
+            if(show)n++;
+        });
+        if(empty)empty.style.display=n?'none':'';
+    }
+    s.addEventListener('input',filter);
+    f.addEventListener('change',filter);
+});
+</script>
 @endsection

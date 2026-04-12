@@ -30,14 +30,6 @@
                     <label for="nama_desa" class="block text-sm font-semibold text-gray-700 mb-2">Nama Desa</label>
                     <input type="text" id="nama_desa" name="nama_desa" value="{{ old('nama_desa', $data_desa['nama_desa'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: Sukamaju" required>
                 </div>
-                <div>
-                    <label for="klasifikasi_instansi" class="block text-sm font-semibold text-gray-700 mb-2">Klasifikasi Instansi</label>
-                    <select id="klasifikasi_instansi" name="klasifikasi_instansi" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required>
-                        <option value="">-- Pilih Klasifikasi --</option>
-                        <option value="Desa" {{ old('klasifikasi_instansi', $data_desa['klasifikasi_instansi'] ?? '') === 'Desa' ? 'selected' : '' }}>Desa</option>
-                        <option value="Kelurahan" {{ old('klasifikasi_instansi', $data_desa['klasifikasi_instansi'] ?? '') === 'Kelurahan' ? 'selected' : '' }}>Kelurahan</option>
-                    </select>
-                </div>
             </div>
 
             <!-- Alamat Lengkap -->
@@ -72,7 +64,7 @@
             <!-- Baris 3: Desa/Kelurahan & Kode Pos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="desa_kelurahan" class="block text-sm font-semibold text-gray-700 mb-2">Desa/Kelurahan</label>
+                    <label for="desa_kelurahan" class="block text-sm font-semibold text-gray-700 mb-2">Desa</label>
                     <select id="desa_kelurahan" name="desa_kelurahan" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
                         <option value="">-- Pilih Desa --</option>
                     </select>
@@ -117,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 "Kecamatan Rumbai": ["Kelurahan Umban Sari", "Kelurahan Sri Meranti", "Kelurahan Palas"]
             },
             "Kabupaten Bengkalis": {
-                "Kecamatan Bengkalis": ["Kelurahan Bengkalis Kota", "Kelurahan Pekanbaru", "Desa Sei Nibung", "Desa Senggoro"],
+                "Kecamatan Bengkalis": ["Desa Air Putih", "Desa Damai", "Desa Kelapapati", "Desa Kelebuk", "Desa Kelemantan", "Desa Kelemantan Barat", "Desa Ketam Putih", "Desa Kuala Alam", "Desa Meskom", "Desa Pematang Duku", "Desa Pematang Duku Timur", "Desa Penebal", "Desa Penampi", "Desa Prapat Tunggal", "Desa Sebauk", "Desa Sungai Alam", "Desa Sekodi", "Desa Senderak", "Desa Teluk Latak", "Desa Temeran", "Desa Wonosari", "Desa Pedekik", "Desa Pangkalan Batang", "Desa Pangkalan Batang Barat", "Desa Sungai Batang", "Desa Simpang Ayam"],
                 "Kecamatan Mandau": ["Kelurahan Duri", "Kelurahan Balik Alam", "Desa Pematang Pudu", "Desa Guntung"],
                 "Kecamatan Rupat": ["Desa Tanjung Medang", "Desa Batu Panjang", "Desa Teluk Rhu", "Desa Darul Aman"],
                 "Kecamatan Siak Kecil": ["Desa Tengganau", "Desa Sungai Selari", "Desa Palkun", "Desa Jangkang"]

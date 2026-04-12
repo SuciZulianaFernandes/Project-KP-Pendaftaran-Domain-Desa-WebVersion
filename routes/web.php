@@ -62,8 +62,6 @@ Route::put('pengajuan/verifikasi/{id}', [PengajuanController::class, 'verifikasi
     ->name('pesan.index');
     Route::get('/faktur/{id}', [FakturController::class, 'show'])
     ->name('faktur.show');
-    Route::post('/faktur/{id}/kirim', [FakturController::class, 'kirimFaktur'])->name('faktur.kirim');
-
     
 });
 
@@ -99,16 +97,12 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
         
     });
-
-    Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])
-        ->name('verifikasi.updateDokumen');
-        
-        Route::get('/pesan', [PesanController::class, 'index'])
-    ->name('pesan.index');
-
-    Route::post('/konfirmasi-pembayaran/{id}', [PesanController::class, 'konfirmasiPembayaran'])
-    ->name('konfirmasi.pembayaran');
-        Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
+    Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])->name('verifikasi.updateDokumen');   
+    Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
+    Route::post('/pesan/{id}/konfirmasi', [PesanController::class, 'konfirmasiPembayaran'])->name('konfirmasi.pembayaran');        
+    Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
+    Route::get('/faktur/{id}', [FakturDesaController::class, 'show'])->name('faktur.show');
+    Route::post('/faktur/{id}/konfirmasi', [FakturDesaController::class, 'konfirmasiPembayaran'])->name('faktur.konfirmasi');
 
 });
 

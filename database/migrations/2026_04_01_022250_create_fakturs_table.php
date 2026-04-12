@@ -29,10 +29,10 @@ return new class extends Migration
     $table->integer('total');
 
     $table->enum('status', [
-        'belum_bayar',
-        'sudah_bayar',
-        'kedaluarsa'
-    ])->default('belum_bayar');
+                'belum_bayar',  // Status setelah faktur dibuat & "dikirim"
+                'sudah_bayar',  // Status setelah desa upload bukti
+                'kedaluarsa'    // Status jika melewati batas waktu
+            ])->default('belum_bayar')->change();
 
     $table->timestamp('tanggal_konfirmasi')->nullable();
     $table->timestamp('expired_at')->nullable();
@@ -46,6 +46,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('fakturs');
+        Schema::table('fakturs', function (Blueprint $table) {
+            // Kembalikan ke keadaan sebelumnya jika perlu
+            $table->enum('status', [
+                'belum_bayar', 'dikirim', 'menunggu_verifikasi', 'sudah_bayar', 'kedaluarsa'
+            ])->default('belum_bayar')->change();
+        });
     }
 };

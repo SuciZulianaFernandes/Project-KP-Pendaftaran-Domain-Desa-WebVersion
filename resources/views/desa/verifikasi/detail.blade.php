@@ -12,12 +12,18 @@
         <p>
             <strong>Status:</strong> 
             <span class="px-2 py-1 rounded text-white 
-                @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-                @elseif($pengajuan->status_pengajuan == 'perbaikan') bg-red-500
-                @elseif($pengajuan->status_pengajuan == 'disetujui') bg-green-500
-                @endif">
-                {{ $pengajuan->status_pengajuan }}
-            </span>
+    @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
+    @elseif($pengajuan->status_pengajuan == 'perbaikan') bg-red-500
+    @elseif($pengajuan->status_pengajuan == 'disetujui') bg-green-500
+    @endif">
+
+    @if($pengajuan->status_pengajuan == 'disetujui')
+        diproses
+    @else
+        {{ $pengajuan->status_pengajuan }}
+    @endif
+
+</span>
         </p>
     </div>
 

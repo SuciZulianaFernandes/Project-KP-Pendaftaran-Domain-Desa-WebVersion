@@ -55,7 +55,6 @@ class PengajuanController extends Controller
     {
         $data = $request->validate([
             'nama_desa' => 'required|string|max:255',
-            'klasifikasi_instansi' => 'required|string|max:255',
             'Telepon' => 'required|string|max:50',
             'Faksimili' => 'required|string|max:50',
             'alamat' => 'required|string',
@@ -138,24 +137,21 @@ foreach ($files as $file) {
 
     DB::beginTransaction();
     try {
-
         // LANGSUNG SIMPAN KE PENGAJUAN (tanpa desa)
         $pengajuan = Pengajuan::create([
-             'id_user' => auth()->id(),
+            'id_user' => auth()->id(),
             'nama_domain' => $allData['nama_domain'],
             'status_pengajuan' => 'ditinjau',
             'tgl_pengajuan' => now(),
-
-            // simpan info desa ke sini aja
-              'nama_desa' => $allData['data_desa']['nama_desa'],
-    'telepon' => $allData['data_desa']['Telepon'],
-    'faksimili' => $allData['data_desa']['Faksimili'],
-    'alamat' => $allData['data_desa']['alamat'],
-    'provinsi' => $allData['data_desa']['provinsi'],
-    'kota_kabupaten' => $allData['data_desa']['kota_kabupaten'],
-    'kecamatan' => $allData['data_desa']['kecamatan'],
-    'desa_kelurahan' => $allData['data_desa']['desa_kelurahan'],
-    'kode_pos' => $allData['data_desa']['kode_pos'],
+            'nama_desa' => $allData['data_desa']['nama_desa'],
+            'telepon' => $allData['data_desa']['Telepon'],
+            'faksimili' => $allData['data_desa']['Faksimili'],
+            'alamat' => $allData['data_desa']['alamat'],
+            'provinsi' => $allData['data_desa']['provinsi'],
+            'kota_kabupaten' => $allData['data_desa']['kota_kabupaten'],
+            'kecamatan' => $allData['data_desa']['kecamatan'],
+            'desa_kelurahan' => $allData['data_desa']['desa_kelurahan'],
+            'kode_pos' => $allData['data_desa']['kode_pos'],
         ]);
 
         // SIMPAN DOKUMEN
@@ -170,15 +166,22 @@ foreach ($files as $file) {
         DB::commit();
         session()->forget('pengajuan');
 
-
-        return redirect()->route('desa.pengajuan.index')
-            ->with('success', 'Pengajuan domain berhasil dikirim!');
+        // Return JSON untuk AJAX
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan domain berhasil dikirim!'
+        ]);
 
     } catch (\Exception $e) {
         DB::rollBack();
-        dd($e->getMessage());
-        }
+        
+        // Return JSON error
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ], 500);
     }
+}
 
     public function daftar()
 {
@@ -257,8 +260,8 @@ public function verifikasi(Request $request, $id)
         'judul' => $request->status == 'disetujui' 
             ? 'Konfirmasi Pembayaran' 
             : 'Perlu Perbaikan',
-        'isi' => $request->status == 'disetujui'
-            ? 'Pengajuan domain '.$pengajuan->nama_domain.' disetujui. Silakan lanjutkan pembayaran.'
+        'isi' => $request->status == 'disetujui' 
+            ? 'Pengajuan domain '.$pengajuan->nama_domain.' disetujui. Apakah Anda ingin melanjutkan pembayaran? Diskominfotik akan membuat faktur untuk Anda.'
             : 'Pengajuan perlu perbaikan: '.$request->catatan,
              'role_tujuan' => 'desa'
             

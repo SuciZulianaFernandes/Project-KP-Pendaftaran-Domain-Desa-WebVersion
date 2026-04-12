@@ -41,8 +41,14 @@
     <div class="flex justify-center">
         <div class="w-full max-w-md">
             <h3 class="font-semibold text-gray-700 mb-5 text-center">
-                Cari Nama Domain
+                Cari Nama Domain Baru Anda di Bawah Ini
             </h3>
+
+            <div class="text-center mb-6">
+                <a href="https://domain.go.id/" target="_blank" class="text-red-700 hover:underline font-medium text-sm">https://domain.go.id/</a>
+            </div>
+
+            <p class="text-center text-gray-600 text-sm mb-5">Kemudian Inputkan Nama Domain Baru Anda di Sini</p>
 
             <div class="space-y-3">
                 <!-- Input dan Suffix -->

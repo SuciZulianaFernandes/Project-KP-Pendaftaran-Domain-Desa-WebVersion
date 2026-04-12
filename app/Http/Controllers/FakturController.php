@@ -48,12 +48,5 @@ class FakturController extends Controller
         return view('admin.faktur.show', compact('faktur'));
     }
     
-    public function kirimFaktur($id)
-    {
-        $faktur = Faktur::findOrFail($id);
-        $faktur->status = 'dikirim'; // Status baru setelah dikirim
-        $faktur->save();
-        
-        return back()->with('success', 'Faktur berhasil dikirim ke pihak desa.');
-    }
+    
 }

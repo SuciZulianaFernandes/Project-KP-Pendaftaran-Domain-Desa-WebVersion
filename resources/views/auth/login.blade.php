@@ -131,27 +131,9 @@
             text-decoration: underline;
         }
         
-        /* Kolom Kanan - Ilustrasi */
-        .right-section {
-            background-color: #f8f9fa; /* Background abu-abu sangat muda */
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .illustration {
-            text-align: center;
-        }
-
-        .illustration i {
-            font-size: 10rem;
-            color: #ccc;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
-            .left-section, .right-section {
+            .left-section {
                 display: none; /* Sembunyikan kolom samping di mobile */
             }
             .middle-section {
@@ -177,7 +159,7 @@
                 </div>
 
                 <!-- Kolom Tengah (Form Login) -->
-                <div class="col-md-4 middle-section">
+                <div class="col-md-8 middle-section">
                     <div class="login-form">
                         <h2>Selamat Datang di<br>Nama Aplikasi</h2>
                         
@@ -219,15 +201,6 @@
                                 Doesn't Have an Account? 
                             <a href="{{ url('/register') }}">Sign Up</a>                            </p>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Kolom Kanan -->
-                <div class="col-md-4 right-section d-none d-md-flex">
-                    <div class="illustration">
-                        <!-- Ikon Laptop dengan Kaca Pembesar -->
-                        <i class="fas fa-laptop"></i>
-                        <i class="fas fa-search" style="font-size: 5rem; color: #aaa; position: absolute; transform: translate(-50px, 30px);"></i>
                     </div>
                 </div>
             </div>
