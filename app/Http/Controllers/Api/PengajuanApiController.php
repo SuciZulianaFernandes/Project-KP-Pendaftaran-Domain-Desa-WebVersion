@@ -76,7 +76,6 @@ class PengajuanApiController extends Controller
                 'no_hp_user' => $request->no_hp,
             ]);
 
-            // 3. Simpan Dokumen
             $files = [
                 'surat_permohonan',
                 'surat_kuasa',
@@ -87,8 +86,16 @@ class PengajuanApiController extends Controller
 
             foreach ($files as $jenis) {
                 if ($request->hasFile($jenis)) {
+
                     $file = $request->file($jenis);
-                    // Simpan file di storage/app/public/pengajuan/dokumen
+
+                    if (!$file->isValid()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => "File $jenis tidak valid"
+                        ], 400);
+                    }
+
                     $path = $file->store('pengajuan/dokumen', 'public');
 
                     $pengajuan->dokumenPersyaratan()->create([
@@ -96,6 +103,11 @@ class PengajuanApiController extends Controller
                         'nama_file' => $file->getClientOriginalName(),
                         'path_file' => $path,
                     ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "File $jenis tidak ditemukan"
+                    ], 400);
                 }
             }
 
