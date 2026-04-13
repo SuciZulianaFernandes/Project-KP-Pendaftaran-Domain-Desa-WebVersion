@@ -72,7 +72,7 @@ class PengajuanApiController extends Controller
 
                 // DATA AKUN (sementara)
                 'username' => $request->username,
-                'password' => Hash::make($request->password), // 🔐 AMAN
+                'password' => Hash::make($request->password),
                 'name_user' => $request->name,
                 'email' => $request->email,
                 'no_hp_user' => $request->no_hp,
@@ -126,8 +126,6 @@ class PengajuanApiController extends Controller
         } catch (\Exception $e) {
 
             DB::rollBack();
-
-            // 🔥 logging biar gampang debug
             Log::error('ERROR PENGAJUAN API:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
