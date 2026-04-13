@@ -10,30 +10,24 @@ use Illuminate\Support\Facades\DB;
 
 class PengajuanApiController extends Controller
 {
-
-    public function checkDomain(Request $request)
-    {
-        $request->validate([
-            'nama_domain' => 'required|string|max:100'
-        ]);
-
-        $domain = strtolower($request->nama_domain);
-
-        $exists = Pengajuan::where('nama_domain', $domain)->exists();
-
-        return response()->json([
-            'success' => true,
-            'available' => !$exists
-        ]);
-    }
-
     public function submit(Request $request)
     {
+        // 1. Validasi (Ditambah field Akun dan Detail Desa)
         $request->validate([
             'nama_domain' => 'required|string|max:100',
 
-            // informasi
+            // === DATA AKUN (ADMIN) ===
+            'username' => 'required|string|unique:users,username', // Cek agar username unik
+            'password' => 'required|string|min:6',
+            'name' => 'required|string', // Nama lengkap admin
+            'email' => 'required|email|unique:users,email',
+            'no_hp' => 'required|string',
+
+            // === DATA DESA ===
             'nama_desa' => 'required|string',
+            'nama_kepala_desa' => 'nullable|string',
+            'nip_kepala_desa' => 'nullable|string',
+            'klasifikasi_instansi' => 'nullable|string',
             'telepon' => 'required|string',
             'faksimili' => 'nullable|string',
             'alamat' => 'required|string',
@@ -43,7 +37,7 @@ class PengajuanApiController extends Controller
             'desa_kelurahan' => 'required|string',
             'kode_pos' => 'required|string',
 
-            // dokumen
+            // === DOKUMEN ===
             'surat_permohonan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
             'surat_kuasa' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
             'surat_penunjukan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
@@ -53,15 +47,18 @@ class PengajuanApiController extends Controller
 
         DB::beginTransaction();
         try {
-
-            // 🔥 SIMPAN PENGAJUAN
+            // 2. Simpan Data Pengajuan (Termasuk Data Akun Sementara)
             $pengajuan = Pengajuan::create([
-                'id_user' => auth()->id() ?? 1, // sementara
+                'id_user' => null, // Null karena yang mendaftar belum punya akun (Public)
                 'nama_domain' => strtolower($request->nama_domain),
                 'status_pengajuan' => 'ditinjau',
                 'tgl_pengajuan' => now(),
 
+                // Simpan Data Desa
                 'nama_desa' => $request->nama_desa,
+                'nama_kepala_desa' => $request->nama_kepala_desa,
+                'nip_kepala_desa' => $request->nip_kepala_desa,
+                'klasifikasi_instansi' => $request->klasifikasi_instansi,
                 'telepon' => $request->telepon,
                 'faksimili' => $request->faksimili,
                 'alamat' => $request->alamat,
@@ -70,9 +67,16 @@ class PengajuanApiController extends Controller
                 'kecamatan' => $request->kecamatan,
                 'desa_kelurahan' => $request->desa_kelurahan,
                 'kode_pos' => $request->kode_pos,
+
+                // Simpan Data Akun (Sementara di tabel pengajuan untuk dilihat admin)
+                'username' => $request->username,
+                'password' => $request->password, // Admin akan lihat ini untuk membuat akun User nanti
+                'name_user' => $request->name,
+                'email' => $request->email,
+                'no_hp_user' => $request->no_hp,
             ]);
 
-            // 🔥 SIMPAN DOKUMEN
+            // 3. Simpan Dokumen
             $files = [
                 'surat_permohonan',
                 'surat_kuasa',
@@ -84,6 +88,7 @@ class PengajuanApiController extends Controller
             foreach ($files as $jenis) {
                 if ($request->hasFile($jenis)) {
                     $file = $request->file($jenis);
+                    // Simpan file di storage/app/public/pengajuan/dokumen
                     $path = $file->store('pengajuan/dokumen', 'public');
 
                     $pengajuan->dokumenPersyaratan()->create([
@@ -106,7 +111,7 @@ class PengajuanApiController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
     }
