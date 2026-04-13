@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PesanController;
 use App\Http\Controllers\FakturController;
+use App\Http\Controllers\FakturDesaController;
 
 // Route untuk tamu (guest)
 Route::get('/', function () {
@@ -59,6 +60,10 @@ Route::put('pengajuan/verifikasi/{id}', [PengajuanController::class, 'verifikasi
     ->name('faktur.store');
     Route::get('/pesan', [PesanController::class, 'adminIndex'])
     ->name('pesan.index');
+    Route::get('/faktur/{id}', [FakturController::class, 'show'])
+    ->name('faktur.show');
+    Route::post('/faktur/{id}/kirim', [FakturController::class, 'kirimFaktur'])->name('faktur.kirim');
+
     
 });
 
@@ -103,5 +108,7 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
 
     Route::post('/konfirmasi-pembayaran/{id}', [PesanController::class, 'konfirmasiPembayaran'])
     ->name('konfirmasi.pembayaran');
+        Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
+
 });
 

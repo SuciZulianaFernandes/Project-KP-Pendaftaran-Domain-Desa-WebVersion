@@ -24,40 +24,48 @@
             <tr class="border-b">
                 <td class="p-3">{{ $i+1 }}</td>
                 <td>{{ $row->nama_desa }}</td>
-<td>{{ $row->nama_domain }}.desa.id</td>
-<td>{{ $row->faktur->no_invoice ?? '-' }}</td>
-<td>{{ $row->faktur->tanggal_konfirmasi ?? '-' }}</td>
+                <td>{{ $row->nama_domain }}.desa.id</td>
+                <td>{{ $row->faktur->no_invoice ?? '-' }}</td>
+                <td>{{ $row->faktur->tanggal_konfirmasi ?? '-' }}</td>
 
                 <td>
                     @if($row->faktur)
-    @if($row->faktur->status == 'sudah_bayar')
-        <span class="bg-green-500 text-white px-3 py-1 rounded-full">Sudah Dibayar</span>
-    @elseif($row->faktur->status == 'belum_bayar')
-        <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">Belum Bayar</span>
-    @elseif($row->faktur->status == 'kedaluarsa')
-        <span class="bg-gray-500 text-white px-3 py-1 rounded-full">Kedaluarsa</span>
-    @endif
-@else
-    <span class="bg-gray-300 text-black px-3 py-1 rounded-full">Belum dibuat</span>
-@endif
+                        @if($row->faktur->status == 'sudah_bayar')
+                            <span class="bg-green-500 text-white px-3 py-1 rounded-full">Sudah Dibayar</span>
+                        @elseif($row->faktur->status == 'belum_bayar')
+                            <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">Belum Bayar</span>
+                        @elseif($row->faktur->status == 'kedaluarsa')
+                            <span class="bg-gray-500 text-white px-3 py-1 rounded-full">Kedaluarsa</span>
+                        @endif
+                    @else
+                        <span class="bg-gray-300 text-black px-3 py-1 rounded-full">Belum dibuat</span>
+                    @endif
                 </td>
 
                 <td>
-    @if(!$row->faktur)
-    <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST">
-        @csrf
-        <button class="bg-blue-500 text-white px-3 py-1 rounded">
-            Buat Faktur
-        </button>
-    </form>
-@else
-    <span class="text-green-600 font-semibold">Sudah dibuat</span>
-@endif
-</td>
+                    @if(!$row->faktur)
+                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST">
+                            @csrf
+                            <button class="bg-blue-500 text-white px-3 py-1 rounded">
+                                Buat Faktur
+                            </button>
+                        </form>
+                    @else
+                        @if($row->faktur->status == 'sudah_bayar')
+                            <a href="{{ route('admin.faktur.show', $row->faktur->id) }}" class="bg-green-500 text-white px-3 py-1 rounded inline-block">
+                                Lihat
+                            </a>
+                        @else
+                            <a href="{{ route('admin.faktur.show', $row->faktur->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded inline-block">
+                                Faktur
+                            </a>
+                        @endif
+                    @endif
+                </td>
             </tr>
         @empty
             <tr>
-                <td colspan="6" class="text-center p-4">Belum ada faktur</td>
+                <td colspan="7" class="text-center p-4">Belum ada faktur</td>
             </tr>
         @endforelse
         </tbody>

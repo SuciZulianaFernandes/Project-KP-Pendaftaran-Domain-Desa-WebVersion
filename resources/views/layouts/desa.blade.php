@@ -104,8 +104,8 @@ font-family: 'Poppins', sans-serif;
 <i class="fas fa-user w-5"></i> Profile
 </a>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
-<i class="fas fa-file-invoice w-5"></i> Faktur
+<a href="{{ route('desa.faktur.index') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+    <i class="fas fa-file-invoice w-5"></i> Faktur
 </a>
 
 <!-- Logout Button -->

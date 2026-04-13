@@ -14,6 +14,15 @@ class Faktur extends Model
     'total',
     'status',
     'tanggal_konfirmasi',
-    'expired_at'
+    'expired_at',
+    'catatan',
 ];
+protected $casts = [
+        'tanggal_konfirmasi' => 'datetime',
+        'expired_at' => 'datetime',
+    ];
+ public function pengajuan()
+    {
+        return $this->belongsTo(Pengajuan::class, 'id_pengajuan');
+    }
 }
