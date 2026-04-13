@@ -5,21 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pengajuan;
-use App\Models\DokumenPersyaratan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class PengajuanApiController extends Controller
 {
     public function submit(Request $request)
     {
-        // 1. Validasi (Ditambah field Akun dan Detail Desa)
+        // ================= VALIDASI =================
         $request->validate([
             'nama_domain' => 'required|string|max:100',
 
-            // === DATA AKUN (ADMIN) ===
-            'username' => 'required|string|unique:users,username', // Cek agar username unik
+            // === DATA AKUN ===
+            'username' => 'required|string|unique:users,username',
             'password' => 'required|string|min:6',
-            'name' => 'required|string', // Nama lengkap admin
+            'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'no_hp' => 'required|string',
 
@@ -46,15 +47,16 @@ class PengajuanApiController extends Controller
         ]);
 
         DB::beginTransaction();
+
         try {
-            // 2. Simpan Data Pengajuan (Termasuk Data Akun Sementara)
+            // ================= SIMPAN PENGAJUAN =================
             $pengajuan = Pengajuan::create([
-                'id_user' => null, // Null karena yang mendaftar belum punya akun (Public)
+                'id_user' => null,
                 'nama_domain' => strtolower($request->nama_domain),
                 'status_pengajuan' => 'ditinjau',
                 'tgl_pengajuan' => now(),
 
-                // Simpan Data Desa
+                // DATA DESA
                 'nama_desa' => $request->nama_desa,
                 'nama_kepala_desa' => $request->nama_kepala_desa,
                 'nip_kepala_desa' => $request->nip_kepala_desa,
@@ -68,14 +70,15 @@ class PengajuanApiController extends Controller
                 'desa_kelurahan' => $request->desa_kelurahan,
                 'kode_pos' => $request->kode_pos,
 
-                // Simpan Data Akun (Sementara di tabel pengajuan untuk dilihat admin)
+                // DATA AKUN (sementara)
                 'username' => $request->username,
-                'password' => $request->password, // Admin akan lihat ini untuk membuat akun User nanti
+                'password' => Hash::make($request->password), // 🔐 AMAN
                 'name_user' => $request->name,
                 'email' => $request->email,
                 'no_hp_user' => $request->no_hp,
             ]);
 
+            // ================= FILE =================
             $files = [
                 'surat_permohonan',
                 'surat_kuasa',
@@ -85,30 +88,32 @@ class PengajuanApiController extends Controller
             ];
 
             foreach ($files as $jenis) {
-                if ($request->hasFile($jenis)) {
 
-                    $file = $request->file($jenis);
-
-                    if (!$file->isValid()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "File $jenis tidak valid"
-                        ], 400);
-                    }
-
-                    $path = $file->store('pengajuan/dokumen', 'public');
-
-                    $pengajuan->dokumenPersyaratan()->create([
-                        'jenis_dokumen' => $jenis,
-                        'nama_file' => $file->getClientOriginalName(),
-                        'path_file' => $path,
-                    ]);
-                } else {
+                if (!$request->hasFile($jenis)) {
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => "File $jenis tidak ditemukan"
                     ], 400);
                 }
+
+                $file = $request->file($jenis);
+
+                if (!$file->isValid()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "File $jenis tidak valid"
+                    ], 400);
+                }
+
+                $path = $file->store('pengajuan/dokumen', 'public');
+
+                $pengajuan->dokumenPersyaratan()->create([
+                    'jenis_dokumen' => $jenis,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'path_file' => $path,
+                ]);
             }
 
             DB::commit();
@@ -119,11 +124,18 @@ class PengajuanApiController extends Controller
             ]);
 
         } catch (\Exception $e) {
+
             DB::rollBack();
+
+            // 🔥 logging biar gampang debug
+            Log::error('ERROR PENGAJUAN API:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan pada server'
             ], 500);
         }
     }
