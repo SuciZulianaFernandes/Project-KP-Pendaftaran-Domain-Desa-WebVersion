@@ -13,7 +13,6 @@ class AuthController extends Controller
     // ================= LOGIN =================
     public function login(Request $request)
     {
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'username' => 'required',
             'password' => 'required',
@@ -27,10 +26,8 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Cari user
         $user = User::where('username', $request->username)->first();
 
-        // Cek password
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
@@ -38,19 +35,22 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Response sukses
         return response()->json([
             'success' => true,
             'message' => 'Login berhasil',
-            'user' => $user,
-            'role' => $user->role
+            'user' => [
+                'id_user' => $user->id_user,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]
         ], 200);
     }
 
     // ================= REGISTER =================
     public function register(Request $request)
     {
-        // Validasi input
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
@@ -68,21 +68,23 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Simpan user
         $user = User::create([
             'name'     => $request->name,
             'username' => $request->username,
             'email'    => $request->email,
             'phone'    => $request->phone,
             'password' => Hash::make($request->password),
-            'role'     => 'desa', 
+            'role'     => 'desa',
         ]);
 
-        // Response sukses
         return response()->json([
             'success' => true,
             'message' => 'Registrasi berhasil',
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+            ]
         ], 201);
     }
 }
