@@ -186,6 +186,7 @@ foreach ($files as $file) {
     public function daftar()
 {
     $data = Pengajuan::where('id_user', auth()->id())
+        ->where('status_pengajuan', '!=', 'aktif') // <--- Tambahkan ini agar yg aktif pindah ke menu perpanjang
         ->latest()
         ->get();
 

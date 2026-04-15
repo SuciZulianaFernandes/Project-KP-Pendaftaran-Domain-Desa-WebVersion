@@ -11,7 +11,7 @@ return new class extends Migration
     $table->id('id_pengajuan');
     $table->unsignedBigInteger('id_desa');
     $table->string('nama_domain',100);
-    $table->enum('status_pengajuan',['ditinjau','draft','diproses','perlu_perbaikan']);
+    $table->enum('status_pengajuan',['ditinjau','draft','diproses','perlu_perbaikan','menunggu_aktivasi','aktif']);
     $table->text('catatan_umum')->nullable();
     $table->dateTime('tgl_pengajuan')->nullable();
     $table->dateTime('tgl_verifikasi')->nullable();

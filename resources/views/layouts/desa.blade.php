@@ -81,7 +81,7 @@ font-family: 'Poppins', sans-serif;
          <a href="{{ url('/desa/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition {{ request()->is('desa/pengajuan*') ? 'bg-red-700' : '' }}">
             <i class="fas fa-plus-circle w-5"></i> Pendaftaran Domain
         </a>
-        <a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+        <a href="{{ url('/desa/perpanjang') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
             <i class="fas fa-clock w-5"></i> Perpanjang Domain
         </a>
 

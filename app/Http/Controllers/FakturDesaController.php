@@ -49,6 +49,12 @@ class FakturDesaController extends Controller
         $faktur->status = 'sudah_bayar';
         $faktur->save();
 
+ $pengajuan = Pengajuan::find($faktur->id_pengajuan);
+        if ($pengajuan) {
+            $pengajuan->status_pengajuan = 'menunggu_aktivasi';
+            $pengajuan->save();
+        }
+
          app(PesanController::class)->notifikasiBuktiPembayaran($faktur->id_pengajuan);
 
 return redirect()->route('desa.faktur.index')

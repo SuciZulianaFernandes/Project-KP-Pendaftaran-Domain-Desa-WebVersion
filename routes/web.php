@@ -1,4 +1,3 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -10,13 +9,14 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PesanController;
 use App\Http\Controllers\FakturController;
 use App\Http\Controllers\FakturDesaController;
+use App\Http\Controllers\Admin\AktivasiController; 
 
 // Route untuk tamu (guest)
 Route::get('/', function () {
     return view('guest.homepage');
 });
 
-// Route Autentikasi
+// Route Autentikasi Web
 Route::get('/register', [RegisterController::class, 'showRegister']);
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
@@ -40,29 +40,38 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // --- MANAJEMEN USER ---
-    // Karena berada di dalam grup dengan prefix 'admin', route ini akan menjadi /admin/users
     Route::resource('users', UserController::class);
 
-    // MANAJEMEN PENGAJUAN
-Route::get('/pengajuan', [PengajuanController::class, 'adminIndex'])
-    ->name('pengajuan.index');
+    // --- MANAJEMEN PENGAJUAN ---
+    Route::get('/pengajuan', [PengajuanController::class, 'adminIndex'])
+        ->name('pengajuan.index');
 
-Route::get('/pengajuan/{id}', [PengajuanController::class, 'adminDetail'])
-    ->name('pengajuan.detail');
+    Route::get('/pengajuan/{id}', [PengajuanController::class, 'adminDetail'])
+        ->name('pengajuan.detail');
 
-// PROSES VERIFIKASI
-Route::put('pengajuan/verifikasi/{id}', [PengajuanController::class, 'verifikasi'])
-    ->name('verifikasi.proses');
+    // PROSES VERIFIKASI
+    Route::put('/pengajuan/verifikasi/{id}', [PengajuanController::class, 'verifikasi'])
+        ->name('verifikasi.proses');
 
+    // --- ROUTE AKTIVASI DOMAIN (BARU) ---
+    // Proses Aktivasi (Tombol Admin)
+    Route::post('/aktivasi/proses/{id}', [AktivasiController::class, 'aktivasi'])
+        ->name('aktivasi.proses');
+
+    // Daftar Domain Terdaftar (Menu Admin)
+    Route::get('domain_terdaftar', [AktivasiController::class, 'adminDaftarAktif'])
+        ->name('domain_terdaftar');
+
+    // --- FAKTUR & PESAN ---
     Route::get('/faktur', [FakturController::class, 'index'])
-    ->name('faktur.index');
+        ->name('faktur.index');
     Route::post('/faktur/{id}', [FakturController::class, 'store'])
-    ->name('faktur.store');
-    Route::get('/pesan', [PesanController::class, 'adminIndex'])
-    ->name('pesan.index');
+        ->name('faktur.store');
     Route::get('/faktur/{id}', [FakturController::class, 'show'])
-    ->name('faktur.show');
-    
+        ->name('faktur.show');
+        
+    Route::get('/pesan', [PesanController::class, 'adminIndex'])
+        ->name('pesan.index');
 });
 
 
@@ -76,7 +85,7 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         return view('desa.dashboard');
     })->name('dashboard');
 
-    // Route Pengajuan Domain
+    // Route Pengajuan Domain (Multi-step)
     Route::post('/cek-domain', [PengajuanController::class, 'cekDomain'])->name('cek.domain');
     Route::post('/api/check-domain-availability', [PengajuanController::class, 'checkAvailabilityApi'])->name('api.check.domain');
     
@@ -88,6 +97,7 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         Route::post('/dokumen', [PengajuanController::class, 'storeDokumenForm'])->name('dokumen.store');
         Route::get('/tinjau', [PengajuanController::class, 'showTinjauForm'])->name('tinjau');
         Route::post('/submit', [PengajuanController::class, 'submitPengajuan'])->name('submit');
+        
     });
     
     // Route Verifikasi Dokumen
@@ -95,14 +105,17 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         Route::get('/', [PengajuanController::class, 'daftar'])->name('daftar');
         Route::get('/{id}', [PengajuanController::class, 'show'])->name('detail');
         Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
-        
     });
+    
     Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])->name('verifikasi.updateDokumen');   
+
+    // Faktur & Pesan
     Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
     Route::post('/pesan/{id}/konfirmasi', [PesanController::class, 'konfirmasiPembayaran'])->name('konfirmasi.pembayaran');        
     Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
     Route::get('/faktur/{id}', [FakturDesaController::class, 'show'])->name('faktur.show');
     Route::post('/faktur/{id}/konfirmasi', [FakturDesaController::class, 'konfirmasiPembayaran'])->name('faktur.konfirmasi');
-
+      // --- ROUTE PERPANJANG DOMAIN (BARU) ---
+        Route::get('/perpanjang', [AktivasiController::class, 'desaPerpanjang'])
+            ->name('perpanjang');
 });
-

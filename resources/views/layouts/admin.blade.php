@@ -64,7 +64,7 @@ class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-re
 <div x-show="open" x-cloak x-transition
 class="ml-8 mt-2 space-y-1">
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<a href="{{ url('/admin/domain_terdaftar') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-list w-5"></i>
 Daftar Domain Terdaftar
 </a>
