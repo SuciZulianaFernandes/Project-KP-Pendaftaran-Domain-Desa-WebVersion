@@ -13,11 +13,11 @@
             <strong>Status:</strong> 
             <span class="px-2 py-1 rounded text-white 
     @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-    @elseif($pengajuan->status_pengajuan == 'perbaikan') bg-red-500
-    @elseif($pengajuan->status_pengajuan == 'disetujui') bg-green-500
+    @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
+    @elseif($pengajuan->status_pengajuan == 'diproses') bg-green-500
     @endif">
 
-    @if($pengajuan->status_pengajuan == 'disetujui')
+    @if($pengajuan->status_pengajuan == 'diproses')
         diproses
     @else
         {{ $pengajuan->status_pengajuan }}
@@ -63,7 +63,7 @@
                         </a>
 
                         <!-- 🔥 MUNCUL HANYA JIKA STATUS PERBAIKAN -->
-                        @if($pengajuan->status_pengajuan == 'perbaikan')
+                        @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
                         <form action="{{ route('verifikasi.updateDokumen', $dok->id) }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')

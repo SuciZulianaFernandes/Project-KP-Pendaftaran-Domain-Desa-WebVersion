@@ -36,7 +36,7 @@ class FakturController extends Controller
     public function index()
     {
         $data = Pengajuan::with('faktur')
-            ->where('status_pengajuan', 'disetujui')
+            ->where('status_pengajuan', 'diproses')
             ->latest()
             ->get();
         return view('admin.faktur.index', compact('data'));

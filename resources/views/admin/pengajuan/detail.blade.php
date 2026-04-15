@@ -14,7 +14,7 @@
             <span class="px-2 py-1 rounded text-white 
                 @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
                 @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
-                @elseif($pengajuan->status_pengajuan == 'disetujui') bg-green-500
+                @elseif($pengajuan->status_pengajuan == 'diproses') bg-green-500
                 @endif">
                 {{ $pengajuan->status_pengajuan }}
             </span>
@@ -67,8 +67,8 @@
             <label class="font-semibold">Pilih Status:</label><br>
 
             <label>
-                <input type="radio" name="status" value="disetujui" required>
-                Disetujui (kirim konfirmasi pembayaran)
+                <input type="radio" name="status" value="diproses" required>
+                Diproses (kirim konfirmasi pembayaran)
             </label>
 
             <br>

@@ -257,11 +257,11 @@ public function verifikasi(Request $request, $id)
     \App\Models\Pesan::create([
         'id_user' => $pengajuan->id_user,
         'id_pengajuan' => $pengajuan->id_pengajuan,
-        'judul' => $request->status == 'disetujui' 
+        'judul' => $request->status == 'diproses' 
             ? 'Konfirmasi Pembayaran' 
             : 'Perlu Perbaikan',
-        'isi' => $request->status == 'disetujui' 
-            ? 'Pengajuan domain '.$pengajuan->nama_domain.' disetujui. Apakah Anda ingin melanjutkan pembayaran? Diskominfotik akan membuat faktur untuk Anda.'
+        'isi' => $request->status == 'diproses' 
+            ? 'Pengajuan domain '.$pengajuan->nama_domain.' diproses. Apakah Anda ingin melanjutkan pembayaran? Diskominfotik akan membuat faktur untuk Anda.'
             : 'Pengajuan perlu perbaikan: '.$request->catatan,
              'role_tujuan' => 'desa'
             

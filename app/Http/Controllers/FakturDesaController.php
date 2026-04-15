@@ -6,6 +6,7 @@ use App\Models\Faktur;
 use App\Models\Pengajuan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\PesanController;
 
 class FakturDesaController extends Controller
 {
@@ -48,6 +49,8 @@ class FakturDesaController extends Controller
         $faktur->status = 'sudah_bayar';
         $faktur->save();
 
-        return back()->with('success', 'Bukti pembayaran berhasil diunggah.');
-    }
+         app(PesanController::class)->notifikasiBuktiPembayaran($faktur->id_pengajuan);
+
+return redirect()->route('desa.faktur.index')
+    ->with('success', 'Bukti pembayaran berhasil diunggah.');    }
 }

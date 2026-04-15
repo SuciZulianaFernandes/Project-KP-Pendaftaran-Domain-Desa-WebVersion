@@ -23,7 +23,7 @@
                 <td>{{ $row->nama_domain }}.desa.id</td>
                 <td>{{ $row->tgl_pengajuan }}</td>
                 <td>
-                    @if($row->status_pengajuan == 'disetujui')
+                    @if($row->status_pengajuan == 'diproses')
                         <span class="bg-green-500 text-white px-3 py-1 rounded-full">Diproses</span>
                     @elseif($row->status_pengajuan == 'ditinjau')
                         <span class="bg-orange-500 text-white px-3 py-1 rounded-full">Ditinjau</span>

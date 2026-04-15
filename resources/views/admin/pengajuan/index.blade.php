@@ -27,8 +27,8 @@
                 <td>{{ $row->tgl_pengajuan }}</td>
 
                 <td>
-                    @if($row->status_pengajuan == 'disetujui')
-                        <span class="bg-green-500 text-white px-3 py-1 rounded-full">Disetujui</span>
+                    @if($row->status_pengajuan == 'diproses')
+                        <span class="bg-green-500 text-white px-3 py-1 rounded-full">Diproses</span>
                     @elseif($row->status_pengajuan == 'ditinjau')
                         <span class="bg-orange-500 text-white px-3 py-1 rounded-full">Ditinjau</span>
                     @elseif($row->status_pengajuan == 'perlu_perbaikan')
