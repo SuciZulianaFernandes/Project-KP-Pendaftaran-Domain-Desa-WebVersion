@@ -25,29 +25,25 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
         $user = User::where('username', $request->username)->first();
-
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Username atau password salah'
             ], 401);
         }
-
         return response()->json([
             'success' => true,
             'message' => 'Login berhasil',
+            'role' => $user->role,
             'user' => [
                 'id_user' => $user->id_user,
                 'name' => $user->name,
                 'username' => $user->username,
                 'email' => $user->email,
-                'role' => $user->role,
             ]
         ], 200);
     }
-
     // ================= REGISTER =================
     public function register(Request $request)
     {
@@ -87,4 +83,55 @@ class AuthController extends Controller
             ]
         ], 201);
     }
+    
+public function profile(Request $request)
+{
+    $user = User::where('id_user', $request->id_user)->first();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User tidak ditemukan'
+        ], 404);
+    }
+
+    return response()->json([
+        'success' => true,
+        'user' => [
+            'id_user' => $user->id_user,
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'phone' => $user->phone,
+        ]
+    ]);
+}
+
+// 🔹 UPDATE PROFILE
+public function updateProfile(Request $request)
+{
+    $user = User::where('id_user', $request->id_user)->first();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User tidak ditemukan'
+        ], 404);
+    }
+
+    $user->name = $request->name;
+    $user->email = $request->email;
+    $user->phone = $request->phone;
+
+    if ($request->password) {
+        $user->password = Hash::make($request->password);
+    }
+
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Profil berhasil diperbarui'
+    ]);
+}
 }
