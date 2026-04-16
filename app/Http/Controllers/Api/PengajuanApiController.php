@@ -23,6 +23,7 @@ class PengajuanApiController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'no_hp' => 'required|string',
+        ]);
 
             // === DATA DESA ===
         $request->validate([
@@ -48,6 +49,7 @@ class PengajuanApiController extends Controller
             'kartu_pegawai' => 'required|file|mimes:pdf|max:2048',
             'dasar_hukum' => 'required|file|mimes:pdf|max:2048',
         ]);
+
 
         DB::beginTransaction();
 
@@ -141,6 +143,7 @@ class PengajuanApiController extends Controller
                 'success' => true,
                 'message' => 'Pengajuan berhasil dikirim'
             ], 201);
+            }
 
         } catch (\Exception $e) {
 
