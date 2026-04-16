@@ -13,8 +13,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix('pengajuan')->group(function () {
-
     Route::post('/check-domain', [PengajuanApiController::class, 'checkDomain']);
-
-    Route::middleware('auth:sanctum')->post('/submit', [PengajuanApiController::class, 'submit']);
+    Route::post('/submit', [PengajuanApiController::class, 'submit']);
 });

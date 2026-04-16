@@ -25,25 +25,28 @@ class PengajuanApiController extends Controller
             'no_hp' => 'required|string',
 
             // === DATA DESA ===
+        $request->validate([
+            'nama_domain' => 'required|string|max:100',
+
+            // DATA DESA / INSTANSI
             'nama_desa' => 'required|string',
             'nama_kepala_desa' => 'nullable|string',
             'nip_kepala_desa' => 'nullable|string',
-            'klasifikasi_instansi' => 'nullable|string',
             'telepon' => 'required|string',
             'faksimili' => 'nullable|string',
             'alamat' => 'required|string',
             'provinsi' => 'required|string',
             'kota_kabupaten' => 'required|string',
             'kecamatan' => 'required|string',
-            'desa_kelurahan' => 'required|string',
+            'desa_kelurahan' => 'nullable|string',
             'kode_pos' => 'required|string',
 
-            // === DOKUMEN ===
-            'surat_permohonan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
-            'surat_kuasa' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
-            'surat_penunjukan' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
-            'kartu_pegawai' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
-            'dasar_hukum' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1024',
+            // DOKUMEN
+            'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
+            'surat_kuasa' => 'required|file|mimes:pdf|max:2048',
+            'surat_penunjukan' => 'required|file|mimes:pdf|max:2048',
+            'kartu_pegawai' => 'required|file|mimes:pdf|max:2048',
+            'dasar_hukum' => 'required|file|mimes:pdf|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -60,14 +63,13 @@ class PengajuanApiController extends Controller
                 'nama_desa' => $request->nama_desa,
                 'nama_kepala_desa' => $request->nama_kepala_desa,
                 'nip_kepala_desa' => $request->nip_kepala_desa,
-                'klasifikasi_instansi' => $request->klasifikasi_instansi,
                 'telepon' => $request->telepon,
                 'faksimili' => $request->faksimili,
                 'alamat' => $request->alamat,
                 'provinsi' => $request->provinsi,
                 'kota_kabupaten' => $request->kota_kabupaten,
                 'kecamatan' => $request->kecamatan,
-                'desa_kelurahan' => $request->desa_kelurahan,
+                'desa_kelurahan' => $request->desa_kelurahan ?? null,
                 'kode_pos' => $request->kode_pos,
 
                 // DATA AKUN (sementara)
@@ -78,13 +80,21 @@ class PengajuanApiController extends Controller
                 'no_hp_user' => $request->no_hp,
             ]);
 
-            // ================= FILE =================
+            // ================= FILE =================]);
             $files = [
                 'surat_permohonan',
                 'surat_kuasa',
                 'surat_penunjukan',
                 'kartu_pegawai',
                 'dasar_hukum'
+            ];
+
+            $mappingJenisDokumen = [
+                'surat_permohonan' => 'surat_permohonan',
+                'surat_kuasa' => 'perda_pembentukan_desa',
+                'surat_penunjukan' => 'perda_pembentukan_desa',
+                'kartu_pegawai' => 'perda_pembentukan_desa',
+                'dasar_hukum' => 'perda_pembentukan_desa',
             ];
 
             foreach ($files as $jenis) {
@@ -95,6 +105,15 @@ class PengajuanApiController extends Controller
                         'success' => false,
                         'message' => "File $jenis tidak ditemukan"
                     ], 400);
+                if ($request->hasFile($jenis)) {
+                    $file = $request->file($jenis);
+                    $path = $file->store('pengajuan/dokumen', 'public');
+
+                    $pengajuan->dokumenPersyaratan()->create([
+                        'jenis_dokumen' => $mappingJenisDokumen[$jenis],
+                        'nama_file' => $file->getClientOriginalName(),
+                        'path_file' => $path,
+                    ]);
                 }
 
                 $file = $request->file($jenis);
@@ -121,7 +140,7 @@ class PengajuanApiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Pengajuan berhasil dikirim'
-            ]);
+            ], 201);
 
         } catch (\Exception $e) {
 
