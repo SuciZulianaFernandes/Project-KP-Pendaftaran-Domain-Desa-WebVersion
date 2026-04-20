@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\PesanController;
 use App\Models\Pengajuan;
 use App\Models\Faktur;
 use App\Models\Aktivasi; // Pastikan model ini ada
@@ -45,6 +46,8 @@ class AktivasiController extends Controller
                 'status_akt' => 'aktif',
                 'tgl_aktivasi' => now(),
             ]);
+
+            app(PesanController::class)->sendNotifikasiAktifasi($pengajuan->id_pengajuan);
 
             DB::commit();
             return back()->with('success', 'Domain berhasil diaktifkan.');

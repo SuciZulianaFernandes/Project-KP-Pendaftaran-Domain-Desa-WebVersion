@@ -8,7 +8,8 @@
 
     @forelse($data as $row)
     <div class="border-l-4 p-4 mb-4 rounded 
-    @if(str_contains($row->judul, 'Konfirmasi Pembayaran')) 
+    {{-- LOGIKA UPDATE: Jika judulnya 'Konfirmasi Pembayaran' ATAU 'Domain Aktif', pakai Hijau --}}
+    @if(str_contains($row->judul, 'Konfirmasi Pembayaran') || str_contains($row->judul, 'Domain Aktif')) 
         border-green-500 bg-green-50
     @else 
         border-red-500 bg-red-50
@@ -21,9 +22,10 @@
         {{ $row->created_at->format('d M Y H:i') }}
     </p>
 
-    {{-- 🔥 tombol --}}
+    {{-- Tombol khusus hanya untuk pesan 'Konfirmasi Pembayaran' --}}
     @if(str_contains($row->judul, 'Konfirmasi Pembayaran') && $row->is_read == 0)
-<form action="{{ route('desa.konfirmasi.pembayaran', $row->id_pengajuan ?? 0) }}" method="POST">        @csrf
+<form action="{{ route('desa.konfirmasi.pembayaran', $row->id_pengajuan ?? 0) }}" method="POST">        
+        @csrf
         <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
             Ya, Kirimkan Faktur
         </button>

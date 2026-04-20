@@ -66,4 +66,18 @@ class PesanController extends Controller
             'role_tujuan'   => 'admin'
         ]);
     }
+
+    public function sendNotifikasiAktifasi($idPengajuan)
+    {
+        $pengajuan = Pengajuan::findOrFail($idPengajuan);
+
+        // Kirim pesan ke Desa
+        Pesan::create([
+            'id_user'       => $pengajuan->id_user,
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Domain Aktif',
+            'isi'           => 'Domain ' . $pengajuan->nama_domain . '.desa.id Anda telah diaktifkan',
+            'role_tujuan'   => 'desa'
+        ]);
+    }
 }
