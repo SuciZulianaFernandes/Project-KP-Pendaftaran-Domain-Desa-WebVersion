@@ -45,10 +45,10 @@ class PengajuanApiController extends Controller
         $status = $request->status; // disetujui / perbaikan
         $catatan = $request->catatan;
 
-        if ($status == 'disetujui') {
+        if ($status == 'diproses') {
             $pengajuan->status_pengajuan = 'diproses';
         } else {
-            $pengajuan->status_pengajuan = 'perbaikan';
+            $pengajuan->status_pengajuan = 'perlu_perbaikan';
         }
 
         $pengajuan->catatan_umum = $catatan;
