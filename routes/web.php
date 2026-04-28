@@ -74,8 +74,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('pesan.index');
 
     Route::get('/perpanjang', [AktivasiController::class, 'adminPerpanjangList'])->name('admin.perpanjang');
-    Route::get('/faktur/perpanjangan/buat/{id}', [FakturController::class, 'storePerpanjangan']);
-});
+    Route::post('/faktur/perpanjangan/buat/{id}', [FakturController::class, 'storePerpanjangan'])
+        ->name('faktur.storePerpanjangan');});
 
 
 // =====================================================

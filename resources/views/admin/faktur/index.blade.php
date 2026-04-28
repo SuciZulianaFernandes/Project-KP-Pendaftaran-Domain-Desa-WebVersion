@@ -26,6 +26,7 @@
             </div>
         @endif
 
+@include('components.inv-search-filter', ['showBelumDibuat' => true])
         <div style="overflow-x:auto">
             <table class="inv-table" id="invTable">
                 <thead>
@@ -42,9 +43,9 @@
                 </thead>
                 <tbody>
                 @forelse($data as $i => $row)
-                    @if($row->faktur->isEmpty())
-                        {{-- JIKA DOMAIN INI BELUM PUNYA FAKTUR SAMA SEKALI --}}
-                        <tr style="animation-delay:{{$i*0.05}}s">
+                    @if($row->faktur->isEmpty() && !in_array($row->id_pengajuan, $perpanjanganBelumBuat))
+                        {{-- JIKA DOMAIN INI BELUM PUNYA FAKTUR SAMA SEKALI DAN BUKAN PERPANJANGAN --}}
+                        <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
                             <td>{{ $data->firstItem() + $i }}</td>
                             <td>{{ $row->nama_desa }}</td>
                             <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
@@ -68,10 +69,9 @@
                             </td>
                         </tr>
                     @else
-                        {{-- JIKA DOMAIN INI PUNYA FAKTUR (BISA LEBIH DARI 1: BARU & PERPANJANGAN) --}}
+                        {{-- JIKA DOMAIN INI PUNYA FAKTUR --}}
                         @foreach($row->faktur as $indexFaktur => $fakturItem)
-                            <tr style="animation-delay:{{$i*0.05}}s">
-                                {{-- NOMOR URUT --}}
+                            <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$i*0.05}}s">
                                 <td>
                                     {{ $data->firstItem() + $i }}
                                     {{ $row->faktur->count() > 1 ? '.' . ($indexFaktur + 1) : '' }}
@@ -81,7 +81,6 @@
                                 <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
                                 <td><span class="inv-id">{{ $fakturItem->no_invoice }}</span></td>
                                 
-                                {{-- KOLOM TIPE --}}
                                 <td style="text-align:center">
                                     @if($fakturItem->tipe == 'perpanjangan')
                                         <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>
@@ -92,7 +91,6 @@
 
                                 <td><span class="inv-date">{{ $fakturItem->tanggal_konfirmasi ? $fakturItem->tanggal_konfirmasi->format('d/m/Y') : '-' }}</span></td>
 
-                                {{-- STATUS --}}
                                 <td style="text-align:center">
                                     @if($fakturItem->status == 'sudah_bayar')
                                         <span class="inv-badge badge-green"><span class="d"></span>Sudah Dibayar</span>
@@ -103,12 +101,41 @@
                                     @endif
                                 </td>
 
-                                {{-- AKSI --}}
                                 <td style="text-align:center">
                                     <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inv-btn-d"><i class="fas fa-eye"></i> Lihat</a>
                                 </td>
                             </tr>
                         @endforeach
+
+                        {{-- BARIS PERPANJANGAN YANG BELUM DIBUAT FAKTURNYA --}}
+                        @if(in_array($row->id_pengajuan, $perpanjanganBelumBuat))
+                            <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
+                                <td>
+                                    {{ $data->firstItem() + $i }}.{{ $row->faktur->count() + 1 }}
+                                </td>
+                                
+                                <td>{{ $row->nama_desa }}</td>
+                                <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
+                                <td><span class="inv-id">-</span></td>
+                                
+                                <td style="text-align:center">
+                                    <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>
+                                </td>
+
+                                <td><span class="inv-date">-</span></td>
+
+                                <td style="text-align:center">
+                                    <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Belum dibuat</span>
+                                </td>
+
+                                <td style="text-align:center">
+                                    <form action="{{ route('admin.faktur.storePerpanjangan', $row->id_pengajuan) }}" method="POST" style="display:inline">
+                                        @csrf
+                                        <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Buat Faktur</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endif
                     @endif
                 @empty
                     <tr class="inv-empty"><td colspan="8"><i class="fas fa-inbox"></i>Belum ada faktur</td></tr>
@@ -120,4 +147,25 @@
         @include('components.inv-pagination', ['paginator' => $data])
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('invSearch'),
+        f=document.getElementById('invFilter'),
+        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
+        empty=document.querySelector('.inv-empty');
+
+    function filter(){
+        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
+        rows.forEach(function(r){
+            var show=(!q||r.textContent.toLowerCase().includes(q))&&(!v||r.dataset.status===v);
+            r.style.display=show?'':'none';
+            if(show)n++;
+        });
+        if(empty)empty.style.display=n?'none':'';
+    }
+    s.addEventListener('input',filter);
+    f.addEventListener('change',filter);
+});
+</script>
 @endsection

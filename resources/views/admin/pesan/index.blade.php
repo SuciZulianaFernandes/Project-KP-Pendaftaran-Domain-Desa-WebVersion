@@ -21,7 +21,7 @@
         @endif
     </div>
 
-        <!-- KOLOM TENGAH: KONFIRMASI DARI DESA -->
+    <!-- KOLOM TENGAH: KONFIRMASI DARI DESA -->
     <div class="bg-white p-6 rounded-xl shadow">
         <h2 class="text-xl font-bold mb-4 text-blue-600">Konfirmasi Desa</h2>
 
@@ -32,7 +32,6 @@
                 <p class="text-xs text-gray-500 mt-2">{{ $row->created_at }}</p>
                 
                 <div class="mt-3">
-                    {{-- TOMBOL KEMBALI KE SEMULA: Hanya menuju halaman Manajemen Faktur --}}
                     <a href="{{ route('admin.faktur.index') }}" 
                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
                         Manajemen Faktur
@@ -46,7 +45,7 @@
         @endif
     </div>
 
-       <!-- KOLOM KANAN: PERMINTAAN PERPANJANGAN DOMAIN -->
+    <!-- KOLOM KANAN: PERMINTAAN PERPANJANGAN DOMAIN -->
     <div class="bg-white p-6 rounded-xl shadow">
         <h2 class="text-xl font-bold mb-4 text-purple-600">Permintaan Perpanjangan</h2>
 
@@ -57,19 +56,10 @@
                 <p class="text-xs text-gray-500 mt-2">{{ $row->created_at }}</p>
                 
                 <div class="mt-3">
-                    @if($row->is_read == 0)
-                        {{-- TOMBOL KIRIM FAKTUR (Jika belum diproses) --}}
-                        <a href="{{ url('/admin/faktur/perpanjangan/buat/' . $row->id_pengajuan) }}" 
-                           class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm">
-                            Kirim Faktur
-                        </a>
-                    @else
-                        {{-- TOMBOL MANAJEMEN FAKTUR (Jika sudah diproses/diklik) --}}
-                        <a href="{{ route('admin.faktur.index') }}" 
-                           class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
-                            Manajemen Faktur
-                        </a>
-                    @endif
+                    <a href="{{ route('admin.faktur.index') }}" 
+                       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm">
+                        Manajemen Faktur
+                    </a>
                 </div>
             </div>
         @endforeach

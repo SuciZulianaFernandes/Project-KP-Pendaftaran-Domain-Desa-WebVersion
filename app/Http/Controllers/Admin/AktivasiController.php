@@ -86,13 +86,28 @@ class AktivasiController extends Controller
     /**
      * LIST DESA: Halaman untuk melihat domain aktif & tombol perpanjang
      */
-    public function desaPerpanjang()
+        public function desaPerpanjang()
     {
         $data = Pengajuan::where('id_user', auth()->id())
             ->where('status_pengajuan', 'aktif')
-            ->with('faktur', 'aktivasi')
+            ->with('aktivasi')
             ->latest()
-            ->get();
+            ->get()
+            ->map(function ($row) {
+                $fakturTersedia = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('tipe', 'perpanjangan')
+                    ->where('status', 'belum_bayar')
+                    ->first();
+
+                $row->ada_faktur_belum_bayar = $fakturTersedia ? true : false;
+
+                $row->menunggu_faktur = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('judul', 'Permintaan Perpanjangan Domain')
+                    ->where('is_read', 0)
+                    ->exists();
+
+                return $row;
+            });
 
         return view('desa.perpanjang', compact('data'));
     }

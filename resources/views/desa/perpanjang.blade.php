@@ -55,46 +55,51 @@
                     @endif
                 </td>
 
+                {{-- KOLOM STATUS --}}
                 <td>
                     @if($kadaluarsa)
                         <span class="px-3 py-1 rounded bg-red-100 text-red-700 text-xs font-medium inline-block">
-                            <i></i> Kadaluarsa
+                            <i class="fas fa-times-circle mr-1"></i> Kadaluarsa
+                        </span>
+                    @elseif($row->ada_faktur_belum_bayar)
+                        <span class="px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium inline-block">
+                            <i class="fas fa-file-invoice mr-1"></i> Faktur Tersedia
+                        </span>
+                    @elseif($row->menunggu_faktur)
+                        <span class="px-3 py-1 rounded bg-orange-100 text-orange-700 text-xs font-medium inline-block">
+                            <i class="fas fa-clock mr-1"></i> Menunggu Faktur
                         </span>
                     @elseif($bisaPerpanjang)
-                        <span class="px-3 py-1 rounded bg-orange-100 text-orange-700 text-xs font-medium inline-block">
-                            <i></i> Siap Diperpanjang
+                        <span class="px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium inline-block">
+                            <i class="fas fa-check-circle mr-1"></i> Siap Diperpanjang
                         </span>
                     @else
-                        <span class="px-3 py-1 rounded bg-green-100 text-green-700 text-xs font-medium inline-block">
-                            <i></i> Aktif
+                        <span class="px-3 py-1 rounded bg-gray-100 text-gray-600 text-xs font-medium inline-block">
+                            <i class="fas fa-check-circle mr-1"></i> Aktif
                         </span>
                     @endif
                 </td>
 
-                                <td>
-                    @php
-                        // Cek apakah desa sudah pernah kirim permintaan tapi admin belum proses
-                        $menungguFaktur = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
-                            ->where('judul', 'Permintaan Perpanjangan Domain')
-                            ->where('is_read', 0)
-                            ->exists();
-                    @endphp
-
-                    @if($menungguFaktur)
-                        {{-- LABEL MENUNGGU FAKTUR --}}
+                {{-- KOLOM AKSI --}}
+                <td>
+                    @if($row->ada_faktur_belum_bayar)
+                        {{-- TOMBOL FAKTUR --}}
+                        <a href="{{ route('desa.faktur.index') }}" 
+                           class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 inline-block">
+                           <i class="fas fa-file-invoice-dollar mr-1"></i> Faktur
+                        </a>
+                    @elseif($row->menunggu_faktur)
                         <span class="px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium inline-block">
                             <i class="fas fa-clock mr-1"></i> Menunggu Faktur
                         </span>
                     @elseif($bisaPerpanjang)
-                        {{-- TOMBOL PERPANJANG --}}
                         <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
-                           class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                           class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 inline-block"
                            onclick="return confirm('Apakah anda ingin perpanjang masa aktif domain? Admin akan mengirimkan faktur untuk perpanjang masa aktif domain anda.')">
                            Perpanjang
                         </a>
                     @else
-                        {{-- TOMBOL DISABLED --}}
-                        <button disabled class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed">
+                        <button disabled class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed inline-block">
                             Perpanjang
                         </button>
                     @endif

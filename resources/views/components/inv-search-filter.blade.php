@@ -6,7 +6,10 @@
     <select id="invFilter" class="inv-btn-f">
         <option value="">Semua Status</option>
         <option value="belum_bayar">Belum Dibayar</option>
-        <!-- <option value="sudah_bayar">Menunggu Verifikasi</option> -->
-        <option value="diverifikasi">Sudah Dibayar</option>
+        <option value="sudah_bayar">Sudah Dibayar</option>
+        <option value="kedaluarsa">Kedaluarsa</option>
+        @if($showBelumDibuat ?? false)
+        <option value="belum_dibuat">Belum Dibuat</option>
+        @endif
     </select>
 </div>
