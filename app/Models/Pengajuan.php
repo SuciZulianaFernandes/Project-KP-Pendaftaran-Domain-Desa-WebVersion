@@ -50,7 +50,7 @@ class Pengajuan extends Model
 
 public function faktur()
 {
-    return $this->hasOne(Faktur::class, 'id_pengajuan');
+    return $this->hasMany(Faktur::class, 'id_pengajuan', 'id_pengajuan');
 }
 
 public function aktivasi()

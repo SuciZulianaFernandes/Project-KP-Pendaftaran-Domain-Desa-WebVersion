@@ -74,7 +74,7 @@ Daftar Domain Terdaftar
 Pengajuan Domain
 </a>
 
-<a href="#" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
+<a href="{{ url('/admin/perpanjang') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-check-circle w-5"></i>
 Pengajuan Perpanjang Domain
 </a>

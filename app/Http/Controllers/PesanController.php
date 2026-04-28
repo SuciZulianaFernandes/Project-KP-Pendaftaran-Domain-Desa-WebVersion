@@ -28,31 +28,26 @@ class PesanController extends Controller
     }
 
     public function konfirmasiPembayaran($id)
-    {
-        $pengajuan = Pengajuan::findOrFail($id);
+{
+    $pengajuan = Pengajuan::findOrFail($id);
 
-        // tandai pesan lama sebagai sudah diproses
-        Pesan::where('id_pengajuan', $id)
-            ->where('id_user', auth()->id())
-            ->update(['is_read' => 1]);
+    // Tandai pesan "Konfirmasi Pembayaran" dari admin sebagai sudah dibaca oleh desa
+    \App\Models\Pesan::where('id_pengajuan', $id)
+        ->where('id_user', auth()->id())
+        ->where('judul', 'Konfirmasi Pembayaran')
+        ->update(['is_read' => 1]);
 
-        // --- HAPUS BAGIAN INI ---
-        // $admins = User::where('role', 'admin')->get();
-        // foreach ($admins as $admin) { ... }
-        // --------------------------
+    // Kirim balik pesan ke admin bahwa desa siap bayar
+    \App\Models\Pesan::create([
+        'id_user'       => \App\Models\User::where('role', 'admin')->value('id_user'),
+        'id_pengajuan'  => $pengajuan->id_pengajuan,
+        'judul'         => 'Konfirmasi Pembayaran Disetujui',
+        'isi'           => 'Desa '.$pengajuan->nama_desa.' menyetujui konfirmasi pembayaran untuk domain '.$pengajuan->nama_domain.'.desa.id. Silakan buat dan kirim faktur.',
+        'role_tujuan'   => 'admin'
+    ]);
 
-        // GANTI DENGAN INI:
-        Pesan::create([
-            'id_user' => User::where('role', 'admin')->value('id_user'),
-            'id_pengajuan' => $pengajuan->id_pengajuan,
-            'judul' => 'Konfirmasi Pembayaran Disetujui',
-            'isi' => 'Desa '.$pengajuan->nama_desa.' menyetujui konfirmasi pembayaran untuk domain '.$pengajuan->nama_domain.'.desa.id. Silakan buat dan kirim faktur.',
-            'role_tujuan' => 'admin'
-        ]);
-
-        return back()->with('success', 'Konfirmasi dikirim ke admin');
-    }
-
+    return back()->with('success', 'Konfirmasi dikirim ke admin');
+}
     public function notifikasiBuktiPembayaran($idPengajuan)
     {
         $pengajuan = Pengajuan::findOrFail($idPengajuan);

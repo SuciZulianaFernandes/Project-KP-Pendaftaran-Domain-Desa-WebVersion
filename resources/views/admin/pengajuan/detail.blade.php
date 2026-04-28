@@ -54,17 +54,43 @@
     </div>
 
     <!-- INFO FAKTUR (Opsional: Untuk memudahkan admin cek) -->
-    @if($pengajuan->faktur)
+        <!-- INFO FAKTUR (Menampilkan semua faktur: Baru & Perpanjangan) -->
+    @if($pengajuan->faktur->isNotEmpty())
     <div class="mb-6 bg-gray-50 p-4 rounded border">
-        <h3 class="font-bold text-lg mb-3">Data Faktur</h3>
-        <p><strong>No. Invoice:</strong> {{ $pengajuan->faktur->no_invoice }}</p>
-        <p><strong>Status Faktur:</strong> {{ ucfirst($pengajuan->faktur->status) }}</p>
+        <h3 class="font-bold text-lg mb-3">Riwayat Data Faktur</h3>
         
-        @if($pengajuan->faktur->bukti_pembayaran_path)
-            <div class="mt-2">
-                <a href="{{ asset('storage/'.$pengajuan->faktur->bukti_pembayaran_path) }}" target="_blank" class="text-blue-600 underline">Lihat Bukti Bayar</a>
-            </div>
-        @endif
+        <div class="space-y-4">
+            @foreach($pengajuan->faktur as $fakturItem)
+                <div class="p-3 bg-white rounded border">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-semibold text-sm text-gray-700">
+                                @if($fakturItem->tipe == 'perpanjangan')
+                                    <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 mr-1">Perpanjangan</span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 mr-1">Baru</span>
+                                @endif
+                                {{ $fakturItem->no_invoice }}
+                            </p>
+                        </div>
+                        <span class="text-xs font-medium px-2 py-1 rounded 
+                            @if($fakturItem->status == 'sudah_bayar') bg-green-100 text-green-700
+                            @elseif($fakturItem->status == 'belum_bayar') bg-red-100 text-red-700
+                            @else bg-gray-100 text-gray-700 @endif">
+                            {{ ucfirst($fakturItem->status) }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-1"><strong>Total:</strong> Rp {{ number_format($fakturItem->total, 0, ',', '.') }}</p>
+                    
+                    @if($fakturItem->bukti_pembayaran_path)
+                        <a href="{{ asset('storage/'.$fakturItem->bukti_pembayaran_path) }}" target="_blank" class="text-blue-600 underline text-sm">
+                            <i class="fas fa-file-image mr-1"></i>Lihat Bukti Bayar
+                        </a>
+                    @endif
+                </div>
+            @endforeach
+        </div>
     </div>
     @endif
 
@@ -97,7 +123,7 @@
             <form action="{{ route('admin.aktivasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
                 @csrf
                 <button class="bg-green-700 text-white px-6 py-2 rounded shadow hover:bg-green-800 font-bold">
-                    🔥 Aktivasi Domain
+                    Aktivasi Domain
                 </button>
             </form>
         </div>

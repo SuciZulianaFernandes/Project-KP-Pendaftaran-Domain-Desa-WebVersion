@@ -186,7 +186,6 @@ foreach ($files as $file) {
     public function daftar()
 {
     $data = Pengajuan::where('id_user', auth()->id())
-        ->where('status_pengajuan', '!=', 'aktif') // <--- Tambahkan ini agar yg aktif pindah ke menu perpanjang
         ->latest()
         ->get();
 
@@ -249,27 +248,40 @@ public function adminDetail($id)
 public function verifikasi(Request $request, $id)
 {
     $pengajuan = Pengajuan::findOrFail($id);
+    
+    $status = $request->status;
+    $catatan = $request->catatan;
 
-    $pengajuan->status_pengajuan = $request->status;
-    $pengajuan->catatan_umum = $request->catatan;
+    $pengajuan->status_pengajuan = $status;
+    $pengajuan->catatan_umum = $catatan;
     $pengajuan->save();
 
-    // 🔥 kirim pesan ke desa
-    \App\Models\Pesan::create([
-        'id_user' => $pengajuan->id_user,
-        'id_pengajuan' => $pengajuan->id_pengajuan,
-        'judul' => $request->status == 'diproses' 
-            ? 'Konfirmasi Pembayaran' 
-            : 'Perlu Perbaikan',
-        'isi' => $request->status == 'diproses' 
-            ? 'Pengajuan domain '.$pengajuan->nama_domain.' diproses. Apakah Anda ingin melanjutkan pembayaran? Diskominfotik akan membuat faktur untuk Anda.'
-            : 'Pengajuan perlu perbaikan: '.$request->catatan,
-             'role_tujuan' => 'desa'
-            
-    ]);
+    // PERBAIKAN: Gunakan in_array agar aman, apapun value tombol prosesnya
+    if (in_array($status, ['disetujui', 'diproses', 'proses'])) {
+        
+        // Kirim pesan: Minta Faktur
+        \App\Models\Pesan::create([
+            'id_user'       => $pengajuan->id_user,
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Konfirmasi Pembayaran',
+            'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan faktur.',
+            'role_tujuan'   => 'desa'
+        ]);
+
+    } else {
+        
+        // Kirim pesan: Perlu Perbaikan
+        \App\Models\Pesan::create([
+            'id_user'       => $pengajuan->id_user,
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Perlu Perbaikan',
+            'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id perlu perbaikan. Catatan: ' . $catatan,
+            'role_tujuan'   => 'desa'
+        ]);
+    }
 
     return redirect()->route('admin.pengajuan.index')
-        ->with('success', 'Berhasil verifikasi');
+        ->with('success', 'Berhasil verifikasi pengajuan');
 }
 
 }

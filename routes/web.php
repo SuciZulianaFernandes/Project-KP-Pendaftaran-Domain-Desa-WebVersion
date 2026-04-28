@@ -72,6 +72,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         
     Route::get('/pesan', [PesanController::class, 'adminIndex'])
         ->name('pesan.index');
+
+    Route::get('/perpanjang', [AktivasiController::class, 'adminPerpanjangList'])->name('admin.perpanjang');
+    Route::get('/faktur/perpanjangan/buat/{id}', [FakturController::class, 'storePerpanjangan']);
 });
 
 
@@ -118,4 +121,7 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
       // --- ROUTE PERPANJANG DOMAIN (BARU) ---
         Route::get('/perpanjang', [AktivasiController::class, 'desaPerpanjang'])
             ->name('perpanjang');
+        Route::get('/perpanjang/proses/{id}', [AktivasiController::class, 'prosesPerpanjang'])->name('perpanjang.proses');
+        Route::get('/perpanjang/ajukan/{id}', [AktivasiController::class, 'ajukanPerpanjang']);
+
 });
