@@ -6,133 +6,76 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pengajuan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PengajuanApiController extends Controller
 {
     public function submit(Request $request)
     {
-        // ================= VALIDASI =================
         $request->validate([
-            'nama_domain' => 'required|string|max:100',
+            'nama_domain' => 'required|string|max:100|unique:pengajuan,nama_domain',
 
-            // === DATA AKUN ===
-            'username' => 'required|string|unique:users,username',
-            'password' => 'required|string|min:6',
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'no_hp' => 'required|string',
-        ]);
-
-            // === DATA DESA ===
-        $request->validate([
-            'nama_domain' => 'required|string|max:100',
-
-            // DATA DESA / INSTANSI
-            'nama_desa' => 'required|string',
-            'nama_kepala_desa' => 'nullable|string',
-            'nip_kepala_desa' => 'nullable|string',
-            'telepon' => 'required|string',
-            'faksimili' => 'nullable|string',
+            // DATA DESA
+            'nama_desa' => 'required|string|max:150',
+            'telepon' => 'required|string|max:20',
+            'faksimili' => 'nullable|string|max:20',
             'alamat' => 'required|string',
             'provinsi' => 'required|string',
             'kota_kabupaten' => 'required|string',
             'kecamatan' => 'required|string',
-            'desa_kelurahan' => 'nullable|string',
-            'kode_pos' => 'required|string',
+            'desa_kelurahan' => 'required|string',
+            'kode_pos' => 'required|string|max:10',
 
-            // DOKUMEN
+            // FILE (HARUS SESUAI ENUM DB)
             'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
+            'perda_pembentukan_desa' => 'required|file|mimes:pdf|max:2048',
             'surat_kuasa' => 'required|file|mimes:pdf|max:2048',
-            'surat_penunjukan' => 'required|file|mimes:pdf|max:2048',
-            'kartu_pegawai' => 'required|file|mimes:pdf|max:2048',
-            'dasar_hukum' => 'required|file|mimes:pdf|max:2048',
+            'surat_penunjukan_pejabat' => 'required|file|mimes:pdf|max:2048',
+            'ktp_asn_pejabat' => 'required|file|mimes:pdf|max:2048',
         ]);
-
 
         DB::beginTransaction();
 
         try {
-            // ================= SIMPAN PENGAJUAN =================
             $pengajuan = Pengajuan::create([
-                'id_user' => null,
+                'id_user' => auth()->id(),
                 'nama_domain' => strtolower($request->nama_domain),
                 'status_pengajuan' => 'ditinjau',
                 'tgl_pengajuan' => now(),
-
-                // DATA DESA
                 'nama_desa' => $request->nama_desa,
-                'nama_kepala_desa' => $request->nama_kepala_desa,
-                'nip_kepala_desa' => $request->nip_kepala_desa,
                 'telepon' => $request->telepon,
                 'faksimili' => $request->faksimili,
                 'alamat' => $request->alamat,
                 'provinsi' => $request->provinsi,
                 'kota_kabupaten' => $request->kota_kabupaten,
                 'kecamatan' => $request->kecamatan,
-                'desa_kelurahan' => $request->desa_kelurahan ?? null,
+                'desa_kelurahan' => $request->desa_kelurahan,
                 'kode_pos' => $request->kode_pos,
-
-                // DATA AKUN (sementara)
-                'username' => $request->username,
-                'password' => Hash::make($request->password),
-                'name_user' => $request->name,
-                'email' => $request->email,
-                'no_hp_user' => $request->no_hp,
             ]);
 
-            // ================= FILE =================]);
             $files = [
                 'surat_permohonan',
+                'perda_pembentukan_desa',
                 'surat_kuasa',
-                'surat_penunjukan',
-                'kartu_pegawai',
-                'dasar_hukum'
-            ];
-
-            $mappingJenisDokumen = [
-                'surat_permohonan' => 'surat_permohonan',
-                'surat_kuasa' => 'perda_pembentukan_desa',
-                'surat_penunjukan' => 'perda_pembentukan_desa',
-                'kartu_pegawai' => 'perda_pembentukan_desa',
-                'dasar_hukum' => 'perda_pembentukan_desa',
+                'surat_penunjukan_pejabat',
+                'ktp_asn_pejabat',
             ];
 
             foreach ($files as $jenis) {
 
-                if (!$request->hasFile($jenis)) {
-                    DB::rollBack();
-                    return response()->json([
-                        'success' => false,
-                        'message' => "File $jenis tidak ditemukan"
-                    ], 400);
-                if ($request->hasFile($jenis)) {
-                    $file = $request->file($jenis);
-                    $path = $file->store('pengajuan/dokumen', 'public');
-
-                    $pengajuan->dokumenPersyaratan()->create([
-                        'jenis_dokumen' => $mappingJenisDokumen[$jenis],
-                        'nama_file' => $file->getClientOriginalName(),
-                        'path_file' => $path,
-                    ]);
-                }
-
                 $file = $request->file($jenis);
 
-                if (!$file->isValid()) {
-                    DB::rollBack();
-                    return response()->json([
-                        'success' => false,
-                        'message' => "File $jenis tidak valid"
-                    ], 400);
+                if (!$file || !$file->isValid()) {
+                    throw new \Exception("File $jenis tidak valid");
                 }
 
-                $path = $file->store('pengajuan/dokumen', 'public');
+                $filename = $jenis . '_' . time() . '_' . Str::random(5) . '.pdf';
+                $path = $file->storeAs('pengajuan/dokumen', $filename, 'public');
 
                 $pengajuan->dokumenPersyaratan()->create([
                     'jenis_dokumen' => $jenis,
-                    'nama_file' => $file->getClientOriginalName(),
+                    'nama_file' => $filename,
                     'path_file' => $path,
                 ]);
             }
@@ -141,21 +84,24 @@ class PengajuanApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengajuan berhasil dikirim'
+                'message' => 'Pengajuan berhasil dikirim',
+                'data' => [
+                    'id_pengajuan' => $pengajuan->id_pengajuan,
+                    'nama_domain' => $pengajuan->nama_domain
+                ]
             ], 201);
-            }
 
         } catch (\Exception $e) {
 
             DB::rollBack();
-            Log::error('ERROR PENGAJUAN API:', [
+
+            Log::error('ERROR API PENGAJUAN', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan pada server'
+                'message' => $e->getMessage()
             ], 500);
         }
     }
