@@ -87,30 +87,30 @@ class AktivasiController extends Controller
      * LIST DESA: Halaman untuk melihat domain aktif & tombol perpanjang
      */
         public function desaPerpanjang()
-    {
-        $data = Pengajuan::where('id_user', auth()->id())
-            ->where('status_pengajuan', 'aktif')
-            ->with('aktivasi')
-            ->latest()
-            ->get()
-            ->map(function ($row) {
-                $fakturTersedia = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
-                    ->where('tipe', 'perpanjangan')
-                    ->where('status', 'belum_bayar')
-                    ->first();
+{
+    $data = Pengajuan::where('id_user', auth()->id())
+        ->where('status_pengajuan', 'aktif')
+        ->with('aktivasi')
+        ->latest()
+        ->get()
+        ->map(function ($row) {
 
-                $row->ada_faktur_belum_bayar = $fakturTersedia ? true : false;
+            // ✅ CEK: ADA FAKTUR BELUM BAYAR (TANPA LIHAT TIPE)
+            $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                ->where('status', 'belum_bayar')
+                ->exists();
 
-                $row->menunggu_faktur = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
-                    ->where('judul', 'Permintaan Perpanjangan Domain')
-                    ->where('is_read', 0)
-                    ->exists();
+            // ✅ CEK: SUDAH AJUKAN PERPANJANGAN (MENUNGGU ADMIN)
+            $row->menunggu_faktur = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+                ->where('judul', 'Permintaan Perpanjangan Domain')
+                ->where('is_read', 0)
+                ->exists();
 
-                return $row;
-            });
+            return $row;
+        });
 
-        return view('desa.perpanjang', compact('data'));
-    }
+    return view('desa.perpanjang', compact('data'));
+}
 
     public function ajukanPerpanjang($id)
     {

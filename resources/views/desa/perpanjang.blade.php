@@ -82,28 +82,34 @@
 
                 {{-- KOLOM AKSI --}}
                 <td>
-                    @if($row->ada_faktur_belum_bayar)
-                        {{-- TOMBOL FAKTUR --}}
-                        <a href="{{ route('desa.faktur.index') }}" 
-                           class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 inline-block">
-                           <i class="fas fa-file-invoice-dollar mr-1"></i> Faktur
-                        </a>
-                    @elseif($row->menunggu_faktur)
-                        <span class="px-3 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium inline-block">
-                            <i class="fas fa-clock mr-1"></i> Menunggu Faktur
-                        </span>
-                    @elseif($bisaPerpanjang)
-                        <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
-                           class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 inline-block"
-                           onclick="return confirm('Apakah anda ingin perpanjang masa aktif domain? Admin akan mengirimkan faktur untuk perpanjang masa aktif domain anda.')">
-                           Perpanjang
-                        </a>
-                    @else
-                        <button disabled class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed inline-block">
-                            Perpanjang
-                        </button>
-                    @endif
-                </td>
+    @if($row->ada_faktur_belum_bayar)
+        {{-- PRIORITAS 1: ADA TAGIHAN --}}
+        <a href="{{ route('desa.faktur.index') }}" 
+           class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 inline-block">
+           <i class="fas fa-file-invoice-dollar mr-1"></i> Faktur
+        </a>
+
+    @elseif($row->menunggu_faktur)
+        {{-- PRIORITAS 2: SUDAH AJUKAN --}}
+        <!-- <span class="px-3 py-1 rounded bg-orange-100 text-orange-700 text-xs font-medium inline-block">
+            <i class="fas fa-clock mr-1"></i> Menunggu Faktur
+        </span> -->
+
+    @elseif($bisaPerpanjang)
+        {{-- PRIORITAS 3: BOLEH AJUKAN --}}
+        <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
+           class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 inline-block"
+           onclick="return confirm('Apakah anda ingin perpanjang domain?')">
+           Perpanjang
+        </a>
+
+    @else
+        {{-- PRIORITAS 4: BELUM WAKTUNYA --}}
+        <button disabled class="bg-gray-400 text-white px-3 py-1 rounded cursor-not-allowed inline-block">
+            Perpanjang
+        </button>
+    @endif
+</td>
             </tr>
         @empty
             <tr>

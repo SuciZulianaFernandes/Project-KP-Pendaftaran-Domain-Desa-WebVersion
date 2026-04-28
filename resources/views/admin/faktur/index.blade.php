@@ -129,7 +129,7 @@
                                 </td>
 
                                 <td style="text-align:center">
-                                    <form action="{{ route('admin.faktur.storePerpanjangan', $row->id_pengajuan) }}" method="POST" style="display:inline">
+                                    <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
                                         @csrf
                                         <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Buat Faktur</button>
                                     </form>
