@@ -13,6 +13,11 @@ use App\Http\Controllers\Admin\AktivasiController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+Route::post('/profile', [AuthController::class, 'profile']);
+Route::post('/profile/update', [AuthController::class, 'updateProfile']);
+Route::post('/instansi', [AuthController::class, 'instansi']);
+Route::post('/instansi/update', [AuthController::class, 'updateInstansi']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
