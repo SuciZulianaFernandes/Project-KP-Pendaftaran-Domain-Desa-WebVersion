@@ -15,10 +15,24 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id_user', 'desc')->paginate(10);
-        return view('admin.users.index', compact('users'));
+        // Default sorting: ID User Ascending (1, 2, 3 ...)
+        $sort = $request->get('sort', 'id_user');
+        $order = $request->get('order', 'asc');
+
+        // Validasi kolom yang boleh di-sort (untuk keamanan)
+        $allowedSorts = ['id_user', 'username', 'name', 'email', 'role'];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id_user';
+        }
+
+        $users = User::orderBy($sort, $order)->paginate(10);
+        
+        // Pertahankan parameter sort & order saat pagination
+        $users->appends(['sort' => $sort, 'order' => $order]);
+
+        return view('admin.users.index', compact('users', 'sort', 'order'));
     }
 
     /**

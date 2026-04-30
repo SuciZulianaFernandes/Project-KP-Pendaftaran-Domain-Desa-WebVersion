@@ -197,9 +197,9 @@
 
                         <div class="form-footer">
                             <a href="#">Lupa Password?</a>
-                            <p class="mt-3 mb-0">
+                            <!-- <p class="mt-3 mb-0">
                                 Doesn't Have an Account? 
-                            <a href="{{ url('/register') }}">Sign Up</a>                            </p>
+                            <a href="{{ url('/register') }}">Sign Up</a></p> -->
                         </div>
                     </div>
                 </div>

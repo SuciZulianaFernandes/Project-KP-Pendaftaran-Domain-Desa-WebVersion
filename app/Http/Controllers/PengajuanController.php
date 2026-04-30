@@ -77,49 +77,63 @@ class PengajuanController extends Controller
         return view('desa.pengajuan.index3');
     }
 
-    public function storeDokumenForm(Request $request)
-    {
-        $request->validate([
-    'surat_permohonan' => 'required|file|mimes:pdf|max:2048',
-    'perda_pembentukan_desa' => 'required|file|mimes:pdf|max:2048',
-    'surat_kuasa' => 'required|file|mimes:pdf|max:2048',
-]);
 
-// CEK FILE TIDAK BOLEH SAMA
-$files = [
-    $request->file('surat_permohonan'),
-    $request->file('perda_pembentukan_desa'),
-    $request->file('surat_kuasa'),
-];
+public function storeDokumenForm(Request $request)
+{
+    // Validasi 5 File
+    $request->validate([
+        'surat_permohonan'         => 'required|file|mimes:pdf|max:2048',
+        'perda_pembentukan_desa'   => 'required|file|mimes:pdf|max:2048',
+        'surat_kuasa'              => 'required|file|mimes:pdf|max:2048',
+        'surat_penunjukan_pejabat' => 'required|file|mimes:pdf|max:2048',
+        'ktp_asn_pejabat'          => 'required|file|mimes:pdf|max:2048',
+    ]);
 
-// Ambil hash tiap file (biar akurat, bukan cuma nama)
-$hashes = [];
+    // CEK FILE TIDAK BOLEH SAMA (Menggunakan Hash)
+    $files = [
+        $request->file('surat_permohonan'),
+        $request->file('perda_pembentukan_desa'),
+        $request->file('surat_kuasa'),
+        $request->file('surat_penunjukan_pejabat'),
+        $request->file('ktp_asn_pejabat'),
+    ];
 
-foreach ($files as $file) {
-    $hash = md5_file($file->getRealPath());
-    if (in_array($hash, $hashes)) {
-        return back()->withErrors([
-            'file' => 'Semua file harus berbeda, tidak boleh upload file yang sama.'
-        ])->withInput();
+    $hashes = [];
+    foreach ($files as $file) {
+        $hash = md5_file($file->getRealPath());
+        if (in_array($hash, $hashes)) {
+            return back()->withErrors([
+                'file' => 'Semua file harus berbeda, tidak boleh upload file yang sama.'
+            ])->withInput();
+        }
+        $hashes[] = $hash;
     }
-    $hashes[] = $hash;
+
+    $dokumen = [];
+    // Define mapping input name ke label yang lebih bersih jika diperlukan, 
+    // tapi di sini kita simpan sesuai nama kolom database.
+    $inputs = $request->only([
+        'surat_permohonan', 
+        'perda_pembentukan_desa', 
+        'surat_kuasa', 
+        'surat_penunjukan_pejabat', 
+        'ktp_asn_pejabat'
+    ]);
+
+    foreach ($inputs as $jenis => $file) {
+        if ($request->hasFile($jenis)) {
+            $path = $request->file($jenis)->store('pengajuan/dokumen', 'public');
+            $dokumen[$jenis] = [
+                'nama_file' => $file->getClientOriginalName(), // Nama asli file
+                'path_file' => $path,
+            ];
+        }
+    }
+
+    session(['pengajuan.data_dokumen' => $dokumen]);
+    return redirect()->route('desa.pengajuan.tinjau');
 }
 
-        $dokumen = [];
-        $files = $request->only(['surat_permohonan', 'perda_pembentukan_desa', 'surat_kuasa']);
-        foreach ($files as $jenis => $file) {
-            if ($request->hasFile($jenis)) {
-                $path = $request->file($jenis)->store('pengajuan/dokumen', 'public');
-                $dokumen[$jenis] = [
-                    'nama_file' => $file->getClientOriginalName(),
-                    'path_file' => $path,
-                ];
-            }
-        }
-
-        session(['pengajuan.data_dokumen' => $dokumen]);
-        return redirect()->route('desa.pengajuan.tinjau');
-    }
 
     public function showTinjauForm()
     {

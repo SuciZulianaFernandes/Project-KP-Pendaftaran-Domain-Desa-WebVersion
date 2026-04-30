@@ -86,7 +86,7 @@ font-family: 'Poppins', sans-serif;
         </a>
 
         <a href="{{ url('/desa/verifikasi') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
-            <i class="fas fa-check-circle w-5"></i> Verifikasi Domain
+            <i class="fas fa-check-circle w-5"></i> Verifikasi Dokumen
         </a>
     </div>
 </div>

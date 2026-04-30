@@ -95,16 +95,31 @@ class AktivasiController extends Controller
         ->get()
         ->map(function ($row) {
 
-            // ✅ CEK: ADA FAKTUR BELUM BAYAR (TANPA LIHAT TIPE)
+            // 1. Cek Faktur Belum Bayar (Prioritas 1 di View)
             $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
                 ->where('status', 'belum_bayar')
                 ->exists();
 
-            // ✅ CEK: SUDAH AJUKAN PERPANJANGAN (MENUNGGU ADMIN)
-            $row->menunggu_faktur = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+            // 2. Cek Menunggu Faktur (Perbaikan Logika)
+            // Ambil pesan perpanjangan terakhir
+            $latestPesan = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
                 ->where('judul', 'Permintaan Perpanjangan Domain')
-                ->where('is_read', 0)
-                ->exists();
+                ->latest('created_at')
+                ->first();
+
+            $row->menunggu_faktur = false;
+            
+            if ($latestPesan) {
+                // Cek apakah ada faktur yang dibuat SETELAH pesan terakhir dikirim
+                // Jika tidak ada faktur setelah pesan, berarti masih menunggu
+                $fakturAdaSetelahPesan = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('created_at', '>=', $latestPesan->created_at)
+                    ->exists();
+
+                if (!$fakturAdaSetelahPesan) {
+                    $row->menunggu_faktur = true;
+                }
+            }
 
             return $row;
         });
