@@ -5,13 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Pengajuan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PengajuanApiController extends Controller
 {
     // ================= LIST =================
-    public function index()
+    public function index(Request $request)
     {
-        $data = Pengajuan::latest()->get();
+        $query = Pengajuan::query();
+
+        if ($request->status) {
+            $query->where('status_pengajuan', $request->status);
+        }
+
+        $data = $query->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -31,9 +38,19 @@ class PengajuanApiController extends Controller
             ]);
         }
 
+      
+        $dokumen = [];
+
+        foreach ($pengajuan->dokumenPersyaratan as $doc) {
+            $dokumen[$doc->jenis_dokumen] = Storage::url($doc->path_file);
+        }
+
         return response()->json([
             'success' => true,
-            'data' => $pengajuan
+            'data' => [
+                ...$pengajuan->toArray(),
+                'dokumen_urls' => $dokumen
+            ]
         ]);
     }
 
@@ -42,16 +59,13 @@ class PengajuanApiController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
 
-        $status = $request->status; // disetujui / perbaikan
-        $catatan = $request->catatan;
-
-        if ($status == 'diproses') {
+        if ($request->status == 'diproses') {
             $pengajuan->status_pengajuan = 'diproses';
         } else {
             $pengajuan->status_pengajuan = 'perlu_perbaikan';
         }
 
-        $pengajuan->catatan_umum = $catatan;
+        $pengajuan->catatan_umum = $request->catatan;
         $pengajuan->tgl_verifikasi = now();
         $pengajuan->save();
 
