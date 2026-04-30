@@ -135,11 +135,42 @@ class AuthController extends Controller
             ], 404);
         }
 
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'no_hp' => 'nullable|string|max:30',
+            'old_password' => 'nullable|string',
+            'password' => 'nullable|string|min:6',
+            'password_confirmation' => 'nullable|same:password',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $user->name = $request->name;
         $user->email = $request->email;
         $user->no_hp = $request->no_hp;
 
         if ($request->filled('password')) {
+            if (!$request->filled('old_password')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password lama wajib diisi',
+                ], 422);
+            }
+
+            if (!Hash::check($request->old_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Password lama tidak sesuai',
+                ], 422);
+            }
+
             $user->password = Hash::make($request->password);
         }
 
@@ -148,6 +179,13 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Profil berhasil diperbarui',
+            'user' => [
+                'id_user' => $user->id_user,
+                'name' => $user->name,
+                'username' => $user->username,
+                'email' => $user->email,
+                'no_hp' => $user->no_hp,
+            ],
         ], 200);
     }
 
