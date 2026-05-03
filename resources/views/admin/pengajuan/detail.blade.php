@@ -4,13 +4,22 @@
 @section('content')
 <div class="bg-white p-6 rounded-xl shadow">
 
-    <h2 class="text-xl font-bold mb-6">Detail Pengajuan</h2>
+    <!-- HEADER -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Detail Pengajuan</h2>
+        <a href="{{ route('admin.pengajuan.index') }}" 
+           class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali
+        </a>
+    </div>
 
-    <!-- INFO DOMAIN -->
+    <!-- STATUS -->
     <div class="mb-6">
-        <p><strong>Domain:</strong> {{ $pengajuan->nama_domain }}.desa.id</p>
+        <p class="mb-2">
+            <strong>Domain</strong> : {{ $pengajuan->nama_domain }}.desa.id
+        </p>
         <p>
-            <strong>Status:</strong> 
+            <strong>Status</strong> : 
             <span class="px-2 py-1 rounded text-white 
                 @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
                 @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
@@ -23,117 +32,168 @@
         </p>
     </div>
 
-    <!-- INFORMASI DESA -->
-    <!-- INFORMASI DESA -->
-    <div class="mb-6">
-        <h3 class="font-semibold mb-3">Informasi Desa</h3>
+    <!-- INFORMASI INSTANSI -->
+    <h3 class="font-semibold mb-4">Informasi Instansi</h3>
 
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <p><strong>Nama Desa:</strong> {{ $pengajuan->nama_desa }}</p>
-            <p><strong>Telepon:</strong> {{ $pengajuan->telepon }}</p>
-            <p><strong>Faksimili:</strong> {{ $pengajuan->faksimili }}</p>
-            <p><strong>Kode Pos:</strong> {{ $pengajuan->kode_pos }}</p>
-            <p><strong>Provinsi:</strong> {{ $pengajuan->provinsi }}</p>
-            <p><strong>Kota/Kabupaten:</strong> {{ $pengajuan->kota_kabupaten }}</p>
-            <p><strong>Kecamatan:</strong> {{ $pengajuan->kecamatan }}</p>
-            <p><strong>Desa/Kelurahan:</strong> {{ $pengajuan->desa_kelurahan }}</p>
+    <div class="grid grid-cols-2 gap-x-10 gap-y-3 text-sm mb-6">
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Nama Organisasi</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->nama_desa }}</span>
         </div>
 
-        <p class="mt-2"><strong>Alamat:</strong> {{ $pengajuan->alamat }}</p>
+        <div class="flex">
+            <span class="w-48 text-gray-600">Provinsi</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->provinsi }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Klasifikasi Instansi</span>
+            <span class="w-4 text-center">:</span>
+            <span>KELURAHAN / DESA</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Kota/Kabupaten</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->kota_kabupaten }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Nama Instansi</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->nama_desa }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Kecamatan</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->kecamatan }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Telepon</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->telepon }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Desa / Kelurahan</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->desa_kelurahan }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Faksimili</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->faksimili }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Kode Pos</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->kode_pos }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Email Registran</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->email }}</span>
+        </div>
+
+        <div class="flex">
+            <span class="w-48 text-gray-600">Alamat</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->alamat }}</span>
+        </div>
+
+        <div class="flex col-span-2">
+            <span class="w-48 text-gray-600">Tanggal Pembuatan</span>
+            <span class="w-4 text-center">:</span>
+            <span>{{ $pengajuan->created_at->format('d M Y') }}</span>
+        </div>
+
     </div>
 
     <!-- DOKUMEN -->
-    <div class="mb-6">
-        <h3 class="font-semibold mb-3">Dokumen</h3>
+    <h3 class="font-semibold mb-4">Dokumen Persyaratan Domain</h3>
+
+    <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
         @foreach($pengajuan->dokumenPersyaratan as $dok)
-            <div class="flex justify-between items-center bg-gray-50 p-3 rounded mb-2">
+            <div class="flex justify-between border-b pb-2">
                 <span>{{ $dok->jenis_dokumen }}</span>
-                <a href="{{ asset('storage/'.$dok->path_file) }}" target="_blank" class="text-blue-600 underline">Lihat</a>
+                <a href="{{ asset('storage/'.$dok->path_file) }}" target="_blank" class="text-red-600 text-xs">
+                    Lihat Dokumen
+                </a>
             </div>
         @endforeach
     </div>
 
-    <!-- INFO FAKTUR (Opsional: Untuk memudahkan admin cek) -->
-        <!-- INFO FAKTUR (Menampilkan semua faktur: Baru & Perpanjangan) -->
+    <!-- FAKTUR -->
     @if($pengajuan->faktur->isNotEmpty())
     <div class="mb-6 bg-gray-50 p-4 rounded border">
         <h3 class="font-bold text-lg mb-3">Riwayat Data Faktur</h3>
-        
-        <div class="space-y-4">
-            @foreach($pengajuan->faktur as $fakturItem)
-                <div class="p-3 bg-white rounded border">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <p class="font-semibold text-sm text-gray-700">
-                                @if($fakturItem->tipe == 'perpanjangan')
-                                    <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 mr-1">Perpanjangan</span>
-                                @else
-                                    <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 mr-1">Baru</span>
-                                @endif
-                                {{ $fakturItem->no_invoice }}
-                            </p>
-                        </div>
-                        <span class="text-xs font-medium px-2 py-1 rounded 
-                            @if($fakturItem->status == 'sudah_bayar') bg-green-100 text-green-700
-                            @elseif($fakturItem->status == 'belum_bayar') bg-red-100 text-red-700
-                            @else bg-gray-100 text-gray-700 @endif">
-                            {{ ucfirst($fakturItem->status) }}
-                        </span>
-                    </div>
-                    
-                    <p class="text-sm text-gray-600 mb-1"><strong>Total:</strong> Rp {{ number_format($fakturItem->total, 0, ',', '.') }}</p>
-                    
-                    @if($fakturItem->bukti_pembayaran_path)
-                        <a href="{{ asset('storage/'.$fakturItem->bukti_pembayaran_path) }}" target="_blank" class="text-blue-600 underline text-sm">
-                            <i class="fas fa-file-image mr-1"></i>Lihat Bukti Bayar
-                        </a>
-                    @endif
-                </div>
-            @endforeach
-        </div>
+        @foreach($pengajuan->faktur as $f)
+            <div class="mb-3 p-3 bg-white border rounded">
+                <p><strong>{{ $f->no_invoice }}</strong></p>
+                <p>Total: Rp {{ number_format($f->total,0,',','.') }}</p>
+            </div>
+        @endforeach
     </div>
     @endif
 
     <hr class="my-4">
 
-    <!-- LOGIKA TAMPILAN BERDASARKAN STATUS -->
-    
-    <!-- 1. FORM VERIFIKASI (Muncul jika: ditinjau / perlu_perbaikan) -->
-    @if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
-        <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
-            @csrf
-            @method('PUT')
-            <div class="mb-4">
-                <label class="font-semibold">Pilih Status:</label><br>
-                <label><input type="radio" name="status" value="diproses" required> Diproses</label>
-                <label class="ml-4"><input type="radio" name="status" value="perlu_perbaikan"> Perlu Perbaikan</label>
-            </div>
-            <div class="mb-4">
-                <label class="font-semibold">Catatan</label>
-                <textarea name="catatan" class="w-full border p-2 rounded">{{ $pengajuan->catatan_umum }}</textarea>
-            </div>
-            <button class="bg-green-600 text-white px-4 py-2 rounded">Simpan Status</button>
-        </form>
+    <!-- VERIFIKASI -->
+@if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
+<form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">        @csrf
+        @method('PUT')
 
-    <!-- 2. TOMBOL AKTIVASI (Muncul jika: menunggu_aktivasi) -->
-    @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
-        <div class="bg-green-50 p-4 rounded border border-green-200">
-            <p class="mb-3 font-semibold text-green-800">Bukti pembayaran sudah dikirim. Silakan aktivasi domain.</p>
-            
-            <form action="{{ route('admin.aktivasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
-                @csrf
-                <button class="bg-green-700 text-white px-6 py-2 rounded shadow hover:bg-green-800 font-bold">
-                    Aktivasi Domain
-                </button>
-            </form>
+        <h3 class="font-semibold mb-3">Hasil Verifikasi</h3>
+
+        <div class="flex items-center gap-6 mb-4">
+            <label>
+                <input type="radio" name="status" value="diproses" id="diproses"> Disetujui
+            </label>
+
+            <label>
+                <input type="radio" name="status" value="perlu_perbaikan" id="perbaikan"> Perlu Perbaikan
+            </label>
+
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="kirim_email" id="kirim_email">
+                Kirim konfirmasi pembayaran
+            </label>
         </div>
 
-    <!-- 3. SUDAH AKTIF -->
-    @elseif($pengajuan->status_pengajuan == 'aktif')
-        <div class="text-green-700 font-bold bg-green-100 p-3 rounded inline-block">
-            Domain Sudah Aktif
-        </div>
-    @endif
+        <textarea name="catatan" placeholder="Catatan..." class="w-full border p-2 rounded mb-4"></textarea>
 
+        <div class="text-right">
+            <button class="bg-red-700 text-white px-6 py-2 rounded">
+                Kirim
+            </button>
+        </div>
+    </form>
+    @else
+
+<div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+    <p class="text-green-700 font-semibold">
+        Data sudah diverifikasi.
+    </p>
 </div>
+    @endif
+</div>
+
+<script>
+document.getElementById('diproses').addEventListener('change', function() {
+    document.getElementById('kirim_email').checked = true;
+});
+
+document.getElementById('perbaikan').addEventListener('change', function() {
+    document.getElementById('kirim_email').checked = false;
+});
+</script>
+
 @endsection

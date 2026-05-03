@@ -74,7 +74,7 @@
                             <i class="fas fa-check-circle mr-1"></i> Siap Diperpanjang
                         </span>
                     @else
-                        <span class="px-3 py-1 rounded bg-gray-100 text-gray-600 text-xs font-medium inline-block">
+                        <span class="px-3 py-1 rounded bg-green-100 text-green-600 text-xs font-medium inline-block">
                             <i class="fas fa-check-circle mr-1"></i> Aktif
                         </span>
                     @endif

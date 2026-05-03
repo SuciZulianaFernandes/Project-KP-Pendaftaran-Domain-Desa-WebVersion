@@ -3,94 +3,186 @@
 @section('title', 'Manajemen User')
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold text-gray-800">Manajemen User</h1>
-        <a href="{{ route('admin.users.create') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+
+@include('components.inv-styles')
+
+<div class="container-fluid" style="padding:0 24px;max-width:1400px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div>
+            <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">Manajemen User</h1>
+            <p style="font-size:14px;color:#64748b;margin:4px 0 0">Kelola data pengguna admin dan desa</p>
+        </div>
+        <a href="{{ route('admin.users.create') }}" class="btn" style="background:#dc2626;color:white;font-weight:600;padding:8px 16px;border-radius:6px;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
             <i class="fas fa-plus mr-2"></i> Tambah User
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
+    <div class="inv-card">
+        @if(session('success'))
+            <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert inv-alert inv-alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-    @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
+        {{-- Search & Filter --}}
+        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
+            <div style="position:relative;flex:1">
+                <input type="text" id="invSearch" placeholder="Cari berdasarkan nama, username, atau email..." 
+                    style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
+                <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+            </div>
+            <div style="width: 150px;">
+                <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
+                    <option value="">Semua Role</option>
+                    <option value="admin">Admin</option>
+                    <option value="desa">Desa</option>
+                </select>
+            </div>
         </div>
-    @endif
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div style="overflow-x:auto">
+            <table class="inv-table" id="invTable">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. HP</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        {{-- Headers diberi class 'sortable' dan data-type --}}
+                        <th data-type="number" class="sortable">ID <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Username <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Nama Lengkap <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Email <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">No. HP <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Role <i class="sort-icon"></i></th>
+                        <th style="text-align:center; cursor: default;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($users as $user)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->id_user }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->username }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->no_hp ?? '-' }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {{ $user->role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' }}">
-                                    {{ ucfirst($user->role) }}
-                                </span>
+                <tbody>
+                    @forelse($users as $i => $user)
+                        <tr data-role="{{ $user->role }}" style="animation-delay:{{$i*0.05}}s">
+                            <td><span class="inv-id">#{{ $user->id_user }}</span></td>
+                            <td style="font-weight:500;color:#334155">{{ $user->username }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td><span class="inv-date" style="font-style:italic">{{ $user->email }}</span></td>
+                            <td>{{ $user->no_hp ?? '-' }}</td>
+                            
+                            <td>
+                                @if($user->role === 'admin')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                                        Admin
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                                        Desa
+                                    </span>
+                                @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.users.show', $user) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Lihat</a>
-                                <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Apakah Anda yakin ingin menghapus user ini?')">Hapus</button>
-                                </form>
+
+                            <td style="text-align:center">
+                                <div style="display:flex;justify-content:center;gap:8px;">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="inv-btn-d" title="Lihat"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ route('admin.users.edit', $user) }}" class="inv-btn-d" title="Edit"><i class="fas fa-edit"></i></a>
+                                    
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" style="display:inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus user ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inv-btn-d" style="color:#dc2626" title="Hapus"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">Tidak ada data user</td>
-                        </tr>
+                        <tr class="inv-empty"><td colspan="7"><i class="fas fa-inbox"></i> Tidak ada data user</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        
-        <div class="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            <div class="flex-1 flex justify-between sm:hidden">
-                {{ $users->links() }}
-            </div>
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700">
-                        Menampilkan
-                        <span class="font-medium">{{ $users->firstItem() }}</span>
-                        hingga
-                        <span class="font-medium">{{ $users->lastItem() }}</span>
-                        dari
-                        <span class="font-medium">{{ $users->total() }}</span>
-                        hasil
-                    </p>
-                </div>
-                <div>
-                    {{ $users->links() }}
-                </div>
-            </div>
-        </div>
+
+        @include('components.inv-pagination', ['paginator' => $users])
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    // --- LOGIC SEARCH & FILTER (Original Logic) ---
+    var s=document.getElementById('invSearch'),
+        f=document.getElementById('invFilter'),
+        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-role]')),
+        empty=document.querySelector('.inv-empty');
+
+    function filter(){
+        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
+        rows.forEach(function(r){
+            var textMatch = (!q || r.textContent.toLowerCase().includes(q));
+            var roleMatch = (!v || r.dataset.role === v);
+            var show = textMatch && roleMatch;
+            r.style.display=show?'':'none';
+            if(show)n++;
+        });
+        if(empty)empty.style.display=n?'none':'';
+    }
+    if(s) s.addEventListener('input',filter);
+    if(f) f.addEventListener('change',filter);
+
+    // --- LOGIC SORTING (New: Client Side Instant Sort) ---
+    const sortHeaders = document.querySelectorAll('th.sortable');
+    
+    sortHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        
+        // Tambahkan hover effect sederhana
+        header.addEventListener('mouseenter', () => header.style.backgroundColor = '#f8fafc');
+        header.addEventListener('mouseleave', () => header.style.backgroundColor = '');
+
+        header.addEventListener('click', () => {
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            const allRows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Ambil tipe data (number/string) dari atribut th
+            const type = header.dataset.type;
+            const icon = header.querySelector('.sort-icon');
+            const colIndex = Array.from(header.parentNode.children).indexOf(header);
+
+            // 1. Reset icon di header lain
+            document.querySelectorAll('th.sortable .sort-icon').forEach(i => i.textContent = '');
+            
+            // 2. Tentukan arah urutan (toggle asc/desc)
+            let isAsc = !header.classList.contains('asc');
+            
+            // 3. Reset kelas di semua header
+            sortHeaders.forEach(h => h.classList.remove('asc', 'desc'));
+            
+            // 4. Set state ke header yang diklik
+            header.classList.add(isAsc ? 'asc' : 'desc');
+            icon.textContent = isAsc ? ' ▲' : ' ▼';
+
+            // 5. Proses Sorting
+            allRows.sort((a, b) => {
+                let aVal = a.cells[colIndex].textContent.trim();
+                let bVal = b.cells[colIndex].textContent.trim();
+
+                // Khusus untuk kolom ID (Hapus tanda # dan jadikan angka)
+                if (type === 'number') {
+                    // Hapus karakter non-angka (khususnya '#')
+                    aVal = parseInt(aVal.replace(/\D/g, ''), 10);
+                    bVal = parseInt(bVal.replace(/\D/g, ''), 10);
+                    return isAsc ? aVal - bVal : bVal - aVal;
+                }
+
+                // Sorting String biasa (abaikan huruf besar/kecil)
+                return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+
+            // 6. Re-append baris yang sudah terurut ke tabel
+            // Ini membuat animasi "langsung terurut"
+            allRows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
+</script>
 @endsection
