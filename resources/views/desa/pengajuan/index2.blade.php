@@ -27,34 +27,34 @@
             <!-- Baris 1: Nama Desa & Klasifikasi Instansi -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="nama_desa" class="block text-sm font-semibold text-gray-700 mb-2">Nama Desa</label>
+                    <label for="nama_desa" class="block text-sm font-semibold text-gray-700 mb-2">Nama Desa <span class="text-red-600">*</span></label>
                     <input type="text" id="nama_desa" name="nama_desa" value="{{ old('nama_desa', $data_desa['nama_desa'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: Sukamaju" required>
                 </div>
             </div>
 
             <!-- Alamat Lengkap -->
             <div class="mb-6">
-                <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap</label>
+                <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap <span class="text-red-600">*</span></label>
                 <textarea id="alamat" name="alamat" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Jl. Contoh No. 123" required>{{ old('alamat', $data_desa['alamat'] ?? '') }}</textarea>
             </div>
 
             <!-- Baris 2: Provinsi, Kota/Kabupaten, Kecamatan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div>
-                    <label for="provinsi" class="block text-sm font-semibold text-gray-700 mb-2">Provinsi</label>
+                    <label for="provinsi" class="block text-sm font-semibold text-gray-700 mb-2">Provinsi <span class="text-red-600">*</span></label>
                     <select id="provinsi" name="provinsi" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required>
                         <option value="">-- Pilih Provinsi --</option>
                         <!-- Data Provinsi akan diisi oleh JavaScript -->
                     </select>
                 </div>
                 <div>
-                    <label for="kota_kabupaten" class="block text-sm font-semibold text-gray-700 mb-2">Kota/Kabupaten</label>
+                    <label for="kota_kabupaten" class="block text-sm font-semibold text-gray-700 mb-2">Kota/Kabupaten <span class="text-red-600">*</span></label>
                     <select id="kota_kabupaten" name="kota_kabupaten" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
                         <option value="">-- Pilih Kota --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="kecamatan" class="block text-sm font-semibold text-gray-700 mb-2">Kecamatan</label>
+                    <label for="kecamatan" class="block text-sm font-semibold text-gray-700 mb-2">Kecamatan <span class="text-red-600">*</span></label>
                     <select id="kecamatan" name="kecamatan" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
                         <option value="">-- Pilih Kecamatan --</option>
                     </select>
@@ -64,13 +64,13 @@
             <!-- Baris 3: Desa/Kelurahan & Kode Pos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="desa_kelurahan" class="block text-sm font-semibold text-gray-700 mb-2">Desa</label>
+                    <label for="desa_kelurahan" class="block text-sm font-semibold text-gray-700 mb-2">Desa <span class="text-red-600">*</span></label>
                     <select id="desa_kelurahan" name="desa_kelurahan" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
                         <option value="">-- Pilih Desa --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="kode_pos" class="block text-sm font-semibold text-gray-700 mb-2">Kode Pos</label>
+                    <label for="kode_pos" class="block text-sm font-semibold text-gray-700 mb-2">Kode Pos <span class="text-red-600">*</span></label>
                     <input type="text" id="kode_pos" name="kode_pos" value="{{ old('kode_pos', $data_desa['kode_pos'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 28111" required>
                 </div>
             </div>
@@ -78,12 +78,12 @@
             <!-- Baris 4: Telepon & Faksimili -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label for="Telepon" class="block text-sm font-semibold text-gray-700 mb-2">Telepon</label>
+                    <label for="Telepon" class="block text-sm font-semibold text-gray-700 mb-2">Telepon <span class="text-red-600">*</span></label>
                     <input type="tel" id="Telepon" name="Telepon" value="{{ old('Telepon', $data_desa['Telepon'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 0761123456" required>
                 </div>
                 <div>
                     <label for="Faksimili" class="block text-sm font-semibold text-gray-700 mb-2">Faksimili</label>
-                    <input type="tel" id="Faksimili" name="Faksimili" value="{{ old('Faksimili', $data_desa['Faksimili'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 0761123457" required>
+                    <input type="tel" id="Faksimili" name="Faksimili" value="{{ old('Faksimili', $data_desa['Faksimili'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 0761123457">
                 </div>
             </div>
 

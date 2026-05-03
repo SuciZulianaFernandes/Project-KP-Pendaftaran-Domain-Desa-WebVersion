@@ -18,7 +18,7 @@
                 <th class="p-3">No</th>
                 <th>Domain</th>
                 <th>Tgl Aktivasi</th>
-                <th>Masa Berlaku</th>
+                <th>Tgl Expired</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>

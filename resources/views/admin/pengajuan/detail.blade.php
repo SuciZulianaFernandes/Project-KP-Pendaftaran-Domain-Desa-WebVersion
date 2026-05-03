@@ -147,53 +147,84 @@
     <hr class="my-4">
 
     <!-- VERIFIKASI -->
-@if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
-<form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">        @csrf
-        @method('PUT')
+    @if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
+        <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
+            @csrf
+            @method('PUT')
 
-        <h3 class="font-semibold mb-3">Hasil Verifikasi</h3>
+            <h3 class="font-semibold mb-3">Hasil Verifikasi</h3>
 
-        <div class="flex items-center gap-6 mb-4">
-            <label>
-                <input type="radio" name="status" value="diproses" id="diproses"> Disetujui
-            </label>
+            <div class="flex items-center gap-6 mb-4">
+                <label>
+                    <input type="radio" name="status" value="diproses" id="diproses"> Disetujui
+                </label>
 
-            <label>
-                <input type="radio" name="status" value="perlu_perbaikan" id="perbaikan"> Perlu Perbaikan
-            </label>
+                <label>
+                    <input type="radio" name="status" value="perlu_perbaikan" id="perbaikan"> Perlu Perbaikan
+                </label>
 
-            <label class="flex items-center gap-2">
-                <input type="checkbox" name="kirim_email" id="kirim_email">
-                Kirim konfirmasi pembayaran
-            </label>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="kirim_email" id="kirim_email">
+                    Kirim konfirmasi pembayaran
+                </label>
+            </div>
+
+            <textarea name="catatan" placeholder="Catatan..." class="w-full border p-2 rounded mb-4"></textarea>
+
+            <div class="text-right">
+                <button class="bg-red-700 text-white px-6 py-2 rounded">
+                    Kirim
+                </button>
+            </div>
+        </form>
+        
+        <!-- Script untuk form verifikasi biasa -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const diproses = document.getElementById('diproses');
+                const perbaikan = document.getElementById('perbaikan');
+                const kirim_email = document.getElementById('kirim_email');
+
+                if(diproses && perbaikan && kirim_email) {
+                    diproses.addEventListener('change', function() {
+                        kirim_email.checked = true;
+                    });
+
+                    perbaikan.addEventListener('change', function() {
+                        kirim_email.checked = false;
+                    });
+                }
+            });
+        </script>
+
+        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
+        <!-- FORM AKTIVASI KHUSUS -->
+        <div class="bg-blue-50 p-4 rounded border border-blue-200">
+            <h3 class="font-bold text-lg mb-2">Aktivasi Domain</h3>
+            <p class="text-sm text-gray-600 mb-4">
+                Status saat ini: <strong>Menunggu Aktivasi</strong>
+            </p>
+            
+            {{-- Menggunakan URL langsung untuk bypass error route --}}
+            {{-- Pastikan route Anda ada di dalam group prefix /admin --}}
+            <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST">
+                @csrf
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition duration-200">
+                        <i class="fas fa-check-circle mr-2"></i> Aktivasikan Domain
+                    </button>
+                </div>
+            </form>
         </div>
 
-        <textarea name="catatan" placeholder="Catatan..." class="w-full border p-2 rounded mb-4"></textarea>
-
-        <div class="text-right">
-            <button class="bg-red-700 text-white px-6 py-2 rounded">
-                Kirim
-            </button>
-        </div>
-    </form>
     @else
-
-<div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
-    <p class="text-green-700 font-semibold">
-        Data sudah diverifikasi.
-    </p>
-</div>
+        <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+            <p class="text-green-700 font-semibold">
+                Data sudah diverifikasi.
+            </p>
+        </div>
     @endif
+
 </div>
-
-<script>
-document.getElementById('diproses').addEventListener('change', function() {
-    document.getElementById('kirim_email').checked = true;
-});
-
-document.getElementById('perbaikan').addEventListener('change', function() {
-    document.getElementById('kirim_email').checked = false;
-});
-</script>
-
 @endsection

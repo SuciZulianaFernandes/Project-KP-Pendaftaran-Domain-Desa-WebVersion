@@ -36,7 +36,7 @@ class FakturDesaController extends Controller
         return view('desa.faktur.show', compact('faktur'));
     }
 
-    public function konfirmasiPembayaran(Request $request, $id)
+        public function konfirmasiPembayaran(Request $request, $id)
     {
         $request->validate([
             'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -47,16 +47,17 @@ class FakturDesaController extends Controller
 
         $faktur->bukti_pembayaran_path = $path;
         $faktur->status = 'sudah_bayar';
+        $faktur->tanggal_konfirmasi = now(); // <--- TAMBAHKAN BARIS INI
         $faktur->save();
 
- $pengajuan = Pengajuan::find($faktur->id_pengajuan);
+        $pengajuan = Pengajuan::find($faktur->id_pengajuan);
         if ($pengajuan) {
             $pengajuan->status_pengajuan = 'menunggu_aktivasi';
             $pengajuan->save();
         }
 
-         app(PesanController::class)->notifikasiBuktiPembayaran($faktur->id_pengajuan);
+        app(PesanController::class)->notifikasiBuktiPembayaran($faktur->id_pengajuan);
 
-return redirect()->route('desa.faktur.index')
-    ->with('success', 'Bukti pembayaran berhasil diunggah.');    }
-}
+        return redirect()->route('desa.faktur.index')
+            ->with('success', 'Bukti pembayaran berhasil diunggah.');    
+    }}

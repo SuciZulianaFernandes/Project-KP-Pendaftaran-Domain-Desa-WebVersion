@@ -13,15 +13,21 @@
                 <th>Nama Desa</th>
                 <th>Domain</th>
                 <th>Tanggal</th>
-                <th>Status</th>
+                <th>Status Domain</th>
                 <th>Aksi</th>
             </tr>
         </thead>
 
         <tbody>
-        @forelse($data as $i => $row)
+        @php($no = 1) 
+        
+        @forelse($data as $row) 
+            @if($row->status_pengajuan == 'aktif')
+                @continue
+            @endif
+            
             <tr class="border-b">
-                <td class="p-3">{{ $i+1 }}</td>
+                <td class="p-3">{{ $no++ }}</td>
                 <td>{{ $row->nama_desa }}</td>
                 <td>{{ $row->nama_domain }}.desa.id</td>
                 <td>{{ $row->tgl_pengajuan }}</td>
@@ -32,14 +38,9 @@
                     @elseif($row->status_pengajuan == 'perlu_perbaikan')
                         <span class="bg-red-500 text-white px-3 py-1 rounded-full">Perlu Perbaikan</span>
                     @elseif($row->status_pengajuan == 'diproses')
-                        <!-- Ubah warna jadi Biru agar beda sama Aktif -->
                         <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Diproses</span>
                     @elseif($row->status_pengajuan == 'menunggu_aktivasi')
-                        <!-- TAMBAHKAN INI: Status menunggu aktivasi -->
                         <span class="bg-orange-500 text-white px-3 py-1 rounded-full">Menunggu Aktivasi</span>
-                    @elseif($row->status_pengajuan == 'aktif')
-                        <!-- TAMBAHKAN INI: Status aktif -->
-                        <span class="bg-green-600 text-white px-3 py-1 rounded-full">Aktif</span>
                     @else
                         <span class="bg-gray-500 text-white px-3 py-1 rounded-full">Draft</span>
                     @endif

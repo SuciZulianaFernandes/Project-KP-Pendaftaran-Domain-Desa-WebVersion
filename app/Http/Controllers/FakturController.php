@@ -8,7 +8,7 @@ use App\Models\Pesan;
 
 class FakturController extends Controller
 {
-        public function store($id)
+            public function store($id)
     {
         $pengajuan = Pengajuan::findOrFail($id);
 
@@ -17,14 +17,29 @@ class FakturController extends Controller
             return back()->with('error', 'Faktur aktif untuk domain ini sudah ada!');
         }
 
-        // SISTEM OTOMATIS: Cek apakah ini pembayaran ke-2 (perpanjangan)
-        $sudahPernahBayar = Faktur::where('id_pengajuan', $id)
-            ->where('status', 'sudah_bayar')
-            ->whereNotNull('bukti_pembayaran_path') // bukti pembayarannya terisi
+        // ============================================
+        // PERBAIKAN LOGIKA TIPE FAKTUR
+        // ============================================
+        
+        // 1. Cek apakah ada pesan permintaan perpanjangan yang belum terproses
+        $requestPerpanjangan = Pesan::where('id_pengajuan', $id)
+            ->where('judul', 'Permintaan Perpanjangan Domain')
             ->exists();
 
-        // Jika sudah pernah bayar sebelumnya, paksa tipenya jadi 'perpanjangan'
-        $tipeFaktur = $sudahPernahBayar ? 'perpanjangan' : 'baru';
+        // 2. Tentukan Tipe Faktur
+        if ($requestPerpanjangan) {
+            // Jika desa mengajukan perpanjangan, paksa tipenya jadi 'perpanjangan'
+            $tipeFaktur = 'perpanjangan';
+        } else {
+            // Jika tidak ada pesan, gunakan logika historis pembayaran
+            $sudahPernahBayar = Faktur::where('id_pengajuan', $id)
+                ->where('status', 'sudah_bayar')
+                ->whereNotNull('bukti_pembayaran_path') // bukti pembayarannya terisi
+                ->exists();
+
+            // Jika sudah pernah bayar sebelumnya, paksa tipenya jadi 'perpanjangan'
+            $tipeFaktur = $sudahPernahBayar ? 'perpanjangan' : 'baru';
+        }
 
         // Format nomor invoice
         $date = now()->format('Ymd');
@@ -38,7 +53,7 @@ class FakturController extends Controller
             'no_invoice' => $noInvoice,
             'total' => 50000,
             'status' => 'belum_bayar',
-            'tipe' => $tipeFaktur, // Menggunakan variabel otomatis di atas
+            'tipe' => $tipeFaktur, // Menggunakan variabel yang sudah diperbaiki
             'expired_at' => now()->addDays(7)
         ]);
 

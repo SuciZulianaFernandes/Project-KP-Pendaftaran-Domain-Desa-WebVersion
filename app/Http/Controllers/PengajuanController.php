@@ -56,7 +56,7 @@ class PengajuanController extends Controller
         $data = $request->validate([
             'nama_desa' => 'required|string|max:255',
             'Telepon' => 'required|string|max:50',
-            'Faksimili' => 'required|string|max:50',
+            'Faksimili' => 'nullable|string|max:50',
             'alamat' => 'required|string',
             'provinsi' => 'required|string|max:255',
             'kota_kabupaten' => 'required|string|max:255',

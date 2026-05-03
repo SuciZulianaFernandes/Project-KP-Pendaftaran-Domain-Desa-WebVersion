@@ -32,9 +32,9 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>No Invoice</th>
                         <th>Nama Desa</th>
                         <th>Domain</th>
-                        <th>No Invoice</th>
                         <th style="text-align:center">Tipe</th>
                         <th>Tanggal Konfirmasi</th>
                         <th style="text-align:center">Status</th>
@@ -42,17 +42,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                @forelse($data as $i => $row)
+                                @forelse($data as $i => $row)
                     @if($row->faktur->isEmpty() && !in_array($row->id_pengajuan, $perpanjanganBelumBuat))
                         {{-- JIKA DOMAIN INI BELUM PUNYA FAKTUR SAMA SEKALI DAN BUKAN PERPANJANGAN --}}
                         <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
                             <td>{{ $data->firstItem() + $i }}</td>
+                            <td><span class="inv-id">-</span></td>
                             <td>{{ $row->nama_desa }}</td>
                             <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                            <td><span class="inv-id">-</span></td>
                             
+                            {{-- PERBAIKAN: Ganti tanda "-" dengan Badge "Baru" --}}
                             <td style="text-align:center">
-                                <span class="text-gray-400 text-xs">-</span>
+                                <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 font-medium">Baru</span>
                             </td>
 
                             <td><span class="inv-date">-</span></td>
@@ -64,7 +65,7 @@
                             <td style="text-align:center">
                                 <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
                                     @csrf
-                                    <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Buat Faktur</button>
+                                    <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Cetak Faktur</button>
                                 </form>
                             </td>
                         </tr>
@@ -76,10 +77,9 @@
                                     {{ $data->firstItem() + $i }}
                                     {{ $row->faktur->count() > 1 ? '.' . ($indexFaktur + 1) : '' }}
                                 </td>
-                                
+                                <td><span class="inv-id">{{ $fakturItem->no_invoice }}</span></td>
                                 <td>{{ $row->nama_desa }}</td>
                                 <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                                <td><span class="inv-id">{{ $fakturItem->no_invoice }}</span></td>
                                 
                                 <td style="text-align:center">
                                     @if($fakturItem->tipe == 'perpanjangan')
@@ -95,7 +95,7 @@
                                     @if($fakturItem->status == 'sudah_bayar')
                                         <span class="inv-badge badge-green"><span class="d"></span>Sudah Dibayar</span>
                                     @elseif($fakturItem->status == 'belum_bayar')
-                                        <span class="inv-badge badge-red"><span class="d"></span>Belum Bayar</span>
+                                        <span class="inv-badge badge-red"><span class="d"></span>Belum Dibayar</span>
                                     @elseif($fakturItem->status == 'kedaluarsa')
                                         <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Kedaluarsa</span>
                                     @endif
@@ -113,10 +113,9 @@
                                 <td>
                                     {{ $data->firstItem() + $i }}.{{ $row->faktur->count() + 1 }}
                                 </td>
-                                
+                                <td><span class="inv-id">-</span></td>
                                 <td>{{ $row->nama_desa }}</td>
                                 <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                                <td><span class="inv-id">-</span></td>
                                 
                                 <td style="text-align:center">
                                     <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>

@@ -19,7 +19,7 @@
                     <th class="p-3 border">No</th>
                     <th class="p-3 border">Domain</th>
                     <th class="p-3 border">Tgl Aktivasi</th>
-                    <th class="p-3 border">Masa Berlaku</th>
+                    <th class="p-3 border">Tgl Expired</th>
                     <th class="p-3 border">Status</th>
                     <th class="p-3 border">Aksi</th>
                 </tr>

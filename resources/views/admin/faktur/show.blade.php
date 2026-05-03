@@ -51,6 +51,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
                 <p><span class="font-medium">Tanggal Dibuat:</span> {{ $faktur->created_at->format('d F Y') }}</p>
+                
+                {{-- PERBAIKAN LOGIKA TANGGAL PEMBAYARAN --}}
+                @if($faktur->status == 'sudah_bayar')
+                    <p>
+                        <span class="font-medium">Tanggal Pembayaran:</span> 
+                        {{-- Gunakan tanggal_konfirmasi jika ada, jika tidak pakai updated_at --}}
+                        {{ $faktur->tanggal_konfirmasi ? $faktur->tanggal_konfirmasi->format('d F Y') : $faktur->updated_at->format('d F Y') }}
+                    </p>
+                @endif
+
                 <p><span class="font-medium">Batas Pembayaran:</span> {{ $faktur->expired_at->format('d F Y') }}</p>
             </div>
             <div>

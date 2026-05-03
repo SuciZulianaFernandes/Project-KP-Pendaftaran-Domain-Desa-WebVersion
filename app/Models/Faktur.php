@@ -20,6 +20,7 @@ class Faktur extends Model
         'no_invoice',
         'total',
         'status',
+        'tipe',
         'tanggal_konfirmasi',
         'expired_at',
         'catatan',

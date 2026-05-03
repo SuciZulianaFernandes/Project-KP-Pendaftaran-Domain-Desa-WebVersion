@@ -18,18 +18,24 @@ body{
 [x-cloak]{
     display:none!important;
 }
+
+/* scroll sidebar */
+aside{
+    overflow-y:auto;
+}
 </style>
 
 </head>
 
-<body class="bg-slate-50 text-slate-800" x-data="{ sidebarOpen:false }">
+<body class="bg-slate-50 text-slate-800" x-data="{ sidebarOpen:true }" x-cloak>
 
 <div class="flex h-screen overflow-hidden">
 
 <!-- SIDEBAR -->
 <aside 
-:class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-class="fixed inset-y-0 left-0 z-50 w-72 bg-red-900 text-white transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex flex-col shadow-2xl">
+x-show="sidebarOpen"
+x-transition
+class="fixed inset-y-0 left-0 z-40 w-72 bg-red-900 text-white md:relative flex flex-col shadow-2xl">
 
 <div class="p-8 border-b border-red-800">
 <span class="text-xl font-bold tracking-widest uppercase">DISKOMINFO</span>
@@ -46,8 +52,7 @@ Overview
 
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Manajemen Domain</p>
 
-<div x-data="{ open:false }">
-
+<div x-data="{ open:true }">
 <button @click="open=!open"
 class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-red-700 transition">
 
@@ -61,33 +66,25 @@ class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-re
 
 </button>
 
-<div x-show="open" x-cloak x-transition
-class="ml-8 mt-2 space-y-1">
-
+<div x-show="open" x-cloak x-transition class="ml-8 mt-2 space-y-1">
 <a href="{{ url('/admin/domain_terdaftar') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-list w-5"></i>
 Daftar Domain Terdaftar
 </a>
-
 <a href="{{ url('/admin/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-plus-circle w-5"></i>
 Pengajuan Domain
 </a>
-
 <a href="{{ url('/admin/perpanjang') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-check-circle w-5"></i>
 Pengajuan Perpanjang Domain
 </a>
-
+</div>
 </div>
 
-</div>
-
-<!-- Manajemen User Menu -->
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Manajemen User</p>
 
-<div x-data="{ open:false }">
-
+<div x-data="{ open:true }">
 <button @click="open=!open"
 class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-red-700 transition">
 
@@ -101,21 +98,16 @@ class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-re
 
 </button>
 
-<div x-show="open" x-cloak x-transition
-class="ml-8 mt-2 space-y-1">
-
+<div x-show="open" x-cloak x-transition class="ml-8 mt-2 space-y-1">
 <a href="{{ url('/admin/users') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-list w-5"></i>
 Daftar User
 </a>
-
 <a href="{{ url('/admin/users/create') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-plus-circle w-5"></i>
 Tambah User
 </a>
-
 </div>
-
 </div>
 
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Menu</p>
@@ -135,28 +127,24 @@ Profil Instansi
 Manajemen Faktur
 </a>
 
-<!-- Logout Button -->
 <form action="{{ route('logout') }}" method="POST" class="mt-6">
-    @csrf
-    <button type="submit" class="flex items-center gap-3 w-full p-2 rounded hover:bg-red-700 transition text-left">
-        <i class="fas fa-sign-out-alt w-5"></i> Keluar
-    </button>
+@csrf
+<button type="submit" class="flex items-center gap-3 w-full p-2 rounded hover:bg-red-700 transition text-left">
+<i class="fas fa-sign-out-alt w-5"></i> Keluar
+</button>
 </form>
 
 </nav>
 
 <div class="p-6 bg-red-900/50 border-t border-red-700">
 <div class="flex items-center gap-3">
-
 <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">
 AD
 </div>
-
 <div class="text-sm">
 <p class="font-bold uppercase tracking-wide">Administrator</p>
 <p class="text-red-300">Sistem Informasi</p>
 </div>
-
 </div>
 </div>
 
@@ -170,8 +158,9 @@ AD
 
 <div class="flex items-center justify-between">
 
+<!-- tombol normal -->
 <button @click="sidebarOpen=!sidebarOpen"
-class="md:hidden text-gray-600 text-xl">
+class="text-gray-600 text-xl md:relative">
 <i class="fas fa-bars"></i>
 </button>
 
@@ -181,36 +170,20 @@ class="md:hidden text-gray-600 text-xl">
 </button>
 </div>
 
-<div class="flex items-center space-x-4">
-
-<div class="relative">
-<input
-type="text"
-placeholder="Search..."
-class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
-/>
-
-<div class="absolute inset-y-0 left-0 flex items-center pl-3">
-<i class="fas fa-search text-gray-400"></i>
-</div>
-</div>
-
-<div class="relative">
-
-<button class="p-2 text-gray-600 hover:text-gray-900">
-<i class="fas fa-bell text-xl"></i>
-<span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
-</button>
-
-</div>
-
-</div>
+<div></div>
 
 </div>
 
 </header>
 
-<!-- CONTENT -->
+<!-- tombol khusus saat nutup sidebar (overlay di merah) -->
+<button 
+x-show="sidebarOpen"
+@click="sidebarOpen=false"
+class="fixed top-4 left-4 z-50 text-white text-xl md:hidden">
+<i class="fas fa-bars"></i>
+</button>
+
 <main class="flex-1 overflow-y-auto p-6">
 @yield('content')
 </main>
