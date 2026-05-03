@@ -12,45 +12,48 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required',
-            'password' => 'required',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'username' => 'required',
+        'password' => 'required',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validasi gagal',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $user = User::with('desa')
-            ->where('username', $request->username)
-            ->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Username atau password salah',
-            ], 401);
-        }
-
+    if ($validator->fails()) {
         return response()->json([
-            'success' => true,
-            'message' => 'Login berhasil',
-            'role' => $user->role,
-            'user' => [
-                'id_user' => $user->id_user,
-                'name' => $user->name,
-                'username' => $user->username,
-                'email' => $user->email,
-                'no_hp' => $user->no_hp,
-                'desa' => $user->desa,
-            ],
-        ], 200);
+            'success' => false,
+            'message' => 'Validasi gagal',
+            'errors' => $validator->errors(),
+        ], 422);
     }
+
+    $user = User::with('desa')
+        ->where('username', $request->username)
+        ->first();
+
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Username atau password salah',
+        ], 401);
+    }
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Login berhasil',
+        'token' => $token,
+        'role' => $user->role,
+        'user' => [
+            'id_user' => $user->id_user,
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'no_hp' => $user->no_hp,
+            'desa' => $user->desa,
+        ],
+    ], 200);
+}
 
     public function register(Request $request)
     {

@@ -23,9 +23,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // ================= USER =================
-Route::prefix('pengajuan')->group(function () {
+Route::prefix('pengajuan')->middleware('auth:sanctum')->group(function () {
     Route::post('/check-domain', [UserPengajuanController::class, 'checkDomain']);
     Route::post('/submit', [UserPengajuanController::class, 'submit']);
+    Route::get('/riwayat', [UserPengajuanController::class, 'riwayat']);
+    Route::post('/update/{id}', [UserPengajuanController::class, 'update']);
 });
 
 // ================= ADMIN =================

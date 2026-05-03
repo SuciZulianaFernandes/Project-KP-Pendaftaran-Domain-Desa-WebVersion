@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pengajuan;
+use App\Models\DokumenPersyaratan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -104,5 +105,47 @@ class PengajuanApiController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+    public function riwayat(Request $request)
+    {
+        try {
+            $idUser = auth()->id();
+            $data = Pengajuan::with('dokumenPersyaratan')
+                ->where('id_user', $idUser)
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+            // ================= UPDATE (PERBAIKAN) =================
+    public function update(Request $request, $id)
+    {
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        if ($pengajuan->status_pengajuan != 'perlu_perbaikan') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak bisa diedit'
+            ], 403);
+        }
+
+        $pengajuan->update($request->all());
+        $pengajuan->status_pengajuan = 'ditinjau';
+        $pengajuan->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Berhasil update'
+        ]);
     }
 }
