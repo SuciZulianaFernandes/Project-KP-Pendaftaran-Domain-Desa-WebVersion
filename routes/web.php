@@ -27,6 +27,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // =====================================================
 // ROUTE UNTUK ADMIN (Memerlukan login dan role admin)
 // =====================================================
+// =====================================================
+// ROUTE UNTUK ADMIN (Memerlukan login dan role admin)
+// =====================================================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
 
@@ -53,7 +56,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/pengajuan/verifikasi/{id}', [PengajuanController::class, 'verifikasi'])
         ->name('verifikasi.proses');
 
-    // --- ROUTE AKTIVASI DOMAIN (BARU) ---
+    // --- ROUTE AKTIVASI DOMAIN ---
     // Proses Aktivasi (Tombol Admin)
     Route::post('/aktivasi/proses/{id}', [AktivasiController::class, 'aktivasi'])
         ->name('aktivasi.proses');
@@ -73,11 +76,20 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/pesan', [PesanController::class, 'adminIndex'])
         ->name('pesan.index');
 
-    Route::get('/perpanjang', [AktivasiController::class, 'adminPerpanjangList'])->name('admin.perpanjang');
+    // --- ROUTE PERPANJANGAN (PERBAIKAN DISINI) ---
+    
+    // 1. List Perpanjangan (Nama route cukup 'perpanjang.list' karena sudah ada prefix 'admin.')
+    Route::get('/perpanjang', [AktivasiController::class, 'adminPerpanjangList'])
+        ->name('perpanjang.list');
+
+    // 2. Detail Perpanjangan (PINDAHKAN KE DALAM GROUP INI)
+    Route::get('/perpanjang/{id}', [AktivasiController::class, 'adminPerpanjangDetail'])
+        ->name('perpanjang.show');
+
     Route::post('/faktur/perpanjangan/buat/{id}', [FakturController::class, 'storePerpanjangan'])
-        ->name('faktur.storePerpanjangan');});
+        ->name('faktur.storePerpanjangan');
 
-
+}); // Penutup Group Admin
 // =====================================================
 // ROUTE UNTUK DESA (Memerlukan login dan role desa)
 // =====================================================
@@ -123,5 +135,5 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
             ->name('perpanjang');
         Route::get('/perpanjang/proses/{id}', [AktivasiController::class, 'prosesPerpanjang'])->name('perpanjang.proses');
         Route::get('/perpanjang/ajukan/{id}', [AktivasiController::class, 'ajukanPerpanjang']);
-
+    
 });

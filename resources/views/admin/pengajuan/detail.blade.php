@@ -36,7 +36,6 @@
     <h3 class="font-semibold mb-4">Informasi Instansi</h3>
 
     <div class="grid grid-cols-2 gap-x-10 gap-y-3 text-sm mb-6">
-
         <div class="flex">
             <span class="w-48 text-gray-600">Nama Organisasi</span>
             <span class="w-4 text-center">:</span>
@@ -114,7 +113,6 @@
             <span class="w-4 text-center">:</span>
             <span>{{ $pengajuan->created_at->format('d M Y') }}</span>
         </div>
-
     </div>
 
     <!-- DOKUMEN -->
@@ -148,7 +146,7 @@
 
     <!-- VERIFIKASI -->
     @if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
-        <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST">
+        <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST" id="formVerifikasi">
             @csrf
             @method('PUT')
 
@@ -172,7 +170,8 @@
             <textarea name="catatan" placeholder="Catatan..." class="w-full border p-2 rounded mb-4"></textarea>
 
             <div class="text-right">
-                <button class="bg-red-700 text-white px-6 py-2 rounded">
+                <!-- Tombol Kirim dengan Pesan Spesifik -->
+                <button type="submit" class="js-confirm-btn bg-red-700 text-white px-6 py-2 rounded" data-confirm-message="Apakah anda yakin ingin mengirim verifikasi ini?">
                     Kirim
                 </button>
             </div>
@@ -197,7 +196,7 @@
             });
         </script>
 
-        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
+    @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
         <!-- FORM AKTIVASI KHUSUS -->
         <div class="bg-blue-50 p-4 rounded border border-blue-200">
             <h3 class="font-bold text-lg mb-2">Aktivasi Domain</h3>
@@ -206,12 +205,12 @@
             </p>
             
             {{-- Menggunakan URL langsung untuk bypass error route --}}
-            {{-- Pastikan route Anda ada di dalam group prefix /admin --}}
-            <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST">
+            <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi">
                 @csrf
                 
                 <div class="flex justify-end">
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition duration-200">
+                    <!-- Tombol Aktivasi dengan Pesan Spesifik -->
+                    <button type="submit" class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition duration-200" data-confirm-message="Apakah Anda yakin ingin mengaktifkan domain ini?">
                         <i class="fas fa-check-circle mr-2"></i> Aktivasikan Domain
                     </button>
                 </div>
@@ -225,6 +224,96 @@
             </p>
         </div>
     @endif
+
+    <!-- MODAL POPUP CONFIRMATION -->
+    <!-- Hidden by default (hidden class). Flex when active. -->
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <!-- Modal Content -->
+        <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+            
+            <div class="mt-3 text-center">
+                <!-- Icon -->
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 mb-4">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                
+                <!-- Pesan Dinamis -->
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Konfirmasi</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="modalConfirmMessage" class="text-sm text-gray-500">
+                        Apakah anda yakin?
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="items-center px-4 py-3 flex justify-center gap-3">
+                <button id="modalNoBtn" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Batal
+                </button>
+                <button id="modalYesBtn" class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">
+                    Ya, saya yakin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script untuk Logika Popup Dinamis -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('confirmationModal');
+            const yesBtn = document.getElementById('modalYesBtn');
+            const noBtn = document.getElementById('modalNoBtn');
+            const modalMessage = document.getElementById('modalConfirmMessage');
+            const confirmBtns = document.querySelectorAll('.js-confirm-btn');
+            
+            let formToSubmit = null;
+
+            // Tampilkan modal saat tombol diklik
+            confirmBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Mencegah submit langsung
+                    formToSubmit = this.closest('form'); // Simpan form
+                    
+                    // Ambil pesan spesifik dari data attribute, atau pakai default
+                    const message = this.getAttribute('data-confirm-message') || 'Apakah anda yakin?';
+                    modalMessage.textContent = message;
+                    
+                    // Tampilkan modal
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                });
+            });
+
+            // Logika tombol "Ya, saya yakin"
+            yesBtn.addEventListener('click', function() {
+                if (formToSubmit) {
+                    formToSubmit.submit(); // Submit form
+                }
+                closeModal();
+            });
+
+            // Logika tombol "Batal"
+            noBtn.addEventListener('click', function() {
+                closeModal();
+            });
+
+            // Tutup modal jika klik overlay
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                formToSubmit = null;
+            }
+        });
+    </script>
 
 </div>
 @endsection

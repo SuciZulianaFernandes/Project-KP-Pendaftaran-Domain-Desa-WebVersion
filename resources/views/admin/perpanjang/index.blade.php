@@ -1,4 +1,4 @@
-@extends('layouts.admin') <!-- Sesuaikan layout admin kamu -->
+@extends('layouts.admin')
 
 @section('title', 'Pengajuan Perpanjang Domain')
 
@@ -18,16 +18,19 @@
                 <tr>
                     <th class="p-3 border">No</th>
                     <th class="p-3 border">Domain</th>
-                    <th class="p-3 border">Tgl Aktivasi</th>
-                    <th class="p-3 border">Tgl Expired</th>
-                    <th class="p-3 border">Status</th>
+                    <th class="p-3 border">Status Domain</th> {{-- Diubah Judul --}}
+                    <th class="p-3 border">Tipe</th>
+                    <th class="p-3 border">Tgl Faktur</th>
+                    <th class="p-3 border">Status Faktur</th>
                     <th class="p-3 border">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($fakturs as $i => $item)
                     @php
+                        // Ambil data aktivasi untuk menampilkan tanggal
                         $aktivasi = $item->pengajuan ? $item->pengajuan->aktivasi : null;
+                        $pengajuanStatus = $item->pengajuan ? $item->pengajuan->status_pengajuan : 'unknown';
                     @endphp
                     <tr class="border-b hover:bg-gray-50">
                         <td class="p-3 border">{{ $i + 1 }}</td>
@@ -35,23 +38,30 @@
                         {{-- DOMAIN --}}
                         <td class="p-3 border font-semibold">{{ $item->nama_domain }}.desa.id</td>
                         
-                        {{-- TGL AKTIVASI --}}
+                        {{-- STATUS DOMAIN (SESUAI REQUEST: MENUNGGU AKTIVASI, DIPROSES, DLL) --}}
                         <td class="p-3 border">
-                            {{ $aktivasi && $aktivasi->tgl_aktivasi ? $aktivasi->tgl_aktivasi->format('d-m-Y') : '-' }}
-                        </td>
-
-                        {{-- MASA BERLAKU --}}
-                        <td class="p-3 border">
-                            @if($aktivasi && $aktivasi->masa_berlaku)
-                                <span class="{{ $aktivasi->is_kadaluarsa ? 'text-red-600 font-bold' : 'text-green-700' }}">
-                                    {{ $aktivasi->masa_berlaku->format('d-m-Y') }}
-                                </span>
+                            @if($pengajuanStatus == 'menunggu_aktivasi')
+                                <span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-800">Menunggu Aktivasi</span>
+                            @elseif($pengajuanStatus == 'diproses')
+                                <span class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">Diproses</span>
+                            @elseif($pengajuanStatus == 'aktif')
+                                <span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800">Aktif</span>
                             @else
-                                <span class="text-gray-400">-</span>
+                                <span class="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">{{ ucfirst(str_replace('_', ' ', $pengajuanStatus)) }}</span>
                             @endif
                         </td>
 
-                        {{-- STATUS INVOICE --}}
+                        {{-- TIPE --}}
+                        <td class="p-3 border">
+                            <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>
+                        </td>
+
+                        {{-- TGL FAKTUR --}}
+                        <td class="p-3 border">
+                            {{ $item->created_at->format('d-m-Y') }}
+                        </td>
+
+                        {{-- STATUS FAKTUR --}}
                         <td class="p-3 border">
                             @if($item->status == 'belum_bayar')
                                 <span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">Belum Bayar</span>
@@ -62,16 +72,16 @@
                             @endif
                         </td>
 
-                        {{-- Aksi --}}
+                        {{-- AKSI (DIUBAH KE DETAIL PERPANJANGAN) --}}
                         <td class="p-3 border">
-                            <a href="{{ route('admin.faktur.show', $item->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
+                            <a href="{{ route('admin.perpanjang.show', $item->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
                                 Detail
                             </a>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center p-6 text-gray-500">
+                        <td colspan="7" class="text-center p-6 text-gray-500">
                             Belum ada pengajuan perpanjangan.
                         </td>
                     </tr>

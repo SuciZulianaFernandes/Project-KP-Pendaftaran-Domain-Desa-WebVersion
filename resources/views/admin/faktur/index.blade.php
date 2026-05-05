@@ -26,7 +26,7 @@
             </div>
         @endif
 
-@include('components.inv-search-filter', ['showBelumDibuat' => true])
+        @include('components.inv-search-filter', ['showBelumDibuat' => true])
         <div style="overflow-x:auto">
             <table class="inv-table" id="invTable">
                 <thead>
@@ -65,7 +65,8 @@
                             <td style="text-align:center">
                                 <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
                                     @csrf
-                                    <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Cetak Faktur</button>
+                                    <!-- Tambahkan class js-confirm-print di sini -->
+                                    <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Cetak Faktur</button>
                                 </form>
                             </td>
                         </tr>
@@ -130,7 +131,8 @@
                                 <td style="text-align:center">
                                     <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
                                         @csrf
-                                        <button type="submit" class="inv-btn-d"><i class="fas fa-plus"></i> Buat Faktur</button>
+                                        <!-- Tambahkan class js-confirm-print di sini -->
+                                        <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Buat Faktur</button>
                                     </form>
                                 </td>
                             </tr>
@@ -147,6 +149,40 @@
     </div>
 </div>
 
+<!-- MODAL POPUP CONFIRMATION CETAK FAKTUR -->
+<!-- Hidden by default -->
+<div id="printConfirmationModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+    <!-- Modal Content -->
+    <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+        
+        <div class="mt-3 text-center">
+            <!-- Icon -->
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                <i class="fas fa-print text-blue-600 text-xl"></i>
+            </div>
+            
+            <!-- Pesan Sesuai Request -->
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Konfirmasi</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    Apakah Anda yakin ingin mencetak faktur?
+                </p>
+            </div>
+        </div>
+        
+        <!-- Buttons -->
+        <div class="items-center px-4 py-3 flex justify-center gap-3">
+            <button id="printModalNoBtn" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                Batal
+            </button>
+            <button id="printModalYesBtn" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                Ya, Lanjutkan
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Script Filter Asli -->
 <script>
 document.addEventListener('DOMContentLoaded',function(){
     var s=document.getElementById('invSearch'),
@@ -165,6 +201,56 @@ document.addEventListener('DOMContentLoaded',function(){
     }
     s.addEventListener('input',filter);
     f.addEventListener('change',filter);
+});
+</script>
+
+<!-- Script Tambahan untuk Popup Konfirmasi -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('printConfirmationModal');
+    const yesBtn = document.getElementById('printModalYesBtn');
+    const noBtn = document.getElementById('printModalNoBtn');
+    const confirmBtns = document.querySelectorAll('.js-confirm-print');
+    
+    let formToSubmit = null;
+
+    // Tampilkan modal saat tombol cetak diklik
+    confirmBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault(); // Mencegah form submit langsung
+            formToSubmit = this.closest('form'); // Simpan referensi form
+            
+            // Tampilkan modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    });
+
+    // Tombol Ya
+    yesBtn.addEventListener('click', function() {
+        if (formToSubmit) {
+            formToSubmit.submit(); // Submit form
+        }
+        closeModal();
+    });
+
+    // Tombol Batal
+    noBtn.addEventListener('click', function() {
+        closeModal();
+    });
+
+    // Tutup jika klik di luar area modal
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        formToSubmit = null;
+    }
 });
 </script>
 @endsection

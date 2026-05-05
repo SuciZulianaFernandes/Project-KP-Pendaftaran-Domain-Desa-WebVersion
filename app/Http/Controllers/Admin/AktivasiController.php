@@ -165,4 +165,18 @@ class AktivasiController extends Controller
 
     return view('admin.perpanjang.index', compact('fakturs'));
 }
+
+public function adminPerpanjangDetail($id)
+{
+    // Ambil data faktur perpanjangan
+    $faktur = Faktur::with('pengajuan')->findOrFail($id);
+    
+    // Ambil data pengajuan utamanya
+    $pengajuan = $faktur->pengajuan;
+    
+    // Load relasi yang dibutuhkan oleh view (dokumen, faktur, aktivasi)
+    $pengajuan->load('dokumenPersyaratan', 'faktur', 'aktivasi');
+
+    return view('admin.perpanjang.show', compact('faktur', 'pengajuan'));
+}
 }
