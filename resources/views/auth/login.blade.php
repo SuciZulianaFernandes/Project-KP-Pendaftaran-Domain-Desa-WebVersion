@@ -118,17 +118,8 @@
         .form-footer {
             text-align: center;
             margin-top: 1.5rem;
-        }
-
-        .form-footer a {
-            color: #777;
-            text-decoration: none;
             font-size: 0.9rem;
-        }
-
-        .form-footer a:hover {
-            color: var(--primary-red);
-            text-decoration: underline;
+            color: #777;
         }
         
         /* Responsive */
@@ -161,7 +152,7 @@
                 <!-- Kolom Tengah (Form Login) -->
                 <div class="col-md-8 middle-section">
                     <div class="login-form">
-                        <h2>Selamat Datang di<br>Nama Aplikasi</h2>
+                        <h2>Selamat Datang di<br>DOMAIN</h2>
                         
                         <!-- Form Login -->
                         <form method="POST" action="{{ route('login') }}">
@@ -190,16 +181,23 @@
                                 @enderror
                             </div>
                             
+                            <!-- Bagian Remember Me (Ingat Saya) -->
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label text-secondary" for="remember">
+                                    Ingat Saya
+                                </label>
+                            </div>
+                            
                             <button type="submit" class="btn btn-login">
                                 Masuk
                             </button>
                         </form>
 
+                        <!-- Footer dibuat kosong atau diganti teks lain jika perlu -->
                         <div class="form-footer">
-                            <a href="#">Lupa Password?</a>
-                            <!-- <p class="mt-3 mb-0">
-                                Doesn't Have an Account? 
-                            <a href="{{ url('/register') }}">Sign Up</a></p> -->
+                            <!-- <a href="#">Lupa Password?</a> -->
+                            &copy; 2023 Domain
                         </div>
                     </div>
                 </div>

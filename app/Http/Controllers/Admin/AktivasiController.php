@@ -47,7 +47,7 @@ class AktivasiController extends Controller
             // TESTING: now()->addMinute()
             // PRODUCTION: now()->addDays(365)
             // ============================================
-             $masaBerlaku = now()->addMinute();
+             $masaBerlaku = now()->addMinutes(3); 
             // $masaBerlaku = now()->addDays(365); 
 
             // 3. Catat ke Tabel Aktivasi
@@ -73,59 +73,110 @@ class AktivasiController extends Controller
     /**
      * LIST ADMIN: Daftar domain yang sudah aktif
      */
-    public function adminDaftarAktif()
+      public function adminDaftarAktif(Request $request)
     {
-        $data = Pengajuan::where('status_pengajuan', 'aktif')
-            ->with('faktur', 'aktivasi')
-            ->latest()
+        // --- 1. CHECK & UPDATE STATUS KADALUARSA (Tetap sama) ---
+        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
+            ->where('status_akt', 'aktif')
             ->get();
 
-        return view('admin.domain_terdaftar', compact('data'));
-    }
+        foreach ($expiredDomains as $aktivasi) {
+            $aktivasi->status_akt = 'kadaluarsa';
+            $aktivasi->save();
+        }
+        // -------------------------------------------------------
+
+        // --- 2. LOGIKA FILTER & AMBIL DATA ---
+        $statusFilter = $request->get('status', 'all'); // Default tampilkan 'semua'
+
+        $query = Pengajuan::with('faktur', 'aktivasi')
+            ->latest();
+
+        // Kita hanya ambil yang status pengajuannya 'aktif' (Daftar Terdaftar)
+        // Kecuali Anda ingin melihat pengajuan ditolak juga, kita fokus 'aktif' dulu.
+        $query->where('status_pengajuan', 'aktif');
+
+        // Terapkan filter berdasarkan tombol yang diklik
+        if ($statusFilter == 'aktif') {
+            $query->whereHas('aktivasi', function ($q) {
+                $q->where('status_akt', 'aktif');
+            });
+        } elseif ($statusFilter == 'kadaluarsa') {
+            $query->whereHas('aktivasi', function ($q) {
+                $q->where('status_akt', 'kadaluarsa');
+            });
+        }
+        // Jika status 'all', kita tidak perlu whereHas tambahan (tampilkan semua yang lolos filter utama)
+
+        $data = $query->get();
+
+        // --- HITUNG STATISTIK WIDGET ---
+        $totalDomain = Aktivasi::count();
+        $totalAktif = Aktivasi::where('status_akt', 'aktif')->count();
+        $totalNonaktif = Aktivasi::where('status_akt', 'nonaktif')->count();
+        $totalKadaluarsa = Aktivasi::where('status_akt', 'kadaluarsa')->count();
+        // -------------------------------
+
+return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));    }
 
     /**
      * LIST DESA: Halaman untuk melihat domain aktif & tombol perpanjang
      */
-        public function desaPerpanjang()
-{
-    $data = Pengajuan::where('id_user', auth()->id())
-        ->where('status_pengajuan', 'aktif')
-        ->with('aktivasi')
-        ->latest()
-        ->get()
-        ->map(function ($row) {
+       public function desaPerpanjang()
+    {
+        // --- TAMBAHKAN LOGIKA INI JUGA DISINI ---
+        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
+            ->where('status_akt', 'aktif')
+            ->get();
 
-            // 1. Cek Faktur Belum Bayar (Prioritas 1 di View)
-            $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
-                ->where('status', 'belum_bayar')
-                ->exists();
-
-            // 2. Cek Menunggu Faktur (Perbaikan Logika)
-            // Ambil pesan perpanjangan terakhir
-            $latestPesan = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
-                ->where('judul', 'Permintaan Perpanjangan Domain')
-                ->latest('created_at')
-                ->first();
-
-            $row->menunggu_faktur = false;
+        foreach ($expiredDomains as $aktivasi) {
+            $aktivasi->status_akt = 'kadaluarsa';
+            $aktivasi->save();
             
-            if ($latestPesan) {
-                // Cek apakah ada faktur yang dibuat SETELAH pesan terakhir dikirim
-                // Jika tidak ada faktur setelah pesan, berarti masih menunggu
-                $fakturAdaSetelahPesan = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
-                    ->where('created_at', '>=', $latestPesan->created_at)
+            $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
+            if ($pengajuan) {
+                $pengajuan->status_pengajuan = 'kadaluarsa';
+                $pengajuan->save();
+            }
+        }
+        // ---------------------------------------
+
+        $data = Pengajuan::where('id_user', auth()->id())
+            // Kita ambil semua status agar desa bisa melihat history kadaluarsanya
+            // ->where('status_pengajuan', 'aktif') 
+            ->with('aktivasi')
+            ->latest()
+            ->get()
+            ->map(function ($row) {
+                // ... (logika map yang anda punya sebelumnya tetap sama) ...
+                // 1. Cek Faktur Belum Bayar
+                $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('status', 'belum_bayar')
                     ->exists();
 
-                if (!$fakturAdaSetelahPesan) {
-                    $row->menunggu_faktur = true;
+                // 2. Cek Menunggu Faktur
+                $latestPesan = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('judul', 'Permintaan Perpanjangan Domain')
+                    ->latest('created_at')
+                    ->first();
+
+                $row->menunggu_faktur = false;
+                
+                if ($latestPesan) {
+                    $fakturAdaSetelahPesan = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                        ->where('created_at', '>=', $latestPesan->created_at)
+                        ->exists();
+
+                    if (!$fakturAdaSetelahPesan) {
+                        $row->menunggu_faktur = true;
+                    }
                 }
-            }
 
-            return $row;
-        });
+                return $row;
+            });
 
-    return view('desa.perpanjang', compact('data'));
-}
+        return view('desa.perpanjang', compact('data'));
+    }
 
     public function ajukanPerpanjang($id)
     {
