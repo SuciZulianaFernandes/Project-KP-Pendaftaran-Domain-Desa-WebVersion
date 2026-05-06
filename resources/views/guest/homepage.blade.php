@@ -214,7 +214,6 @@
                 <div class="auth-buttons d-flex align-items-center ms-3">
                     <span class="me-3"><i class="fas fa-phone"></i> +62 123 456 789</span>
                     <a href="{{ url('/login') }}" class="btn btn-outline-primary">Login</a>
-                    <a href="{{ url('/register') }}" class="btn btn-primary">Register</a>
                 </div>
             </div>
         </div>
