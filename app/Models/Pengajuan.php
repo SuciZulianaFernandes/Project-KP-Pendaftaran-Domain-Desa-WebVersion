@@ -10,52 +10,66 @@ class Pengajuan extends Model
     protected $primaryKey = 'id_pengajuan';
 
     protected $fillable = [
-    'id_user',
-    'id_pengajuan',
-    'nama_domain',
-    'status_pengajuan',
-    'catatan_umum',
-    'tgl_pengajuan',
-    'tgl_verifikasi',
+        'id_user',
+        'id_pengajuan',
+        'nama_domain',
+        'status_pengajuan',
+        'catatan_umum',
+        'tgl_pengajuan',
+        'tgl_verifikasi',
 
-    'nama_desa',
-    'telepon',
-    'faksimili',
-    'alamat',
-    'provinsi',
-    'kota_kabupaten',
-    'kecamatan',
-    'desa_kelurahan',
-    'kode_pos'
-];
+        'nama_desa',
+        'telepon',
+        'faksimili',
+        'alamat',
+        'provinsi',
+        'kota_kabupaten',
+        'kecamatan',
+        'desa_kelurahan',
+        'kode_pos',
+    ];
 
     public $timestamps = true;
 
-
     public function dokumenPersyaratan()
     {
-        return $this->hasMany(DokumenPersyaratan::class, 'id_pengajuan');
+        return $this->hasMany(
+            DokumenPersyaratan::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        );
     }
 
-    
     public function desa()
     {
         return $this->belongsTo(Desa::class, 'id_desa');
     }
 
     public function pesan()
-{
-    return $this->hasMany(Pesan::class);
-}
+    {
+        return $this->hasMany(
+            Pesan::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        );
+    }
 
-public function faktur()
-{
-    return $this->hasMany(Faktur::class, 'id_pengajuan', 'id_pengajuan');
-}
+    // TETAP hasMany supaya halaman admin web tidak error
+    public function faktur()
+    {
+        return $this->hasMany(
+            Faktur::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        );
+    }
 
-public function aktivasi()
-{
-    return $this->hasOne(Aktivasi::class, 'id_pengajuan', 'id_pengajuan');
-}
-
+    public function aktivasi()
+    {
+        return $this->hasOne(
+            Aktivasi::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        );
+    }
 }
