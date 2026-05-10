@@ -56,5 +56,6 @@ Route::prefix('admin')->group(function () {
     Route::post('/verifikasi/{id}', [AdminPengajuanController::class, 'verifikasi']);
 
     // AKTIVASI DOMAIN ADMIN
-    Route::post('/aktivasi/{id}', [AktivasiController::class, 'aktivasi']);
+    Route::post('/admin/verifikasi/{id}',[AdminPengajuanController::class, 'verifikasi']);
+    Route::post('/admin/aktivasi/proses/{id}',[AdminPengajuanController::class, 'aktivasi']);
 });

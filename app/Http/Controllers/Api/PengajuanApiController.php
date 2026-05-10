@@ -283,7 +283,7 @@ class PengajuanApiController extends Controller
                     'id_pengajuan' => $pengajuan->id_pengajuan,
                     'nama_desa' => $pengajuan->nama_desa,
                     'nama_domain' => $pengajuan->nama_domain,
-                    'no_invoice' => 'INV-' . $pengajuan->id_pengajuan,
+                    'no_invoice' => "INV/{$date}/{$random}",
                     'total' => 50000,
                     'status' => 'belum_bayar',
                     'tipe' => 'baru',

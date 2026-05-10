@@ -54,24 +54,97 @@ class PengajuanApiController extends Controller
         ]);
     }
 
-    // ================= VERIFIKASI =================
     public function verifikasi(Request $request, $id)
     {
         $pengajuan = Pengajuan::findOrFail($id);
 
-        if ($request->status == 'diproses') {
-            $pengajuan->status_pengajuan = 'diproses';
-        } else {
-            $pengajuan->status_pengajuan = 'perlu_perbaikan';
+        $status = $request->status;
+        $catatan = $request->catatan;
+
+        // update status
+        $pengajuan->status_pengajuan = $status;
+        $pengajuan->catatan_umum = $catatan;
+        $pengajuan->tgl_verifikasi = now();
+
+        $pengajuan->save();
+
+        // =========================
+        // PERLU PERBAIKAN
+        // =========================
+        if ($status == 'perlu_perbaikan') {
+
+            \App\Models\Pesan::create([
+                'id_user'       => $pengajuan->id_user,
+                'id_pengajuan'  => $pengajuan->id_pengajuan,
+                'judul'         => 'Perlu Perbaikan',
+                'isi'           => 'Pengajuan domain '
+                                    .$pengajuan->nama_domain.
+                                    '.desa.id perlu perbaikan. Catatan: '
+                                    .$catatan,
+                'role_tujuan'   => 'desa'
+            ]);
         }
 
-        $pengajuan->catatan_umum = $request->catatan;
-        $pengajuan->tgl_verifikasi = now();
-        $pengajuan->save();
+        // =========================
+        // DIPROSES
+        // AUTO BUAT FAKTUR
+        // =========================
+        if ($status == 'diproses') {
+
+            // buat faktur otomatis
+            \App\Models\Faktur::firstOrCreate(
+                [
+                    'id_pengajuan' => $pengajuan->id_pengajuan,
+                ],
+                [
+                    'nama_desa'    => $pengajuan->nama_desa,
+                    'nama_domain'  => $pengajuan->nama_domain,
+                    'no_invoice' => "INV/{$date}/{$random}",
+                    'total'        => 50000,
+                    'status'       => 'belum_bayar',
+                    'tipe'         => 'baru',
+                    'expired_at'   => now()->addDays(7),
+                ]
+            );
+
+            // notif ke user
+            \App\Models\Pesan::create([
+                'id_user'       => $pengajuan->id_user,
+                'id_pengajuan'  => $pengajuan->id_pengajuan,
+                'judul'         => 'Faktur Baru',
+                'isi'           => 'Faktur pembayaran domain '
+                                    .$pengajuan->nama_domain.
+                                    '.desa.id telah tersedia.',
+                'role_tujuan'   => 'desa'
+            ]);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Verifikasi berhasil'
         ]);
     }
+    public function aktivasi($id)
+{
+    $pengajuan = Pengajuan::findOrFail($id);
+
+    $pengajuan->status_pengajuan = 'aktif';
+    $pengajuan->save();
+
+    // kirim notifikasi
+    \App\Models\Pesan::create([
+        'id_user'       => $pengajuan->id_user,
+        'id_pengajuan'  => $pengajuan->id_pengajuan,
+        'judul'         => 'Domain Aktif',
+        'isi'           => 'Domain '
+                            .$pengajuan->nama_domain.
+                            '.desa.id telah aktif.',
+        'role_tujuan'   => 'desa'
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Domain berhasil diaktifkan'
+    ]);
+}
 }
