@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pengajuan;
 use App\Models\Faktur;
+use App\Models\Pesan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,9 @@ use Illuminate\Support\Str;
 
 class PengajuanApiController extends Controller
 {
+    // =========================
+    // CEK DOMAIN
+    // =========================
     public function checkDomain(Request $request)
     {
         $domain = strtolower($request->nama_domain);
@@ -25,6 +29,9 @@ class PengajuanApiController extends Controller
         ], 200);
     }
 
+    // =========================
+    // SUBMIT PENGAJUAN
+    // =========================
     public function submit(Request $request)
     {
         $request->validate([
@@ -51,6 +58,7 @@ class PengajuanApiController extends Controller
         DB::beginTransaction();
 
         try {
+
             $pengajuan = Pengajuan::create([
                 'id_user' => $request->id_user,
                 'nama_domain' => strtolower($request->nama_domain),
@@ -77,6 +85,7 @@ class PengajuanApiController extends Controller
             ];
 
             foreach ($files as $jenis) {
+
                 $file = $request->file($jenis);
 
                 if (!$file || !$file->isValid()) {
@@ -108,7 +117,9 @@ class PengajuanApiController extends Controller
                     'nama_domain' => $pengajuan->nama_domain,
                 ],
             ], 201);
+
         } catch (\Exception $e) {
+
             DB::rollBack();
 
             Log::error('ERROR API PENGAJUAN', [
@@ -121,58 +132,55 @@ class PengajuanApiController extends Controller
             ], 500);
         }
     }
+// DATA PENGAJUAN USER
+public function getPengajuanUser(Request $request)
+{
+    try {
 
-    public function getPengajuanUser(Request $request)
-    {
-        try {
-            $data = Pengajuan::with([
-                'dokumenPersyaratan',
-                'faktur',
-            ])
-                ->where('id_user', $request->id_user)
-                ->latest()
-                ->get();
+        $data = Pengajuan::with([
+            'dokumenPersyaratan',
 
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+            // faktur hanya muncul kalau sudah dibuat
+            'faktur' => function ($query) {
+                $query->whereNotNull('no_invoice');
+            }
+        ])
+        ->where('id_user', $request->id_user)
+        ->latest()
+        ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ], 200);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
+    // =========================
+    // RIWAYAT USER
+    // =========================
     public function riwayat(Request $request)
     {
-        try {
-            $data = Pengajuan::with([
-                'dokumenPersyaratan',
-                'faktur',
-            ])
-                ->where('id_user', $request->id_user)
-                ->latest()
-                ->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+        return $this->getPengajuanUser($request);
     }
 
+    // =========================
+    // UPDATE PENGAJUAN
+    // =========================
     public function update(Request $request, $id)
     {
-        $pengajuan = Pengajuan::with('dokumenPersyaratan')->findOrFail($id);
+        $pengajuan = Pengajuan::with('dokumenPersyaratan')
+            ->findOrFail($id);
 
         if ($pengajuan->status_pengajuan != 'perlu_perbaikan') {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Pengajuan tidak bisa diedit',
@@ -182,6 +190,7 @@ class PengajuanApiController extends Controller
         DB::beginTransaction();
 
         try {
+
             $pengajuan->update([
                 'nama_domain' => strtolower($request->nama_domain),
                 'nama_desa' => $request->nama_desa,
@@ -193,6 +202,7 @@ class PengajuanApiController extends Controller
                 'kecamatan' => $request->kecamatan,
                 'desa_kelurahan' => $request->desa_kelurahan,
                 'kode_pos' => $request->kode_pos,
+
                 'status_pengajuan' => 'ditinjau',
                 'catatan_umum' => null,
                 'tgl_verifikasi' => null,
@@ -207,7 +217,9 @@ class PengajuanApiController extends Controller
             ];
 
             foreach ($files as $jenis) {
+
                 if ($request->hasFile($jenis)) {
+
                     $file = $request->file($jenis);
 
                     if (!$file || !$file->isValid()) {
@@ -231,11 +243,14 @@ class PengajuanApiController extends Controller
                     );
 
                     if ($dokumen) {
+
                         $dokumen->update([
                             'nama_file' => $filename,
                             'path_file' => $path,
                         ]);
+
                     } else {
+
                         $pengajuan->dokumenPersyaratan()->create([
                             'jenis_dokumen' => $jenis,
                             'nama_file' => $filename,
@@ -251,7 +266,9 @@ class PengajuanApiController extends Controller
                 'success' => true,
                 'message' => 'Pengajuan berhasil diperbarui',
             ], 200);
+
         } catch (\Exception $e) {
+
             DB::rollBack();
 
             Log::error('ERROR UPDATE API PENGAJUAN', [
@@ -265,6 +282,61 @@ class PengajuanApiController extends Controller
         }
     }
 
+    // =========================
+    // LANJUTKAN PEMBAYARAN
+    // =========================
+    public function lanjutkanPembayaran($id)
+    {
+        try {
+
+            $pengajuan = Pengajuan::findOrFail($id);
+
+            $date = now()->format('Ymd');
+            $random = strtoupper(substr(md5(uniqid()), 0, 5));
+
+            $faktur = Faktur::firstOrCreate(
+                [
+                    'id_pengajuan' => $pengajuan->id_pengajuan,
+                ],
+                [
+                    'nama_desa'    => $pengajuan->nama_desa,
+                    'nama_domain'  => $pengajuan->nama_domain,
+                    'no_invoice'   => "INV/{$date}/{$random}",
+                    'total'        => 50000,
+                    'status'       => 'belum_bayar',
+                    'tipe'         => 'baru',
+                    'expired_at'   => now()->addDays(7),
+                ]
+            );
+
+            Pesan::create([
+                'id_user'       => $pengajuan->id_user,
+                'id_pengajuan'  => $pengajuan->id_pengajuan,
+                'judul'         => 'Faktur Baru',
+                'isi'           => 'Invoice pembayaran domain ' .
+                                    $pengajuan->nama_domain .
+                                    '.desa.id telah tersedia.',
+                'role_tujuan'   => 'desa'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Faktur berhasil dibuat',
+                'data' => $faktur
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // =========================
+    // UPLOAD BUKTI PEMBAYARAN
+    // =========================
     public function uploadBuktiPembayaran(Request $request, $id)
     {
         $request->validate([
@@ -274,20 +346,28 @@ class PengajuanApiController extends Controller
         DB::beginTransaction();
 
         try {
+
             $pengajuan = Pengajuan::findOrFail($id);
 
-            $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)->first();
+            $faktur = Faktur::where(
+                'id_pengajuan',
+                $pengajuan->id_pengajuan
+            )->first();
 
             if (!$faktur) {
+
+                $date = now()->format('Ymd');
+                $random = strtoupper(substr(md5(uniqid()), 0, 5));
+
                 $faktur = Faktur::create([
                     'id_pengajuan' => $pengajuan->id_pengajuan,
-                    'nama_desa' => $pengajuan->nama_desa,
-                    'nama_domain' => $pengajuan->nama_domain,
-                    'no_invoice' => "INV/{$date}/{$random}",
-                    'total' => 50000,
-                    'status' => 'belum_bayar',
-                    'tipe' => 'baru',
-                    'expired_at' => now()->addDays(7),
+                    'nama_desa'    => $pengajuan->nama_desa,
+                    'nama_domain'  => $pengajuan->nama_domain,
+                    'no_invoice'   => "INV/{$date}/{$random}",
+                    'total'        => 50000,
+                    'status'       => 'belum_bayar',
+                    'tipe'         => 'baru',
+                    'expired_at'   => now()->addDays(7),
                 ]);
             }
 
@@ -298,7 +378,8 @@ class PengajuanApiController extends Controller
             }
 
             if ($faktur->bukti_pembayaran_path) {
-                Storage::disk('public')->delete($faktur->bukti_pembayaran_path);
+                Storage::disk('public')
+                    ->delete($faktur->bukti_pembayaran_path);
             }
 
             $extension = $file->getClientOriginalExtension();
@@ -333,7 +414,9 @@ class PengajuanApiController extends Controller
                 'message' => 'Bukti pembayaran berhasil dikirim',
                 'data' => $faktur,
             ], 200);
+
         } catch (\Exception $e) {
+
             DB::rollBack();
 
             Log::error('ERROR UPLOAD BUKTI PEMBAYARAN', [
