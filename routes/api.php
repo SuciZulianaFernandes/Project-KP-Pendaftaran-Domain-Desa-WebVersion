@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PengajuanApiController as UserPengajuanController;
 use App\Http\Controllers\Api\PesanControllerApi;
+use App\Http\Controllers\Api\DomainTerdaftarController;
+
 
 use App\Http\Controllers\Admin\PengajuanApiController as AdminPengajuanController;
 
@@ -53,13 +55,17 @@ Route::middleware('auth:sanctum')->group(function () {
             [UserPengajuanController::class, 'uploadBuktiPembayaran']);
 
         Route::post('/{id}/lanjutkan-pembayaran',
-            [UserPengajuanController::class, 'lanjutkanPembayaran']);
-    });
+            [UserPengajuanController::class, 'lanjutkanPembayaran']);});
 
     // ================= NOTIFIKASI =================
     Route::get('/notifikasi',
         [PesanControllerApi::class, 'index']);
-});
+
+    });
+Route::get(
+    '/domain-terdaftar',
+    [DomainTerdaftarController::class, 'index']
+);
 
 
 // ================= ADMIN =================
