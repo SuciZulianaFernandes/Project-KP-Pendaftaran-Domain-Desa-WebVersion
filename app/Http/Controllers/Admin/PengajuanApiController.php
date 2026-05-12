@@ -275,4 +275,79 @@ class PengajuanApiController extends Controller
             ], 500);
         }
     }
+    public function fakturMobile()
+{
+    $data = Faktur::with('pengajuan')
+        ->latest()
+        ->get();
+
+    return response()->json([
+
+        'success' => true,
+
+        'data' => $data->map(function ($item) {
+
+            return [
+
+                'id' => $item->id,
+
+                'no_invoice' =>
+                    $item->no_invoice,
+
+                'nama_desa' =>
+                    $item->pengajuan->nama_desa ?? '-',
+
+                'nama_domain' =>
+                    $item->pengajuan->nama_domain ?? '-',
+
+                'status' =>
+                    $item->status,
+
+                'tipe' =>
+                    $item->tipe,
+
+                'tanggal_konfirmasi' =>
+                    optional($item->tanggal_konfirmasi)
+                        ?->format('Y-m-d'),
+            ];
+        })
+    ]);
+}
+public function detailFakturMobile($id)
+{
+    $item = Faktur::with('pengajuan')
+        ->findOrFail($id);
+
+    return response()->json([
+
+        'success' => true,
+
+        'data' => [
+
+            'id' => $item->id,
+
+            'no_invoice' => $item->no_invoice,
+
+            'nama_desa' =>
+                $item->pengajuan->nama_desa ?? '-',
+
+            'nama_domain' =>
+                $item->pengajuan->nama_domain ?? '-',
+
+            'status' => $item->status,
+
+            'tipe' => $item->tipe,
+
+            'tanggal_konfirmasi' =>
+                optional($item->tanggal_konfirmasi)
+                    ?->format('Y-m-d'),
+
+            'bukti_pembayaran' =>
+                $item->bukti_pembayaran_path
+                    ? asset('storage/' . $item->bukti_pembayaran_path)
+                    : null,
+        ]
+    ]);
+}
+    
 }

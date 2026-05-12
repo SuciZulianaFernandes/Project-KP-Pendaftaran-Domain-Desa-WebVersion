@@ -340,7 +340,7 @@ public function getPengajuanUser(Request $request)
     public function uploadBuktiPembayaran(Request $request, $id)
     {
         $request->validate([
-            'bukti_pembayaran' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'bukti_pembayaran' => 'required|file|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         DB::beginTransaction();
@@ -394,7 +394,7 @@ public function getPengajuanUser(Request $request)
                 $extension;
 
             $path = $file->storeAs(
-                'faktur/bukti_pembayaran',
+                'bukti_pembayaran',
                 $filename,
                 'public'
             );

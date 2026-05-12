@@ -55,18 +55,14 @@ Route::middleware('auth:sanctum')->group(function () {
             [UserPengajuanController::class, 'uploadBuktiPembayaran']);
 
         Route::post('/{id}/lanjutkan-pembayaran',
-            [UserPengajuanController::class, 'lanjutkanPembayaran']);});
+            [UserPengajuanController::class, 'lanjutkanPembayaran']);
+    });
 
     // ================= NOTIFIKASI =================
-    Route::get('/notifikasi',
-        [PesanControllerApi::class, 'index']);
-
+    Route::get('/notifikasi',[PesanControllerApi::class, 'index']);
+        
+    Route::get('/domain-terdaftar', [DomainTerdaftarController::class, 'index']);
     });
-Route::get(
-    '/domain-terdaftar',
-    [DomainTerdaftarController::class, 'index']
-);
-
 
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
@@ -88,4 +84,10 @@ Route::prefix('admin')->group(function () {
 
     Route::post('/aktivasi/proses/{id}',
         [AdminPengajuanController::class, 'aktivasi']);
+
+    Route::get('/faktur',[AdminPengajuanController::class, 'fakturMobile']);
+
+    Route::get('/faktur/{id}',[AdminPengajuanController::class, 'detailFakturMobile']);
+
+
 });
