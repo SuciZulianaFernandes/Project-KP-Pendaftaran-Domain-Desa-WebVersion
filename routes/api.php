@@ -17,6 +17,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 
+Route::get('/domain-terdaftar', [DomainTerdaftarController::class, 'index']);
 // ================= ROUTE LOGIN =================
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -60,9 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ================= NOTIFIKASI =================
     Route::get('/notifikasi',[PesanControllerApi::class, 'index']);
-        
-    Route::get('/domain-terdaftar', [DomainTerdaftarController::class, 'index']);
-    });
+ });
 
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
