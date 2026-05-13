@@ -5,57 +5,88 @@ use Illuminate\Http\Request;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PengajuanApiController as UserPengajuanController;
+use App\Http\Controllers\Api\PesanControllerApi;
+use App\Http\Controllers\Api\DomainTerdaftarController;
+
 
 use App\Http\Controllers\Admin\PengajuanApiController as AdminPengajuanController;
-use App\Http\Controllers\Admin\AktivasiController;
+
 
 // ================= AUTH =================
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
-Route::post('/profile', [AuthController::class, 'profile']);
-Route::post('/profile/update', [AuthController::class, 'updateProfile']);
 
-Route::post('/instansi', [AuthController::class, 'instansi']);
-Route::post('/instansi/update', [AuthController::class, 'updateInstansi']);
+Route::get('/domain-terdaftar', [DomainTerdaftarController::class, 'index']);
+// ================= ROUTE LOGIN =================
+Route::middleware('auth:sanctum')->group(function () {
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+    // PROFILE
+    Route::post('/profile', [AuthController::class, 'profile']);
+    Route::post('/profile/update', [AuthController::class, 'updateProfile']);
 
-// ================= USER / DESA =================
-Route::prefix('pengajuan')->group(function () {
-    // CEK DOMAIN
-    Route::post('/check-domain', [UserPengajuanController::class, 'checkDomain']);
+    // INSTANSI
+    Route::post('/instansi', [AuthController::class, 'instansi']);
+    Route::post('/instansi/update', [AuthController::class, 'updateInstansi']);
 
-    // SUBMIT PENGAJUAN BARU
-    Route::post('/submit', [UserPengajuanController::class, 'submit']);
+    // USER LOGIN
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 
-    // DATA PENGAJUAN USER UNTUK VERIFIKASI DOKUMEN MOBILE
-    Route::post('/user', [UserPengajuanController::class, 'getPengajuanUser']);
+    // ================= USER / DESA =================
+    Route::prefix('pengajuan')->group(function () {
 
-    // OPSIONAL UNTUK HALAMAN LAMA
-    Route::post('/riwayat', [UserPengajuanController::class, 'getPengajuanUser']);
+        Route::post('/check-domain',
+            [UserPengajuanController::class, 'checkDomain']);
 
-    // UPDATE PENGAJUAN SAAT STATUS PERLU PERBAIKAN
-    Route::post('/update/{id}', [UserPengajuanController::class, 'update']);
+        Route::post('/submit',
+            [UserPengajuanController::class, 'submit']);
 
-    // UPLOAD BUKTI PEMBAYARAN KE TABEL FAKTURS
-    Route::post('/bukti-pembayaran/{id}', [UserPengajuanController::class, 'uploadBuktiPembayaran']);
-});
+        Route::post('/user',
+            [UserPengajuanController::class, 'getPengajuanUser']);
+
+        Route::post('/riwayat',
+            [UserPengajuanController::class, 'getPengajuanUser']);
+
+        Route::post('/update/{id}',
+            [UserPengajuanController::class, 'update']);
+
+        Route::post('/bukti-pembayaran/{id}',
+            [UserPengajuanController::class, 'uploadBuktiPembayaran']);
+
+        Route::post('/{id}/lanjutkan-pembayaran',
+            [UserPengajuanController::class, 'lanjutkanPembayaran']);
+    });
+
+    // ================= NOTIFIKASI =================
+    Route::get('/notifikasi',[PesanControllerApi::class, 'index']);
+ });
 
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
-    // LIST PENGAJUAN ADMIN
-    Route::get('/pengajuan', [AdminPengajuanController::class, 'index']);
 
-    // DETAIL PENGAJUAN ADMIN
-    Route::get('/pengajuan/{id}', [AdminPengajuanController::class, 'show']);
+    Route::get('/pengajuan',
+        [AdminPengajuanController::class, 'index']);
 
-    // VERIFIKASI DOKUMEN ADMIN
-    Route::post('/verifikasi/{id}', [AdminPengajuanController::class, 'verifikasi']);
+    Route::get('/pengajuan/{id}',
+        [AdminPengajuanController::class, 'show']);
 
-    // AKTIVASI DOMAIN ADMIN
-    Route::post('/admin/verifikasi/{id}',[AdminPengajuanController::class, 'verifikasi']);
-    Route::post('/admin/aktivasi/proses/{id}',[AdminPengajuanController::class, 'aktivasi']);
+    Route::post('/verifikasi/{id}',
+        [AdminPengajuanController::class, 'verifikasi']);
+
+    Route::get('/pembayaran',
+        [AdminPengajuanController::class, 'pembayaran']);
+
+    Route::post('/verifikasi-pembayaran/{id}',
+        [AdminPengajuanController::class, 'verifikasiPembayaran']);
+
+    Route::post('/aktivasi/proses/{id}',
+        [AdminPengajuanController::class, 'aktivasi']);
+
+    Route::get('/faktur',[AdminPengajuanController::class, 'fakturMobile']);
+
+    Route::get('/faktur/{id}',[AdminPengajuanController::class, 'detailFakturMobile']);
+
+
 });
