@@ -26,14 +26,31 @@ aside{ overflow-y:auto; }
 
 </head>
 
-<body class="bg-slate-50 text-slate-800" x-data="{ sidebarOpen:false }">
+<!-- 
+  LOGIC RESPONSIVE:
+  - sidebarOpen: true pada Desktop (lebar >= 1024px), false pada Mobile.
+  - Menggunakan window.innerWidth agar sesuai saat load pertama.
+-->
+<body class="bg-slate-50 text-slate-800" x-data="{ sidebarOpen: window.innerWidth >= 1024 }" x-cloak>
 
 <div class="flex h-screen overflow-hidden">
 
+<!-- OVERLAY (Hanya muncul di Mobile saat sidebar terbuka) -->
+<div x-cloak x-show="sidebarOpen" x-transition.opacity 
+     class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+     @click="sidebarOpen = false">
+</div>
+
 <!-- SIDEBAR -->
+<!-- 
+  Logika:
+  - Default: -translate-x-full (Sembunyi)
+  - Desktop (lg:): Defaultnya terbuka, tapi kita kontrol via Alpine variable agar bisa ditutup.
+  - x-class: Mengatur posisi berdasarkan state sidebarOpen.
+-->
 <aside 
-:class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-class="fixed inset-y-0 left-0 z-40 w-72 bg-red-900 text-white transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+:class="sidebarOpen ? 'translate-x-0' : ''"
+class="fixed inset-y-0 left-0 z-40 w-72 bg-red-900 text-white transition-transform duration-300 ease-in-out flex flex-col shadow-2xl -translate-x-full">
 
 <div class="p-8 border-b border-red-800">
 <span class="text-xl font-bold tracking-widest uppercase">DISKOMINFO</span>
@@ -48,7 +65,6 @@ class="fixed inset-y-0 left-0 z-40 w-72 bg-red-900 text-white transition-transfo
 </a>
 
 <p class="text-red-200 uppercase text-xs tracking-wider mt-6 mb-2">Domain</p>
-
 <div class="domain-dropdown">
 <button id="domainDropdownBtn" class="flex items-center justify-between w-full gap-3 p-2 rounded hover:bg-red-700 transition {{ request()->is('desa/pengajuan*') ? 'bg-red-700' : '' }}">
 <div class="flex items-center gap-3">
@@ -106,22 +122,30 @@ class="fixed inset-y-0 left-0 z-40 w-72 bg-red-900 text-white transition-transfo
 
 </aside>
 
-<!-- MAIN -->
-<div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+<!-- MAIN WRAPPER -->
+<!-- 
+  Logika Margin:
+  - Mobile: Tidak ada margin (sidebar menimpa).
+  - Desktop (lg:): Ada margin 72 (w-72) jika sidebarOpen, dan 0 jika sidebar tertutup.
+  - transition-all: Agar halaman bergeser halus saat tombol ditekan.
+-->
+<div class="flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300"
+     :class="sidebarOpen ? 'lg:ml-72' : 'lg:ml-0'">
 
 <!-- HEADER -->
-<header class="bg-white shadow-sm px-6 py-4 relative">
+<!-- Menggunakan flex items-center agar posisi hamburger dan title rapi -->
+<header class="bg-white shadow-sm px-6 py-4 flex items-center relative z-20">
 
-<!-- HAMBURGER FIXED -->
+<!-- HAMBURGER (Selalu muncul di latar putih) -->
 <button 
 @click="sidebarOpen = !sidebarOpen"
-class="fixed top-4 left-4 z-[999] text-xl":class="sidebarOpen ? 'text-white' : 'text-gray-600'">
-<i class="fas fa-bars"></i>
+class="text-gray-600 hover:text-red-600 focus:outline-none transition-colors duration-200">
+<i class="fas fa-bars text-xl"></i>
 </button>
 
-<!-- TITLE CENTER -->
-<div class="flex justify-center">
-<div class="flex space-x-1 border-b border-gray-200">
+<!-- TITLE CENTER (Flex grow untuk menengahkan teks) -->
+<div class="flex-1 text-center pr-10"> <!-- pr-10 untuk kompensasi lebar hamburger agar text benar-benar tengah -->
+<div class="inline-flex space-x-1 border-b border-gray-200">
 <button class="px-4 py-2 text-sm font-medium text-red-600 border-b-2 border-red-600">
 Dashboard
 </button>
@@ -149,10 +173,12 @@ const btn = document.getElementById('domainDropdownBtn');
 const dropdown = document.getElementById('domainDropdown');
 const arrow = document.getElementById('domainArrow');
 
-btn.addEventListener('click', function() {
-dropdown.classList.toggle('show');
-arrow.classList.toggle('rotate');
-});
+if(btn){
+    btn.addEventListener('click', function() {
+        dropdown.classList.toggle('show');
+        arrow.classList.toggle('rotate');
+    });
+}
 });
 </script>
 

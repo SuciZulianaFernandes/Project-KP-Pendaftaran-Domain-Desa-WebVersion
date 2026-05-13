@@ -51,8 +51,9 @@
             <table class="inv-table" id="invTable">
                 <thead>
                     <tr>
-                        {{-- Headers diberi class 'sortable' dan data-type --}}
-                        <th data-type="number" class="sortable">ID <i class="sort-icon"></i></th>
+                        {{-- Kolom No (Non-sortable) --}}
+                        <th>No</th>
+                        
                         <th data-type="string" class="sortable">Username <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Nama Lengkap <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Email <i class="sort-icon"></i></th>
@@ -62,9 +63,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($users as $i => $user)
-                        <tr data-role="{{ $user->role }}" style="animation-delay:{{$i*0.05}}s">
-                            <td><span class="inv-id">#{{ $user->id_user }}</span></td>
+                    @forelse($users as $indexUser => $user)
+                        <tr data-role="{{ $user->role }}" style="animation-delay:{{$indexUser*0.05}}s">
+                            
+                            {{-- Nomor Urut --}}
+                            <td>{{ $users->firstItem() + $indexUser }}</td>
+                            
                             <td style="font-weight:500;color:#334155">{{ $user->username }}</td>
                             <td>{{ $user->name }}</td>
                             <td><span class="inv-date" style="font-style:italic">{{ $user->email }}</span></td>
@@ -146,6 +150,7 @@ document.addEventListener('DOMContentLoaded',function(){
             // Ambil tipe data (number/string) dari atribut th
             const type = header.dataset.type;
             const icon = header.querySelector('.sort-icon');
+            // colIndex dikurangi 1 karena kolom pertama (No) tidak sortable
             const colIndex = Array.from(header.parentNode.children).indexOf(header);
 
             // 1. Reset icon di header lain
@@ -166,20 +171,19 @@ document.addEventListener('DOMContentLoaded',function(){
                 let aVal = a.cells[colIndex].textContent.trim();
                 let bVal = b.cells[colIndex].textContent.trim();
 
-                // Khusus untuk kolom ID (Hapus tanda # dan jadikan angka)
+                // Sorting String biasa (abaikan huruf besar/kecil)
+                // Catatan: Tipe 'number' hanya tersedia jika ditambahkan di atribut th.
+                // Untuk kolom No, sorting dinonaktifkan.
                 if (type === 'number') {
-                    // Hapus karakter non-angka (khususnya '#')
-                    aVal = parseInt(aVal.replace(/\D/g, ''), 10);
-                    bVal = parseInt(bVal.replace(/\D/g, ''), 10);
-                    return isAsc ? aVal - bVal : bVal - aVal;
+                     aVal = parseInt(aVal.replace(/\D/g, ''), 10);
+                     bVal = parseInt(bVal.replace(/\D/g, ''), 10);
+                     return isAsc ? aVal - bVal : bVal - aVal;
                 }
 
-                // Sorting String biasa (abaikan huruf besar/kecil)
                 return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             });
 
             // 6. Re-append baris yang sudah terurut ke tabel
-            // Ini membuat animasi "langsung terurut"
             allRows.forEach(row => tbody.appendChild(row));
         });
     });

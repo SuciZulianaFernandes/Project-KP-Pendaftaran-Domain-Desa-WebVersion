@@ -154,7 +154,7 @@
 
             <div class="flex items-center gap-6 mb-4">
                 <label>
-                    <input type="radio" name="status" value="diproses" id="diproses"> Disetujui
+                    <input type="radio" name="status" value="diproses" id="diproses"> Diproses
                 </label>
 
                 <label>

@@ -2,6 +2,7 @@
 @section('title', 'Daftar Domain Terdaftar')
 
 @section('content')
+
 @include('components.inv-styles')
 
 <!-- WIDGET STATISTIK (Disesuaikan dengan tema minimalis) -->
@@ -98,7 +99,8 @@
                 <tbody>
                     @forelse($data as $i => $row)
                     <tr data-status="{{ $row->aktivasi->status_akt ?? '' }}" style="animation-delay:{{$i*0.05}}s">
-                        <td>{{ $i+1 }}</td>
+                        {{-- DIUBAH: Menambahkan firstItem() agar nomor berlanjut --}}
+                        <td>{{ $data->firstItem() + $i }}</td>
                         <td><span class="inv-date">{{ $row->nama_desa }}</span></td>
                         <td><span class="inv-id">{{ $row->nama_domain }}.desa.id</span></td>
                         <td><span class="inv-date">{{ $row->aktivasi ? $row->aktivasi->tgl_aktivasi->format('d/m/Y') : '-' }}</span></td>
@@ -136,6 +138,9 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- DITAMBAHKAN: PAGINATION --}}
+        @include('components.inv-pagination', ['paginator' => $data])
     </div>
 </div>
 

@@ -1,72 +1,193 @@
 @extends('layouts.desa')
+
 @section('title', 'Daftar Pengajuan Verifikasi Dokumen')
 
 @section('content')
-<div class="bg-white rounded-xl shadow p-6">
 
-    <h2 class="text-xl font-bold mb-4">Daftar Pengajuan Domain</h2>
+@include('components.inv-styles')
 
-    <table class="w-full text-sm text-left">
-        <thead class="bg-gray-100">
-            <tr>
-                <th class="p-3">No</th>
-                <th>Nama Domain</th>
-                <th>Tanggal Pengajuan</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-        @forelse($data as $i => $row)
-            <tr class="border-b">
-                <td class="p-3">{{ $i+1 }}</td>
-                <td>{{ $row->nama_domain }}.desa.id</td>
-                <td>{{ $row->tgl_pengajuan }}</td>
-                <td>
-                    @if($row->status_pengajuan == 'ditinjau')
-                        <span class="bg-yellow-500 text-white px-3 py-1 rounded-full">Ditinjau</span>
-                    @elseif($row->status_pengajuan == 'perlu_perbaikan')
-                        <span class="bg-red-500 text-white px-3 py-1 rounded-full">Perlu Perbaikan</span>
-                    @elseif($row->status_pengajuan == 'diproses')
-                        <!-- Ubah warna jadi Biru agar beda sama Aktif -->
-                        <span class="bg-blue-500 text-white px-3 py-1 rounded-full">Diproses</span>
-                    @elseif($row->status_pengajuan == 'menunggu_aktivasi')
-                        <!-- TAMBAHKAN INI: Status menunggu aktivasi -->
-                        <span class="bg-orange-500 text-white px-3 py-1 rounded-full">Menunggu Aktivasi</span>
-                    @elseif($row->status_pengajuan == 'aktif')
-                        <!-- TAMBAHKAN INI: Status aktif -->
-                        <span class="bg-green-600 text-white px-3 py-1 rounded-full">Aktif</span>
-                    @else
-                        <span class="bg-gray-500 text-white px-3 py-1 rounded-full">Draft</span>
-                    @endif
-                </td>
-                <td class="flex gap-2">
+<div class="container-fluid" style="padding:0 24px;max-width:1400px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div>
+            <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">Daftar Pengajuan Domain</h1>
+            <p style="font-size:14px;color:#64748b;margin:4px 0 0">Kelola dan verifikasi status domain desa</p>
+        </div>
+    </div>
 
-                    <!-- DETAIL -->
-                   <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}"
-                       class="bg-blue-500 text-white px-3 py-1 rounded">
-                        Lihat
-                    </a>
+    <div class="inv-card">
+        @if(session('success'))
+            <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert inv-alert inv-alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-                    <!-- HAPUS -->
-                    <form action="{{ route('desa.verifikasi.destroy', $row->id_pengajuan) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button class="bg-red-500 text-white px-3 py-1 rounded"
-                            onclick="return confirm('Yakin hapus?')">
-                            Hapus
-                        </button>
-                    </form>
+        {{-- Search & Filter --}}
+        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
+            <div style="position:relative;flex:1">
+                <input type="text" id="invSearch" placeholder="Cari berdasarkan nama domain..." 
+                    style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
+                <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+            </div>
+            <div style="width: 180px;">
+                <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
+                    <option value="">Semua Status</option>
+                    <option value="ditinjau">Ditinjau</option>
+                    <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                    <option value="diproses">Diproses</option>
+                    <option value="menunggu_aktivasi">Menunggu Aktivasi</option>
+                    <option value="aktif">Aktif</option>
+                </select>
+            </div>
+        </div>
 
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="5" class="text-center p-4">Belum ada pengajuan</td>
-            </tr>
-        @endforelse
-        </tbody>
-    </table>
+        <div style="overflow-x:auto">
+            <table class="inv-table" id="invTable">
+                <thead>
+                    <tr>
+                        {{-- Kolom No (Non-sortable) --}}
+                        <th>No</th>
+                        
+                        <th data-type="string" class="sortable">Nama Domain <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Tanggal Pengajuan <i class="sort-icon"></i></th>
+                        <th data-type="string" class="sortable">Status <i class="sort-icon"></i></th>
+                        <th style="text-align:center; cursor: default;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($data as $indexVerifikasi => $row)
+                        <tr data-status="{{ $row->status_pengajuan }}" style="animation-delay:{{$indexVerifikasi*0.05}}s">
+                            
+                            <td>{{ method_exists($data, 'firstItem') ? $data->firstItem() + $indexVerifikasi : $indexVerifikasi + 1 }}</td>
+                            
+                            <td style="font-weight:500;color:#334155">{{ $row->nama_domain }}.desa.id</td>
+                            
+                            <td><span class="inv-date">{{ $row->tgl_pengajuan }}</span></td>
+                            
+                            <td>
+                                @if($row->status_pengajuan == 'ditinjau')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                        Ditinjau
+                                    </span>
+                                @elseif($row->status_pengajuan == 'perlu_perbaikan')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                                        Perlu Perbaikan
+                                    </span>
+                                @elseif($row->status_pengajuan == 'diproses')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                                        Diproses
+                                    </span>
+                                @elseif($row->status_pengajuan == 'menunggu_aktivasi')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200">
+                                        Menunggu Aktivasi
+                                    </span>
+                                @elseif($row->status_pengajuan == 'aktif')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+                                        Aktif
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                        Draft
+                                    </span>
+                                @endif
+                            </td>
 
+                            <td style="text-align:center">
+                                <div style="display:flex;justify-content:center;gap:8px;">
+                                    <!-- DETAIL (Icon) -->
+                                    <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
+                                        <i class="fas fa-eye"></i>
+                                    </a>    
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr class="inv-empty"><td colspan="5"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @include('components.inv-pagination', ['paginator' => $data])
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+    // --- LOGIC SEARCH & FILTER (Adapted for Verifikasi) ---
+    var s=document.getElementById('invSearch'),
+        f=document.getElementById('invFilter'),
+        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
+        empty=document.querySelector('.inv-empty');
+
+    function filter(){
+        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
+        rows.forEach(function(r){
+            var textMatch = (!q || r.textContent.toLowerCase().includes(q));
+            // Menggunakan data-status untuk filter
+            var statusMatch = (!v || r.dataset.status === v);
+            var show = textMatch && statusMatch;
+            r.style.display=show?'':'none';
+            if(show)n++;
+        });
+        if(empty)empty.style.display=n?'none':'';
+    }
+    if(s) s.addEventListener('input',filter);
+    if(f) f.addEventListener('change',filter);
+
+    // --- LOGIC SORTING (New: Client Side Instant Sort) ---
+    const sortHeaders = document.querySelectorAll('th.sortable');
+    
+    sortHeaders.forEach(header => {
+        header.style.cursor = 'pointer';
+        
+        // Tambahkan hover effect sederhana
+        header.addEventListener('mouseenter', () => header.style.backgroundColor = '#f8fafc');
+        header.addEventListener('mouseleave', () => header.style.backgroundColor = '');
+
+        header.addEventListener('click', () => {
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            const allRows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Ambil tipe data (number/string) dari atribut th
+            const type = header.dataset.type;
+            const icon = header.querySelector('.sort-icon');
+            // colIndex dikurangi 1 karena kolom pertama (No) tidak sortable
+            const colIndex = Array.from(header.parentNode.children).indexOf(header);
+
+            // 1. Reset icon di header lain
+            document.querySelectorAll('th.sortable .sort-icon').forEach(i => i.textContent = '');
+            
+            // 2. Tentukan arah urutan (toggle asc/desc)
+            let isAsc = !header.classList.contains('asc');
+            
+            // 3. Reset kelas di semua header
+            sortHeaders.forEach(h => h.classList.remove('asc', 'desc'));
+            
+            // 4. Set state ke header yang diklik
+            header.classList.add(isAsc ? 'asc' : 'desc');
+            icon.textContent = isAsc ? ' ▲' : ' ▼';
+
+            // 5. Proses Sorting
+            allRows.sort((a, b) => {
+                let aVal = a.cells[colIndex].textContent.trim();
+                let bVal = b.cells[colIndex].textContent.trim();
+
+                // Sorting String biasa (abaikan huruf besar/kecil)
+                return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+
+            // 6. Re-append baris yang sudah terurut ke tabel
+            allRows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
+</script>
 @endsection
