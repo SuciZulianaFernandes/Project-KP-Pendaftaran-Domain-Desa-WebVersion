@@ -87,6 +87,8 @@ Route::prefix('admin')->group(function () {
     Route::get('/faktur',[AdminPengajuanController::class, 'fakturMobile']);
 
     Route::get('/faktur/{id}',[AdminPengajuanController::class, 'detailFakturMobile']);
+    Route::get('/notifikasi', [PesanControllerApi::class,'adminNotif'
+]);
 
 
 });
