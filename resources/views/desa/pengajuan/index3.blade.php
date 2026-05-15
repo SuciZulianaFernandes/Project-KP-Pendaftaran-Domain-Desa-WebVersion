@@ -63,7 +63,7 @@
 
                 <div class="mt-8 mb-4 text-sm text-gray-500">
                     <p class="font-semibold">• Wajib Diisi.</p>
-                    <p>• Semua dokumen yang diunggah harus format png, jpg, atau pdf. (Max 1024KB setiap dokumen.)</p>
+                    <p>• Semua dokumen yang diunggah harus format pdf. (Max 1024KB setiap dokumen.)</p>
                 </div>
 
                 <div class="flex justify-end mt-8 space-x-3 border-t pt-6">

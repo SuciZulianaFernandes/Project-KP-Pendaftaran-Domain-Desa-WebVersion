@@ -73,9 +73,10 @@ class AktivasiController extends Controller
     /**
      * LIST ADMIN: Daftar domain yang sudah aktif
      */
-      public function adminDaftarAktif(Request $request)
+          public function adminDaftarAktif(Request $request)
     {
-        // --- 1. CHECK & UPDATE STATUS KADALUARSA (Tetap sama) ---
+        // --- 1. UPDATE STATUS KADALUARSA ---
+        // Gunakan get() agar SEMUA data kadaluarsa terupdate, bukan cuma 10 data pertama
         $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
             ->get();
@@ -84,19 +85,14 @@ class AktivasiController extends Controller
             $aktivasi->status_akt = 'kadaluarsa';
             $aktivasi->save();
         }
-        // -------------------------------------------------------
 
-        // --- 2. LOGIKA FILTER & AMBIL DATA ---
-        $statusFilter = $request->get('status', 'all'); // Default tampilkan 'semua'
+        $statusFilter = $request->get('status', 'all');
 
+        // --- 2. QUERY DATA TABEL ---
         $query = Pengajuan::with('faktur', 'aktivasi')
-            ->latest();
+            ->latest()
+            ->where('status_pengajuan', 'aktif'); // Hanya domain yang terdaftar
 
-        // Kita hanya ambil yang status pengajuannya 'aktif' (Daftar Terdaftar)
-        // Kecuali Anda ingin melihat pengajuan ditolak juga, kita fokus 'aktif' dulu.
-        $query->where('status_pengajuan', 'aktif');
-
-        // Terapkan filter berdasarkan tombol yang diklik
         if ($statusFilter == 'aktif') {
             $query->whereHas('aktivasi', function ($q) {
                 $q->where('status_akt', 'aktif');
@@ -106,25 +102,39 @@ class AktivasiController extends Controller
                 $q->where('status_akt', 'kadaluarsa');
             });
         }
-        // Jika status 'all', kita tidak perlu whereHas tambahan (tampilkan semua yang lolos filter utama)
 
-        $data = $query->get();
+        $data = $query->latest()->paginate(10);
 
-        // --- HITUNG STATISTIK WIDGET ---
-        $totalDomain = Aktivasi::count();
-        $totalAktif = Aktivasi::where('status_akt', 'aktif')->count();
-        $totalNonaktif = Aktivasi::where('status_akt', 'nonaktif')->count();
-        $totalKadaluarsa = Aktivasi::where('status_akt', 'kadaluarsa')->count();
-        // -------------------------------
+        // --- 3. PERHITUNGAN WIDGET (DIKOREKSI) ---
+        // Kita hitung berdasarkan Pengajuan agar sesuai dengan jumlah Domain (Unik)
+        // Bukan berdasarkan jumlah baris riwayat di tabel Aktivasi
+        
+        $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
 
-return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));    }
+        // Total Domain = Semua pengajuan aktif (Menghindari duplikat riwayat perpanjangan)
+        $totalDomain = $baseQuery->count();
 
+        // Total Aktif = Pengajuan aktif yang status_aktivasi = aktif
+        $totalAktif = (clone $baseQuery)->whereHas('aktivasi', function ($q) {
+            $q->where('status_akt', 'aktif');
+        })->count();
+
+        // Total Kadaluarsa = Pengajuan aktif yang status_aktivasi = kadaluarsa
+        $totalKadaluarsa = (clone $baseQuery)->whereHas('aktivasi', function ($q) {
+            $q->where('status_akt', 'kadaluarsa');
+        })->count();
+
+        // Total Nonaktif = Sisa dari total (misal: nonaktif manual atau status lain)
+        $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
+
+        return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));
+    }
     /**
      * LIST DESA: Halaman untuk melihat domain aktif & tombol perpanjang
      */
-       public function desaPerpanjang()
+              public function desaPerpanjang()
     {
-        // --- TAMBAHKAN LOGIKA INI JUGA DISINI ---
+        // --- UPDATE STATUS KADALUARSA ---
         $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
             ->get();
@@ -139,16 +149,16 @@ return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDoma
                 $pengajuan->save();
             }
         }
-        // ---------------------------------------
 
         $data = Pengajuan::where('id_user', auth()->id())
-            // Kita ambil semua status agar desa bisa melihat history kadaluarsanya
-            // ->where('status_pengajuan', 'aktif') 
             ->with('aktivasi')
             ->latest()
             ->get()
             ->map(function ($row) {
-                // ... (logika map yang anda punya sebelumnya tetap sama) ...
+                // PERBAIKAN ERROR SORTBYDESC
+                // Kita ambil aktivasi TERAKHIR secara langsung menggunakan query relasi
+                $row->aktivasi_terakhir = $row->aktivasi()->latest()->first();
+
                 // 1. Cek Faktur Belum Bayar
                 $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
                     ->where('status', 'belum_bayar')
@@ -212,7 +222,7 @@ return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDoma
     $fakturs = Faktur::where('tipe', 'perpanjangan')
         ->with('pengajuan') // ambil relasi pengajuan untuk tau nama domain & desa
         ->latest()
-        ->get();
+        ->paginate(10);
 
     return view('admin.perpanjang.index', compact('fakturs'));
 }

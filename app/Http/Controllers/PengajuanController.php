@@ -201,7 +201,7 @@ public function storeDokumenForm(Request $request)
 {
     $data = Pengajuan::where('id_user', auth()->id())
         ->latest()
-        ->get();
+        ->paginate(10);
 
     return view('desa.verifikasi.daftar', compact('data'));
 }
@@ -247,11 +247,14 @@ public function updateDokumen(Request $request, $id)
     return back()->with('success', 'Dokumen berhasil diperbarui');
 }
 
-public function adminIndex()
-{
-    $data = Pengajuan::latest()->get();
-    return view('admin.pengajuan.index', compact('data'));
-}
+    public function adminIndex()
+    {
+        $data = Pengajuan::where('status_pengajuan', '!=', 'aktif')
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.pengajuan.index', compact('data'));
+    }
 
 public function adminDetail($id)
 {

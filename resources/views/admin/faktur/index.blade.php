@@ -59,7 +59,7 @@
                             <td><span class="inv-date">-</span></td>
 
                             <td style="text-align:center">
-                                <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Belum dibuat</span>
+                                <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Belum Dibuat</span>
                             </td>
 
                             <td style="text-align:center">

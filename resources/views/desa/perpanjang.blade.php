@@ -29,7 +29,7 @@
             </div>
         @endif
 
-        <!-- Search Bar (Opsional) -->
+        <!-- Search Bar -->
         <div style="margin-bottom:20px; position:relative;">
             <input type="text" id="invSearch" placeholder="Cari Nama Domain..." 
                    style="width:100%; padding:10px 15px; border:1px solid #e2e8f0; border-radius:6px; outline:none; font-size:14px;">
@@ -51,15 +51,18 @@
                 <tbody>
                     @forelse($data as $i => $row)
                         @php
-                            $kadaluarsa = ($row->aktivasi && $row->aktivasi->masa_berlaku) ? $row->aktivasi->is_kadaluarsa : false;
+                            // GUNAKAN AKTIVASI TERAKHIR
+                            $aktivasi = $row->aktivasi_terakhir;
+                            
+                            $kadaluarsa = ($aktivasi && $aktivasi->masa_berlaku) ? $aktivasi->is_kadaluarsa : false;
                             
                             $bisaPerpanjang = false;
-                            if ($row->aktivasi && $row->aktivasi->tgl_aktivasi) {
+                            if ($aktivasi && $aktivasi->tgl_aktivasi) {
                                 // TESTING: 30 detik SETELAH tanggal aktivasi
-                                $batasAwal = $row->aktivasi->tgl_aktivasi->copy()->addSeconds(30);
+                                $batasAwal = $aktivasi->tgl_aktivasi->copy()->addSeconds(30);
                                 
                                 // PRODUCTION: 60 hari SEBELUM masa berlaku habis
-                                // $batasAwal = $row->aktivasi->masa_berlaku->copy()->subDays(60);
+                                // $batasAwal = $aktivasi->masa_berlaku->copy()->subDays(60);
                                 
                                 $bisaPerpanjang = \Carbon\Carbon::now() >= $batasAwal;
                             }
@@ -68,12 +71,19 @@
                     <tr data-status="{{ $row->nama_domain }}" style="animation-delay:{{$i*0.05}}s">
                         <td>{{ $i+1 }}</td>
                         <td><span class="inv-id">{{ $row->nama_domain }}.desa.id</span></td>
-                        <td><span class="inv-date">{{ $row->aktivasi ? $row->aktivasi->tgl_aktivasi->format('d/m/Y H:i') : '-' }}</span></td>
                         
                         <td>
-                            @if($row->aktivasi && $row->aktivasi->masa_berlaku)
+                            @if($aktivasi && $aktivasi->tgl_aktivasi)
+                                <span class="inv-date">{{ $aktivasi->tgl_aktivasi->format('d/m/Y H:i') }}</span>
+                            @else
+                                <span class="inv-date">-</span>
+                            @endif
+                        </td>
+                        
+                        <td>
+                            @if($aktivasi && $aktivasi->masa_berlaku)
                                 <span class="inv-date {{ $kadaluarsa ? 'text-red-600 font-bold' : 'text-gray-700' }}">
-                                    {{ $row->aktivasi->masa_berlaku->format('d/m/Y H:i') }}
+                                    {{ $aktivasi->masa_berlaku->format('d/m/Y H:i') }}
                                 </span>
                             @else
                                 <span class="inv-date text-gray-400">-</span>
@@ -116,7 +126,6 @@
                                 {{-- PRIORITAS 3: BOLEH AJUKAN --}}
                                 <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
                                    class="inv-btn-d"
-                                   style="background:#10b981; border-color:#10b981;"
                                    onclick="return confirm('Apakah anda ingin perpanjang domain?')">
                                    <i class="fas fa-redo"></i> Ajukan Perpanjang
                                 </a>
@@ -135,9 +144,6 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination (Opsional, pakai komponen jika ada) -->
-        {{-- @include('components.inv-pagination') --}}
     </div>
 </div>
 

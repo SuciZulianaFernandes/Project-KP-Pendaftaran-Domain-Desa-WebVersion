@@ -69,15 +69,17 @@ class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-re
 <div x-show="open" x-cloak x-transition class="ml-8 mt-2 space-y-1">
 <a href="{{ url('/admin/domain_terdaftar') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-list w-5"></i>
-Daftar Domain Terdaftar
+Daftar Domain
 </a>
+
 <a href="{{ url('/admin/pengajuan') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-plus-circle w-5"></i>
 Pengajuan Domain
 </a>
+
 <a href="{{ url('/admin/perpanjang') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-check-circle w-5"></i>
-Pengajuan Perpanjang Domain
+Perpanjang Domain
 </a>
 </div>
 </div>
@@ -103,10 +105,12 @@ class="flex items-center justify-between w-full gap-3 p-3 rounded-lg hover:bg-re
 <i class="fas fa-list w-5"></i>
 Daftar User
 </a>
+
 <a href="{{ url('/admin/users/create') }}" class="flex items-center gap-3 p-2 rounded hover:bg-red-700 transition">
 <i class="fas fa-plus-circle w-5"></i>
 Tambah User
 </a>
+
 </div>
 </div>
 
