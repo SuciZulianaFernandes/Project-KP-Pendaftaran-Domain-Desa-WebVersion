@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PengajuanApiController as UserPengajuanController;
 use App\Http\Controllers\Api\PesanControllerApi;
 use App\Http\Controllers\Api\DomainTerdaftarController;
-
+use App\Http\Controllers\Api\PerpanjanganApiController;
 
 use App\Http\Controllers\Admin\PengajuanApiController as AdminPengajuanController;
 
@@ -62,6 +62,34 @@ Route::middleware('auth:sanctum')->group(function () {
     // ================= NOTIFIKASI =================
     Route::get('/notifikasi',[PesanControllerApi::class, 'index']);
  });
+    // ================= PERPANJANGAN =================
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get(
+            '/perpanjangan/domain',
+            [PerpanjanganApiController::class, 'listDomain']
+        );
+
+        Route::post(
+            '/perpanjangan/ajukan/{id}',
+            [PerpanjanganApiController::class, 'ajukan']
+        );
+
+        // ADMIN
+        Route::get(
+            '/admin/perpanjangan',
+            [PerpanjanganApiController::class, 'adminList']
+        );
+
+        Route::post(
+            '/admin/perpanjangan/faktur/{id}',
+            [PerpanjanganApiController::class, 'generateFaktur']
+        );
+
+        Route::post(
+            '/admin/perpanjangan/aktivasi/{id}',
+            [PerpanjanganApiController::class, 'aktivasi']
+        );
+    });
 
 // ================= ADMIN =================
 Route::prefix('admin')->group(function () {
