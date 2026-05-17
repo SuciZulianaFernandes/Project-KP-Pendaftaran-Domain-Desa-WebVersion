@@ -26,6 +26,18 @@ class PesanControllerApi extends Controller
             'data' => $data
         ]);
     }
+    // ================= LIST NOTIF ADMIN =================
+    public function adminNotif()
+    {
+        $data = Pesan::where('role_tujuan', 'admin')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
 
     // ================= KONFIRMASI PEMBAYARAN (USER KLIK "YA") =================
     public function konfirmasiPembayaran(Request $request, $id)
@@ -64,28 +76,27 @@ class PesanControllerApi extends Controller
             'catatan'      => 'Silakan lakukan pembayaran sebelum jatuh tempo',
         ]);
 
-        // ================= KIRIM PESAN KE USER =================
-        Pesan::create([
-            'id_user'       => $pengajuan->id_user,
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'Invoice Pembayaran',
-            'isi'           => 'Invoice telah dibuat dengan nomor ' . $faktur->no_invoice . '. Silakan lakukan pembayaran.',
-            'role_tujuan'   => 'desa'
-        ]);
+        PesanService::toUser(
+            $pengajuan->id_user,
+            $pengajuan->id_pengajuan,
+            'Invoice Pembayaran',
+            'Invoice telah dibuat dengan nomor '
+            . $faktur->no_invoice .
+            '. Silakan lakukan pembayaran.'
+        );
 
-        // ================= KIRIM PESAN KE ADMIN =================
-        Pesan::create([
-            'id_user'       => User::where('role', 'admin')->value('id_user'),
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'User Siap Bayar',
-            'isi'           => 'Desa ' . $pengajuan->nama_desa . ' siap melakukan pembayaran untuk domain ' . $pengajuan->nama_domain,
-            'role_tujuan'   => 'admin'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Faktur berhasil dibuat',
-            'data' => $faktur
-        ]);
-    }
+        PesanService::toAdmin(
+            $pengajuan->id_pengajuan,
+            'User Siap Bayar',
+            'Desa '
+            . $pengajuan->nama_desa .
+            ' siap melakukan pembayaran untuk domain '
+            . $pengajuan->nama_domain
+        );
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Faktur berhasil dibuat',
+                    'data' => $faktur
+                ]);
+            }   
 }
