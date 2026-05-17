@@ -56,7 +56,7 @@
                     <input
                         type="text"
                         id="domain-input"
-                        placeholder="Nama Domain"
+                        placeholder="Gunakan minimal 3 huruf atau angka"
                             value="{{ old('nama_domain', session('pengajuan.nama_domain')) }}" 
                         class="flex-1 px-4 py-3 focus:outline-none"
                         autocomplete="off"

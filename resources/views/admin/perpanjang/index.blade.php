@@ -126,7 +126,7 @@
                             {{-- AKSI --}}
                             <td style="text-align:center">
                                 <div style="display:flex;justify-content:center;gap:8px;">
-                                    <a href="{{ route('admin.perpanjang.show', $item->id) }}" class="inv-btn-d" title="Lihat Detail">
+                                    <a href="{{ route('admin.perpanjang.show', $item->id) }}" class="inv-btn-d" title="Lihat">
                                         <i class="fas fa-eye"></i> Detail
                                     </a>
                                 </div>

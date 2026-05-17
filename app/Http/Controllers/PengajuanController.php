@@ -200,6 +200,7 @@ public function storeDokumenForm(Request $request)
     public function daftar()
 {
     $data = Pengajuan::where('id_user', auth()->id())
+    ->where('status_pengajuan', '!=', 'aktif')
         ->latest()
         ->paginate(10);
 

@@ -34,23 +34,15 @@ class AktivasiController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. Update Status Pengajuan
             $pengajuan->status_pengajuan = 'aktif';
             $pengajuan->save();
 
-            // 2. Update Status Faktur
             $faktur->status = 'sudah_bayar';
             $faktur->save();
 
-            // ============================================
             // KONFIGURASI MASA BERLAKU
-            // TESTING: now()->addMinute()
-            // PRODUCTION: now()->addDays(365)
-            // ============================================
-             $masaBerlaku = now()->addMinutes(3); 
-            // $masaBerlaku = now()->addDays(365); 
+            $masaBerlaku = now()->addMinutes(3); 
 
-            // 3. Catat ke Tabel Aktivasi
             Aktivasi::create([
                 'id_pengajuan' => $pengajuan->id_pengajuan,
                 'status_akt'   => 'aktif',
@@ -58,25 +50,22 @@ class AktivasiController extends Controller
                 'masa_berlaku' => $masaBerlaku,
             ]);
 
-            // 4. Kirim Notifikasi
-            app(PesanController::class)->sendNotifikasiAktifasi($pengajuan->id_pengajuan);
+            if (class_exists(PesanController::class)) {
+                app(PesanController::class)->sendNotifikasiAktifasi($pengajuan->id_pengajuan);
+            }
 
             DB::commit();
             return back()->with('success', 'Domain berhasil diaktifkan selama 1 tahun.');
             
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan sistem.');
+            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 
-    /**
-     * LIST ADMIN: Daftar domain yang sudah aktif
-     */
-          public function adminDaftarAktif(Request $request)
+    public function adminDaftarAktif(Request $request)
     {
-        // --- 1. UPDATE STATUS KADALUARSA ---
-        // Gunakan get() agar SEMUA data kadaluarsa terupdate, bukan cuma 10 data pertama
+        // Update kadaluarsa otomatis
         $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
             ->get();
@@ -84,65 +73,6 @@ class AktivasiController extends Controller
         foreach ($expiredDomains as $aktivasi) {
             $aktivasi->status_akt = 'kadaluarsa';
             $aktivasi->save();
-        }
-
-        $statusFilter = $request->get('status', 'all');
-
-        // --- 2. QUERY DATA TABEL ---
-        $query = Pengajuan::with('faktur', 'aktivasi')
-            ->latest()
-            ->where('status_pengajuan', 'aktif'); // Hanya domain yang terdaftar
-
-        if ($statusFilter == 'aktif') {
-            $query->whereHas('aktivasi', function ($q) {
-                $q->where('status_akt', 'aktif');
-            });
-        } elseif ($statusFilter == 'kadaluarsa') {
-            $query->whereHas('aktivasi', function ($q) {
-                $q->where('status_akt', 'kadaluarsa');
-            });
-        }
-
-        $data = $query->latest()->paginate(10);
-
-        // --- 3. PERHITUNGAN WIDGET (DIKOREKSI) ---
-        // Kita hitung berdasarkan Pengajuan agar sesuai dengan jumlah Domain (Unik)
-        // Bukan berdasarkan jumlah baris riwayat di tabel Aktivasi
-        
-        $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
-
-        // Total Domain = Semua pengajuan aktif (Menghindari duplikat riwayat perpanjangan)
-        $totalDomain = $baseQuery->count();
-
-        // Total Aktif = Pengajuan aktif yang status_aktivasi = aktif
-        $totalAktif = (clone $baseQuery)->whereHas('aktivasi', function ($q) {
-            $q->where('status_akt', 'aktif');
-        })->count();
-
-        // Total Kadaluarsa = Pengajuan aktif yang status_aktivasi = kadaluarsa
-        $totalKadaluarsa = (clone $baseQuery)->whereHas('aktivasi', function ($q) {
-            $q->where('status_akt', 'kadaluarsa');
-        })->count();
-
-        // Total Nonaktif = Sisa dari total (misal: nonaktif manual atau status lain)
-        $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
-
-        return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));
-    }
-    /**
-     * LIST DESA: Halaman untuk melihat domain aktif & tombol perpanjang
-     */
-              public function desaPerpanjang()
-    {
-        // --- UPDATE STATUS KADALUARSA ---
-        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
-            ->where('status_akt', 'aktif')
-            ->get();
-
-        foreach ($expiredDomains as $aktivasi) {
-            $aktivasi->status_akt = 'kadaluarsa';
-            $aktivasi->save();
-            
             $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
             if ($pengajuan) {
                 $pengajuan->status_pengajuan = 'kadaluarsa';
@@ -150,94 +80,159 @@ class AktivasiController extends Controller
             }
         }
 
-        $data = Pengajuan::where('id_user', auth()->id())
-            ->with('aktivasi')
-            ->latest()
-            ->get()
-            ->map(function ($row) {
-                // PERBAIKAN ERROR SORTBYDESC
-                // Kita ambil aktivasi TERAKHIR secara langsung menggunakan query relasi
-                $row->aktivasi_terakhir = $row->aktivasi()->latest()->first();
+        $statusFilter = $request->get('status', 'all');
+        $query = Pengajuan::with('faktur', 'aktivasi')
+            ->whereIn('status_pengajuan', ['aktif', 'kadaluarsa']);
 
-                // 1. Cek Faktur Belum Bayar
-                $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
-                    ->where('status', 'belum_bayar')
+        if ($statusFilter == 'aktif') {
+            $query->whereHas('aktivasi', function ($q) { $q->where('status_akt', 'aktif'); });
+        } elseif ($statusFilter == 'kadaluarsa') {
+            $query->whereHas('aktivasi', function ($q) { $q->where('status_akt', 'kadaluarsa'); });
+        }
+
+        $data = $query->latest()->paginate(10);
+        $baseQuery = Pengajuan::whereIn('status_pengajuan', ['aktif', 'kadaluarsa']);
+        
+        $totalDomain = $baseQuery->count();
+        $totalAktif = (clone $baseQuery)->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'aktif'))->count();
+        $totalKadaluarsa = (clone $baseQuery)->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'kadaluarsa'))->count();
+        $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
+
+        return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));
+    }
+
+    /**
+     * LIST DESA: Halaman perpanjang
+     */
+    public function desaPerpanjang()
+    {
+        // Update status kadaluarsa
+        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
+            ->where('status_akt', 'aktif')
+            ->get();
+
+        foreach ($expiredDomains as $aktivasi) {
+            $aktivasi->status_akt = 'kadaluarsa';
+            $aktivasi->save();
+            $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
+            if ($pengajuan) {
+                $pengajuan->status_pengajuan = 'kadaluarsa';
+                $pengajuan->save();
+            }
+        }
+        
+        $query = Pengajuan::where('id_user', auth()->id())
+            ->with('aktivasi')
+            ->latest();
+
+        $data = $query->paginate(10);
+
+        $data->getCollection()->transform(function ($row) {
+            $row->aktivasi_terakhir = $row->aktivasi()->latest()->first();
+
+            // Cek Faktur Belum Bayar
+            $row->ada_faktur_belum_bayar = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                ->where('status', 'belum_bayar')
+                ->exists();
+
+            // Cek Status Menunggu Faktur
+            $latestPesan = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+                ->where('judul', 'Permintaan Perpanjangan Domain')
+                ->latest('created_at')
+                ->first();
+
+            $row->menunggu_faktur = false;
+            
+            if ($latestPesan) {
+                // Cek apakah ada FAKTUR PERPANJANGAN yang dibuat SETELAH pesan ini
+                $fakturAdaSetelahPesan = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
+                    ->where('tipe', 'perpanjangan') // Filter tipe perpanjangan agar akurat
+                    ->where('created_at', '>=', $latestPesan->created_at)
                     ->exists();
 
-                // 2. Cek Menunggu Faktur
-                $latestPesan = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
-                    ->where('judul', 'Permintaan Perpanjangan Domain')
-                    ->latest('created_at')
-                    ->first();
-
-                $row->menunggu_faktur = false;
-                
-                if ($latestPesan) {
-                    $fakturAdaSetelahPesan = \App\Models\Faktur::where('id_pengajuan', $row->id_pengajuan)
-                        ->where('created_at', '>=', $latestPesan->created_at)
-                        ->exists();
-
-                    if (!$fakturAdaSetelahPesan) {
-                        $row->menunggu_faktur = true;
-                    }
+                if (!$fakturAdaSetelahPesan) {
+                    $row->menunggu_faktur = true;
                 }
+            }
 
-                return $row;
-            });
+            return $row;
+        });
 
         return view('desa.perpanjang', compact('data'));
     }
 
+    /**
+     * DESA: Ajukan Perpanjang (LOGIKA DIPERBAIKI)
+     */
     public function ajukanPerpanjang($id)
     {
         $pengajuan = Pengajuan::where('id_pengajuan', $id)
             ->where('id_user', auth()->id())
             ->firstOrFail();
 
-        // Cegah spam: cek apakah pesan perpanjangan yang sama masih belum dibaca admin
-        $pesanSudahAda = Pesan::where('id_pengajuan', $id)
+        // 1. Cari pesan perpanjangan terakhir untuk domain ini
+        $latestPesan = Pesan::where('id_pengajuan', $id)
             ->where('judul', 'Permintaan Perpanjangan Domain')
-            ->where('is_read', 0)
-            ->exists();
+            ->latest()
+            ->first();
 
-        if ($pesanSudahAda) {
-            return redirect()->route('desa.perpanjang')
-                ->with('error', 'Permintaan perpanjangan sudah terkirim, silakan tunggu admin memproses.');
+        // 2. Jika ada pesan lama yang masih belum dibaca (is_read = 0)
+        if ($latestPesan && $latestPesan->is_read == 0) {
+            
+            // Cek apakah admin sudah merespons dengan membuat Faktur Perpanjangan?
+            // (Meski pesan belum diread, admin mungkin sudah membuat faktur)
+            $fakturRespons = Faktur::where('id_pengajuan', $id)
+                ->where('tipe', 'perpanjangan')
+                ->where('created_at', '>', $latestPesan->created_at)
+                ->exists();
+
+            if (!$fakturRespons) {
+                // Jika TIDAK ada faktur setelah pesan -> Admin belum merespons -> TOLAK request baru
+                return redirect()->route('desa.perpanjang')
+                    ->with('error', 'Permintaan perpanjangan sebelumnya masih diproses admin. Silakan tunggu.');
+            } else {
+                // Jika ADA faktur setelah pesan -> Admin sudah merespons.
+                // Kita anggap request lama selesai. Update status pesan lama jadi 'read' agar rapi.
+                $latestPesan->is_read = 1;
+                $latestPesan->save();
+            }
         }
 
-        // Kirim pesan ke admin
+        // 3. Jika aman (tidak ada pesan pending, atau pesan lama sudah direspon), buat pesan baru
+        $adminId = User::where('role', 'admin')->value('id_user');
+        
+        if (!$adminId) {
+            return redirect()->route('desa.perpanjang')->with('error', 'Admin tidak ditemukan.');
+        }
+
         Pesan::create([
-            'id_user'       => User::where('role', 'admin')->value('id_user'),
+            'id_user'       => $adminId,
             'id_pengajuan'  => $pengajuan->id_pengajuan,
             'judul'         => 'Permintaan Perpanjangan Domain',
-            'isi'           => 'Desa ' . $pengajuan->nama_desa . ' ingin melakukan perpanjangan domain ' . $pengajuan->nama_domain . '.desa.id, kirimkan faktur.',            'role_tujuan'   => 'admin'
+            'isi'           => 'Desa ' . $pengajuan->nama_desa . ' ingin melakukan perpanjangan domain ' . $pengajuan->nama_domain . '.desa.id, kirimkan faktur.',
+            'role_tujuan'   => 'admin'
         ]);
 
         return redirect()->route('desa.perpanjang')
             ->with('success', 'Permintaan perpanjangan berhasil dikirim ke admin.');
     }
+
     public function adminPerpanjangList()
-{
-    // Ambil semua faktur yang tipenya perpanjangan
-    $fakturs = Faktur::where('tipe', 'perpanjangan')
-        ->with('pengajuan') // ambil relasi pengajuan untuk tau nama domain & desa
-        ->latest()
-        ->paginate(10);
+    {
+        $fakturs = Faktur::where('tipe', 'perpanjangan')
+            ->with('pengajuan') 
+            ->latest()
+            ->paginate(10);
 
-    return view('admin.perpanjang.index', compact('fakturs'));
-}
+        return view('admin.perpanjang.index', compact('fakturs'));
+    }
 
-public function adminPerpanjangDetail($id)
-{
-    // Ambil data faktur perpanjangan
-    $faktur = Faktur::with('pengajuan')->findOrFail($id);
-    
-    // Ambil data pengajuan utamanya
-    $pengajuan = $faktur->pengajuan;
-    
-    // Load relasi yang dibutuhkan oleh view (dokumen, faktur, aktivasi)
-    $pengajuan->load('dokumenPersyaratan', 'faktur', 'aktivasi');
+    public function adminPerpanjangDetail($id)
+    {
+        $faktur = Faktur::with('pengajuan')->findOrFail($id);
+        $pengajuan = $faktur->pengajuan;
+        $pengajuan->load('dokumenPersyaratan', 'faktur', 'aktivasi');
 
-    return view('admin.perpanjang.show', compact('faktur', 'pengajuan'));
-}
+        return view('admin.perpanjang.show', compact('faktur', 'pengajuan'));
+    }
 }

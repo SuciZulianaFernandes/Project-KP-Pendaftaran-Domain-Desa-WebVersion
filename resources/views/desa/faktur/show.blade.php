@@ -1,4 +1,5 @@
 @extends('layouts.desa')
+
 @section('title', 'Invoice')
 
 @section('content')
@@ -59,8 +60,9 @@
 
 <div style="padding:0 24px;max-width:1200px">
     <div class="show-grid">
-        <!-- Status Domain -->
+        <!-- Sidebar Kiri -->
         <div>
+            <!-- 1. Card Status Domain -->
             <x-status-domain :status="$faktur->status" />
         </div>
 
@@ -91,7 +93,17 @@
                     <span class="k">Harga</span>
                     <span class="v price">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
                 </div>
+                <div class="show-row">
+                    <span class="k">Tipe Pembayaran</span>
+                    <span class="v"> @if($faktur->tipe == 'perpanjangan')
+                        <span class="v">Perpanjangan</span>
+                    @else
+                        <span class="v">Baru (Registrasi)</span>
+                    @endif</span>
+                </div>
             </div>
+                
+                
 
             <div class="show-pay">
                 <h3>Petunjuk Pembayaran</h3>

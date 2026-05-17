@@ -2,7 +2,6 @@
 @section('title', 'Informasi Desa')
 @section('content')
 
-<!-- TOMBOL PERBAIKAN: TAMBAHKAN BLOK INI UNTUK MENAMPILKAN ERROR -->
 @if ($errors->any())
     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
         <p class="font-bold">Perbaiki Kesalahan Berikut:</p>
@@ -13,229 +12,460 @@
         </ul>
     </div>
 @endif
-<!-- AKHIR BLOK PERBAIKAN -->
 
 <div class="bg-white rounded-xl shadow p-10">
+
     @include('desa.pengajuan._steps', ['currentStep' => 2])
 
     <div class="mt-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Isi Informasi Desa</h2>
-        
-        <form action="{{ route('desa.pengajuan.informasi.store') }}" method="POST" id="formInformasi">
+
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            Isi Informasi Desa
+        </h2>
+
+        <form action="{{ route('desa.pengajuan.informasi.store') }}"
+              method="POST"
+              id="formInformasi">
+
             @csrf
-            
-            <!-- Baris 1: Nama Desa & Klasifikasi Instansi -->
+
+            <!-- Nama Organisasi -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
                 <div>
-                    <label for="nama_desa" class="block text-sm font-semibold text-gray-700 mb-2">Nama Desa <span class="text-red-600">*</span></label>
-                    <input type="text" id="nama_desa" name="nama_desa" value="{{ old('nama_desa', $data_desa['nama_desa'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: Sukamaju" required>
+                    <label for="nama_desa"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nama Organisasi
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <input type="text"
+                           id="nama_desa"
+                           name="nama_desa"
+                           value="{{ old('nama_desa', $data_desa['nama_desa'] ?? '') }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           placeholder="Contoh: Pemerintah Desa XXX"
+                           required>
                 </div>
+
             </div>
 
-            <!-- Alamat Lengkap -->
+            <!-- Alamat -->
             <div class="mb-6">
-                <label for="alamat" class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap <span class="text-red-600">*</span></label>
-                <textarea id="alamat" name="alamat" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Jl. Contoh No. 123" required>{{ old('alamat', $data_desa['alamat'] ?? '') }}</textarea>
+
+                <label for="alamat"
+                       class="block text-sm font-semibold text-gray-700 mb-2">
+                    Alamat Lengkap
+                    <span class="text-red-600">*</span>
+                </label>
+
+                <textarea id="alamat"
+                          name="alamat"
+                          rows="3"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                          placeholder="Jl. Contoh No. 123"
+                          required>{{ old('alamat', $data_desa['alamat'] ?? '') }}</textarea>
+
             </div>
 
-            <!-- Baris 2: Provinsi, Kota/Kabupaten, Kecamatan -->
+            <!-- Provinsi Kabupaten Kecamatan -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+
+                <!-- PROVINSI -->
                 <div>
-                    <label for="provinsi" class="block text-sm font-semibold text-gray-700 mb-2">Provinsi <span class="text-red-600">*</span></label>
-                    <select id="provinsi" name="provinsi" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required>
-                        <option value="">-- Pilih Provinsi --</option>
-                        <!-- Data Provinsi akan diisi oleh JavaScript -->
-                    </select>
+
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Provinsi
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <div class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 flex items-center shadow-sm">
+                        Provinsi Riau
+                    </div>
+
+                    <input type="hidden"
+                           name="provinsi"
+                           value="Provinsi Riau">
+
                 </div>
+
+                <!-- KABUPATEN -->
                 <div>
-                    <label for="kota_kabupaten" class="block text-sm font-semibold text-gray-700 mb-2">Kota/Kabupaten <span class="text-red-600">*</span></label>
-                    <select id="kota_kabupaten" name="kota_kabupaten" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
-                        <option value="">-- Pilih Kota --</option>
+
+                    <label for="kota_kabupaten"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kabupaten
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <select id="kota_kabupaten"
+                            name="kota_kabupaten"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            required>
+
+                        <option value="">
+                            -- Pilih Kabupaten --
+                        </option>
+
                     </select>
+
+                    @error('kota_kabupaten')
+                        <p class="text-red-500 text-xs mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
                 </div>
+
+                <!-- KECAMATAN -->
                 <div>
-                    <label for="kecamatan" class="block text-sm font-semibold text-gray-700 mb-2">Kecamatan <span class="text-red-600">*</span></label>
-                    <select id="kecamatan" name="kecamatan" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
-                        <option value="">-- Pilih Kecamatan --</option>
+
+                    <label for="kecamatan"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kecamatan
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <select id="kecamatan"
+                            name="kecamatan"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            required
+                            disabled>
+
+                        <option value="">
+                            -- Pilih Kecamatan --
+                        </option>
+
                     </select>
+
+                    @error('kecamatan')
+                        <p class="text-red-500 text-xs mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
                 </div>
+
             </div>
 
-            <!-- Baris 3: Desa/Kelurahan & Kode Pos -->
+            <!-- Desa & Kode Pos -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
                 <div>
-                    <label for="desa_kelurahan" class="block text-sm font-semibold text-gray-700 mb-2">Desa <span class="text-red-600">*</span></label>
-                    <select id="desa_kelurahan" name="desa_kelurahan" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" required disabled>
-                        <option value="">-- Pilih Desa --</option>
+
+                    <label for="desa_kelurahan"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Desa
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <select id="desa_kelurahan"
+                            name="desa_kelurahan"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            required
+                            disabled>
+
+                        <option value="">
+                            -- Pilih Desa --
+                        </option>
+
                     </select>
+
+                    @error('desa_kelurahan')
+                        <p class="text-red-500 text-xs mt-1">
+                            {{ $message }}
+                        </p>
+                    @enderror
+
                 </div>
+
                 <div>
-                    <label for="kode_pos" class="block text-sm font-semibold text-gray-700 mb-2">Kode Pos <span class="text-red-600">*</span></label>
-                    <input type="text" id="kode_pos" name="kode_pos" value="{{ old('kode_pos', $data_desa['kode_pos'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 28111" required>
+
+                    <label for="kode_pos"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kode Pos
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <input type="text"
+                           id="kode_pos"
+                           name="kode_pos"
+                           value="{{ old('kode_pos', $data_desa['kode_pos'] ?? '') }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           placeholder="Contoh: 28111"
+                           required>
+
                 </div>
+
             </div>
 
-            <!-- Baris 4: Telepon & Faksimili -->
+            <!-- Telepon & Faksimili -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
                 <div>
-                    <label for="Telepon" class="block text-sm font-semibold text-gray-700 mb-2">Telepon <span class="text-red-600">*</span></label>
-                    <input type="tel" id="Telepon" name="Telepon" value="{{ old('Telepon', $data_desa['Telepon'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 0761123456" required>
+
+                    <label for="Telepon"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Telepon
+                        <span class="text-red-600">*</span>
+                    </label>
+
+                    <input type="tel"
+                           id="Telepon"
+                           name="Telepon"
+                           value="{{ old('Telepon', $data_desa['Telepon'] ?? '') }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           placeholder="Contoh: 0761123456"
+                           required>
+
                 </div>
+
                 <div>
-                    <label for="Faksimili" class="block text-sm font-semibold text-gray-700 mb-2">Faksimili</label>
-                    <input type="tel" id="Faksimili" name="Faksimili" value="{{ old('Faksimili', $data_desa['Faksimili'] ?? '') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150" placeholder="Contoh: 0761123457">
+
+                    <label for="Faksimili"
+                           class="block text-sm font-semibold text-gray-700 mb-2">
+                        Faksimili
+                    </label>
+
+                    <input type="tel"
+                           id="Faksimili"
+                           name="Faksimili"
+                           value="{{ old('Faksimili', $data_desa['Faksimili'] ?? '') }}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           placeholder="Contoh: 0761123457">
+
                 </div>
+
             </div>
 
-            <!-- Tombol Aksi -->
+            <!-- BUTTON -->
             <div class="flex justify-end mt-8 space-x-4">
-<a href="{{ route('desa.pengajuan.index') }}" class="px-7 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition duration-150">Kembali</a>                <button type="submit" class="px-7 py-3 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition duration-150">Lanjutkan</button>
+
+                <a href="{{ route('desa.pengajuan.index') }}"
+                   class="px-7 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition duration-150">
+                    Kembali
+                </a>
+
+                <button type="submit"
+                        class="px-7 py-3 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition duration-150">
+
+                    Lanjutkan
+
+                </button>
+
             </div>
+
         </form>
+
     </div>
+
 </div>
 
 @push('scripts')
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    console.log("Script Form Pengajuan berhasil dimuat.");
 
-    // --- DATA WILAYAH PROVINSI RIAU ---
-    const addressData = {
-        "Provinsi Riau": {
-            "Kota Pekanbaru": {
-                "Kecamatan Sukajadi": ["Kelurahan Sukajadi", "Kelurahan Paledang", "Kelurahan Tangkerang Selatan"],
-                "Kecamatan Marpoyan Damai": ["Kelurahan Maharatu", "Kelurahan Sidomulyo Timur", "Kelurahan Harjosari"],
-                "Kecamatan Rumbai": ["Kelurahan Umban Sari", "Kelurahan Sri Meranti", "Kelurahan Palas"]
-            },
-            "Kabupaten Bengkalis": {
-                "Kecamatan Bengkalis": ["Desa Air Putih", "Desa Damai", "Desa Kelapapati", "Desa Kelebuk", "Desa Kelemantan", "Desa Kelemantan Barat", "Desa Ketam Putih", "Desa Kuala Alam", "Desa Meskom", "Desa Pematang Duku", "Desa Pematang Duku Timur", "Desa Penebal", "Desa Penampi", "Desa Prapat Tunggal", "Desa Sebauk", "Desa Sungai Alam", "Desa Sekodi", "Desa Senderak", "Desa Teluk Latak", "Desa Temeran", "Desa Wonosari", "Desa Pedekik", "Desa Pangkalan Batang", "Desa Pangkalan Batang Barat", "Desa Sungai Batang", "Desa Simpang Ayam"],
-                "Kecamatan Mandau": ["Kelurahan Duri", "Kelurahan Balik Alam", "Desa Pematang Pudu", "Desa Guntung"],
-                "Kecamatan Rupat": ["Desa Tanjung Medang", "Desa Batu Panjang", "Desa Teluk Rhu", "Desa Darul Aman"],
-                "Kecamatan Siak Kecil": ["Desa Tengganau", "Desa Sungai Selari", "Desa Palkun", "Desa Jangkang"]
-            },
-            "Kabupaten Kampar": {
-                "Kecamatan Bangkinang Kota": ["Desa Bangkinang Kota", "Desa Kuok", "Desa Sungai Pagar"],
-                "Kecamatan Kampar": ["Desa Kampar Kiri Hilir", "Desa Kampar Kiri Hulu", "Desa Air Tiris"]
-            }
-        }
-    };
+    const PROVINSI_RIAU_ID = '14';
+    const API_URL = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
-    // --- ELEMEN DOM ---
-    const provinsiSelect = document.getElementById('provinsi');
     const kotaSelect = document.getElementById('kota_kabupaten');
     const kecamatanSelect = document.getElementById('kecamatan');
     const desaSelect = document.getElementById('desa_kelurahan');
 
-    // --- FUNGSI UNTUK MENGISI DROPDOWN ---
-    function populateSelect(selectElement, options, placeholder, valueToSelect = '') {
-        selectElement.innerHTML = `<option value="">${placeholder}</option>`;
-        if (options) {
-            const items = Array.isArray(options) ? options : Object.keys(options);
-            items.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                if (item === valueToSelect) {
-                    option.selected = true;
-                }
-                selectElement.appendChild(option);
-            });
+    async function fetchData(endpoint) {
+
+        try {
+
+            const response = await fetch(`${API_URL}${endpoint}`);
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            return await response.json();
+
+        } catch (error) {
+
+            console.error("Gagal fetch API:", error);
+            return null;
+
         }
+
     }
-    
-    // --- FUNGSI UNTUK MENGISI ULANG FORM SAAT HALAMAN DIMUAT ---
-    function repopulateForm(data) {
-        // Reset state anak-anak dropdown terlebih dahulu
-        kotaSelect.disabled = true;
-        kecamatanSelect.disabled = true;
-        desaSelect.disabled = true;
-        kotaSelect.innerHTML = '<option value="">-- Pilih Kota --</option>';
-        kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
-        if (!data.provinsi || !addressData[data.provinsi]) return;
+    // LOAD KABUPATEN
+    async function loadKabupaten() {
 
-        // 1. Isi dan Aktifkan Kota/Kabupaten
-        const kotaOptions = addressData[data.provinsi];
-        populateSelect(kotaSelect, kotaOptions, '-- Pilih Kota --', data.kota_kabupaten ?? '');
-        kotaSelect.disabled = false;
+        kotaSelect.innerHTML =
+            '<option value="">Memuat data Kabupaten...</option>';
 
-        if (!data.kota_kabupaten || !kotaOptions[data.kota_kabupaten]) return;
+        const allRegencies =
+            await fetchData(`/regencies/${PROVINSI_RIAU_ID}.json`);
 
-        // 2. Isi dan Aktifkan Kecamatan
-        const kecOptions = kotaOptions[data.kota_kabupaten];
-        populateSelect(kecamatanSelect, kecOptions, '-- Pilih Kecamatan --', data.kecamatan ?? '');
+        if (!allRegencies) {
+
+            kotaSelect.innerHTML =
+                '<option value="">Gagal memuat data</option>';
+
+            return;
+        }
+
+        const kabupatenOnly =
+            allRegencies.filter(item => !item.name.includes('Kota'));
+
+        kotaSelect.innerHTML =
+            '<option value="">-- Pilih Kabupaten --</option>';
+
+        kabupatenOnly.forEach(kab => {
+
+            const option = document.createElement('option');
+
+            // DISIMPAN KE DATABASE
+            option.value = kab.name;
+
+            // UNTUK API
+            option.dataset.id = kab.id;
+
+            // TAMPILAN
+            option.textContent = kab.name;
+
+            kotaSelect.appendChild(option);
+
+        });
+
+    }
+
+    // LOAD KECAMATAN
+    async function loadKecamatan(kabId) {
+
+        if (!kabId) {
+
+            kecamatanSelect.innerHTML =
+                '<option value="">-- Pilih Kecamatan --</option>';
+
+            kecamatanSelect.disabled = true;
+
+            return;
+        }
+
         kecamatanSelect.disabled = false;
 
-        if (!data.kecamatan || !kecOptions[data.kecamatan]) return;
-        
-        // 3. Isi dan Aktifkan Desa/Kelurahan
-        const desaOptions = kecOptions[data.kecamatan];
-        populateSelect(desaSelect, desaOptions, '-- Pilih Desa --', data.desa_kelurahan ?? '');
+        kecamatanSelect.innerHTML =
+            '<option value="">Memuat data Kecamatan...</option>';
+
+        const districts =
+            await fetchData(`/districts/${kabId}.json`);
+
+        if (!districts) {
+
+            kecamatanSelect.innerHTML =
+                '<option value="">Gagal memuat data</option>';
+
+            return;
+        }
+
+        kecamatanSelect.innerHTML =
+            '<option value="">-- Pilih Kecamatan --</option>';
+
+        districts.forEach(disc => {
+
+            const option = document.createElement('option');
+
+            // DISIMPAN
+            option.value = disc.name;
+
+            // UNTUK API
+            option.dataset.id = disc.id;
+
+            option.textContent = disc.name;
+
+            kecamatanSelect.appendChild(option);
+
+        });
+
+    }
+
+    // LOAD DESA
+    async function loadDesa(kecId) {
+
+        if (!kecId) {
+
+            desaSelect.innerHTML =
+                '<option value="">-- Pilih Desa --</option>';
+
+            desaSelect.disabled = true;
+
+            return;
+        }
+
         desaSelect.disabled = false;
-    }
 
-    // --- INISIALISASI SAAT HALAMAN PERTAMA KALI DIMUAT ---
-    // Isi dropdown Provinsi
-    populateSelect(provinsiSelect, Object.keys(addressData), '-- Pilih Provinsi --');
+        desaSelect.innerHTML =
+            '<option value="">Memuat data Desa...</option>';
 
-    // Ambil data lama dari session
-    let oldData = {};
-    @if(isset($data_desa) && is_array($data_desa))
-        oldData = @json($data_desa);
-    @endif
+        const villages =
+            await fetchData(`/villages/${kecId}.json`);
 
-    // Jika ada data lama, panggil fungsi untuk mengisi ulang form
-    if (Object.keys(oldData).length > 0) {
-        console.log("Mengisi ulang form dengan data:", oldData);
-        // Pilih provinsi di dropdown
-        provinsiSelect.value = oldData.provinsi;
-        // Jalankan fungsi untuk mengisi anak-anaknya
-        repopulateForm(oldData);
-    }
+        if (!villages) {
 
-    // --- EVENT LISTENER UNTUK PERUBAHAN MANUAL OLEH USER ---
-    
-    // Event saat Provinsi berubah
-    provinsiSelect.addEventListener('change', function() {
-        const selectedProv = this.value;
-        kotaSelect.disabled = !selectedProv;
-        kecamatanSelect.disabled = true;
-        desaSelect.disabled = true;
-        kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
+            desaSelect.innerHTML =
+                '<option value="">Gagal memuat data</option>';
 
-        if (selectedProv && addressData[selectedProv]) {
-            populateSelect(kotaSelect, addressData[selectedProv], '-- Pilih Kota --');
+            return;
         }
-    });
 
-    // Event saat Kota/Kabupaten berubah
+        desaSelect.innerHTML =
+            '<option value="">-- Pilih Desa --</option>';
+
+        villages.forEach(vill => {
+
+            const option = document.createElement('option');
+
+            // DISIMPAN
+            option.value = vill.name;
+
+            option.textContent = vill.name;
+
+            desaSelect.appendChild(option);
+
+        });
+
+    }
+
+    // EVENT KABUPATEN
     kotaSelect.addEventListener('change', function() {
-        const selectedProv = provinsiSelect.value;
-        const selectedKota = this.value;
-        kecamatanSelect.disabled = !selectedKota;
+
+        const selectedOption =
+            this.options[this.selectedIndex];
+
+        const kabId =
+            selectedOption.dataset.id;
+
+        loadKecamatan(kabId);
+
+        desaSelect.innerHTML =
+            '<option value="">-- Pilih Desa --</option>';
+
         desaSelect.disabled = true;
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
-        if (selectedProv && selectedKota && addressData[selectedProv][selectedKota]) {
-            populateSelect(kecamatanSelect, addressData[selectedProv][selectedKota], '-- Pilih Kecamatan --');
-        }
     });
 
-    // Event saat Kecamatan berubah
+    // EVENT KECAMATAN
     kecamatanSelect.addEventListener('change', function() {
-        const selectedProv = provinsiSelect.value;
-        const selectedKota = kotaSelect.value;
-        const selectedKec = this.value;
-        desaSelect.disabled = !selectedKec;
-        desaSelect.innerHTML = '<option value="">-- Pilih Desa --</option>';
 
-        if (selectedProv && selectedKota && selectedKec && addressData[selectedProv][selectedKota][selectedKec]) {
-            populateSelect(desaSelect, addressData[selectedProv][selectedKota][selectedKec], '-- Pilih Desa --');
-        }
+        const selectedOption =
+            this.options[this.selectedIndex];
+
+        const kecId =
+            selectedOption.dataset.id;
+
+        loadDesa(kecId);
+
     });
+
+    loadKabupaten();
+
 });
 </script>
 

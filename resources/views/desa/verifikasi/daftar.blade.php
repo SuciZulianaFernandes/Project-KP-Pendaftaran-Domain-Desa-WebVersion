@@ -102,13 +102,14 @@
                                 <div style="display:flex;justify-content:center;gap:8px;">
                                     <!-- DETAIL (Icon) -->
                                     <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
-                                        <i class="fas fa-eye"></i>
+                                        <i class="fas fa-eye"></i> Lihat
                                     </a>    
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr class="inv-empty"><td colspan="5"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
+                        {{-- Update colspan menjadi 6 karena ada tambahan 1 kolom --}}
+                        <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
                     @endforelse
                 </tbody>
             </table>
