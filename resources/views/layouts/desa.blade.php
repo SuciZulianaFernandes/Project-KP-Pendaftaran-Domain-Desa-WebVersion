@@ -177,8 +177,8 @@
             </a>
 
             <a
-                href="#"
-                class="flex items-center gap-3 p-2 rounded transition hover:bg-red-700"
+                href="{{ url('/desa/profile') }}"
+                class="flex items-center gap-3 p-2 rounded transition {{ request()->is('desa/profile*') ? 'bg-red-700 text-white' : 'hover:bg-red-700' }}"
             >
                 <i class="fas fa-user w-5"></i>
                 Profile

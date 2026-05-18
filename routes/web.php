@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\PesanController;
 use App\Http\Controllers\FakturController;
 use App\Http\Controllers\FakturDesaController;
+use App\Http\Controllers\ProfileDesaController;
 use App\Http\Controllers\Admin\AktivasiController; 
 
 // Route untuk tamu (guest)
@@ -135,5 +136,10 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
             ->name('perpanjang');
         Route::get('/perpanjang/proses/{id}', [AktivasiController::class, 'prosesPerpanjang'])->name('perpanjang.proses');
         Route::get('/perpanjang/ajukan/{id}', [AktivasiController::class, 'ajukanPerpanjang']);
-    
+        
+     Route::get('/profile', [ProfileDesaController::class, 'index'])
+        ->name('profile');
+
+    Route::put('/profile/update', [ProfileDesaController::class, 'update'])
+        ->name('profile.update');
 });
