@@ -214,21 +214,19 @@
 
             <div class="flex items-center gap-3">
 
-                <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">
-                    AD
-                </div>
+               <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">
+            {{ strtoupper(substr(Auth::user()->username, 0, 2)) }}
+        </div>
 
                 <div class="text-sm">
+            <p class="font-bold uppercase tracking-wide">
+                {{ Auth::user()->name }}
+            </p>
 
-                    <p class="font-bold uppercase tracking-wide">
-                        Administrator Desa
-                    </p>
-
-                    <p class="text-red-300">
-                        Sistem Informasi
-                    </p>
-
-                </div>
+            <p class="text-red-300">
+                {{ Auth::user()->username }}
+            </p>
+        </div>
 
             </div>
 

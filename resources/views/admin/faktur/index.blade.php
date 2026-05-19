@@ -103,7 +103,7 @@
                                 </td>
 
                                 <td style="text-align:center">
-                                    <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inv-btn-d"><i class="fas fa-eye"></i> Lihat</a>
+                                    <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inv-btn-d"><i class="fas fa-eye"></i> Detail</a>
                                 </td>
                             </tr>
                         @endforeach

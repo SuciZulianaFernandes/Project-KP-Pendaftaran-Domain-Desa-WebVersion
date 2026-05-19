@@ -68,6 +68,10 @@
 
         <!-- Konten Utama -->
         <div class="show-card">
+            <a href="{{ url()->previous() }}"
+   class=" text-black font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+    <i class="fas fa-arrow-left mr-2"></i> Kembali
+</a>
             <div class="show-header">
                 <div class="lbl">Invoice</div>
                 <div class="num">INV-#{{ $faktur->no_invoice }}</div>

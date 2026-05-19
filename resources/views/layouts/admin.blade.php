@@ -249,27 +249,27 @@
         </nav>
 
         <!-- FOOTER -->
-        <div class="p-5 bg-red-900/50 border-t border-red-700">
+<div class="p-5 bg-red-900/50 border-t border-red-700">
 
-            <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3">
 
-                <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">
-                    AD
-                </div>
-
-                <div class="text-sm">
-                    <p class="font-bold uppercase tracking-wide">
-                        Administrator
-                    </p>
-
-                    <p class="text-red-300">
-                        Sistem Informasi
-                    </p>
-                </div>
-
-            </div>
-
+        <div class="w-10 h-10 rounded-full bg-red-700 flex items-center justify-center text-sm font-bold uppercase">
+            {{ strtoupper(substr(Auth::user()->username, 0, 2)) }}
         </div>
+
+        <div class="text-sm">
+            <p class="font-bold uppercase tracking-wide">
+                {{ Auth::user()->name }}
+            </p>
+
+            <p class="text-red-300">
+                {{ Auth::user()->username }}
+            </p>
+        </div>
+
+    </div>
+
+</div>
 
     </aside>
 

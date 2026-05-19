@@ -3,90 +3,290 @@
 @section('title', 'Detail Faktur')
 
 @section('content')
-<div class="bg-white p-6 rounded-xl shadow">
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h2 class="text-xl font-bold">Detail Faktur</h2>
-            <p class="text-sm text-gray-600 mt-1">Invoice #{{ $faktur->no_invoice }}</p>
-        </div>
-        <a href="{{ route('admin.faktur.index') }}" class="text-blue-600 hover:underline flex items-center">
-            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Kembali ke Daftar Faktur
-        </a>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Informasi Desa -->
+@include('components.inv-styles')
+
+<style>
+.show-grid{display:grid;grid-template-columns:1fr;gap:24px}
+@media(min-width:1024px){.show-grid{grid-template-columns:280px 1fr}}
+
+.show-card{
+    background:#fff;
+    border-radius:14px;
+    border:1px solid var(--inv-border);
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.04)
+}
+
+.show-header{
+    padding:22px 24px;
+    background:linear-gradient(135deg,#1e293b,#334155);
+    color:#fff
+}
+
+.show-header .lbl{
+    font-size:11px;
+    opacity:.6;
+    text-transform:uppercase;
+    letter-spacing:.6px
+}
+
+.show-header .num{
+    font-size:20px;
+    font-weight:800;
+    margin-top:2px
+}
+
+.show-meta{
+    padding:0 24px 16px
+}
+
+.show-meta p{
+    font-size:15px;
+    font-weight:700;
+    color:#1e293b
+}
+
+.show-body{
+    padding:0 24px 20px
+}
+
+.show-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:13px 0;
+    border-bottom:1px solid #f1f5f9
+}
+
+.show-row:last-child{
+    border-bottom:none
+}
+
+.show-row .k{
+    font-size:14px;
+    color:var(--inv-text)
+}
+
+.show-row .v{
+    font-size:14px;
+    font-weight:600;
+    color:#1e293b;
+    text-align:right
+}
+
+.show-row .v.price{
+    font-size:18px;
+    font-weight:800;
+    color:var(--inv-accent)
+}
+
+.show-box{
+    background:#f8fafc;
+    border:1px solid var(--inv-border);
+    border-radius:12px;
+    padding:20px;
+    margin:0 24px 20px
+}
+
+.show-box h3{
+    font-size:14px;
+    font-weight:700;
+    color:#1e293b;
+    margin-bottom:12px
+}
+
+.show-box .item{
+    display:flex;
+    justify-content:space-between;
+    padding:7px 0;
+    border-bottom:1px solid #e2e8f0;
+    gap:16px
+}
+
+.show-box .item:last-child{
+    border-bottom:none
+}
+
+.show-box .item .k{
+    font-size:13px;
+    color:var(--inv-text)
+}
+
+.show-box .item .v{
+    font-size:13px;
+    font-weight:600;
+    color:#1e293b;
+    text-align:right
+}
+
+.status-badge{
+    padding:5px 12px;
+    border-radius:9999px;
+    font-size:12px;
+    font-weight:700;
+    color:#fff
+}
+
+.status-warning{background:#f59e0b}
+.status-success{background:#10b981}
+.status-danger{background:#ef4444}
+
+.note-box{
+    background:#fff;
+    border:1px solid var(--inv-border);
+    border-radius:10px;
+    padding:14px;
+    font-size:14px;
+    color:#475569;
+    line-height:1.6
+}
+
+.show-bukti{
+    margin:0 24px 24px
+}
+
+.show-bukti .lbl{
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--inv-text);
+    margin-bottom:10px
+}
+
+.show-bukti img{
+    max-width:100%;
+    max-height:320px;
+    border-radius:12px;
+    border:1px solid var(--inv-border);
+    object-fit:contain
+}
+
+.back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:#2563eb;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:20px
+}
+
+.back-btn:hover{
+    text-decoration:underline
+}
+</style>
+
+<div style="padding:0 24px;max-width:1200px">
+
+    <div class="show-grid">
+
+        <!-- CARD KIRI -->
         <div>
-            <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">Informasi Desa</h3>
-            <div class="space-y-2 text-sm">
-                <p><span class="font-medium">Nama Desa:</span> {{ $faktur->nama_desa }}</p>
-                <p><span class="font-medium">Domain:</span> {{ $faktur->nama_domain }}.desa.id</p>
+            <x-status-domain :status="$faktur->status" />
+        </div>
+
+        <!-- CARD KANAN -->
+        <div class="show-card">
+
+            <!-- HEADER -->
+             <a href="{{ url()->previous() }}"
+   class=" text-black font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+    <i class="fas fa-arrow-left mr-2"></i> Kembali
+</a>
+            <div class="show-header">
+                <div class="lbl">Invoice</div>
+                <div class="num">INV-#{{ $faktur->no_invoice }}</div>
             </div>
-        </div>
 
-        <!-- Informasi Faktur -->
-        <div>
-            <h3 class="font-semibold text-gray-700 mb-3 border-b pb-2">Informasi Faktur</h3>
-            <div class="space-y-2 text-sm">
-                <p><span class="font-medium">No. Invoice:</span> {{ $faktur->no_invoice }}</p>
-                <p><span class="font-medium">Total:</span> Rp {{ number_format($faktur->total, 0, ',', '.') }}</p>
-                <p>
-                    <span class="font-medium">Status:</span>
-                    @if($faktur->status == 'belum_bayar')
-                        <span class="ml-2 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs">Belum Bayar</span>
-                    @elseif($faktur->status == 'sudah_bayar')
-                        <span class="ml-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs">Sudah Bayar</span>
-                    @elseif($faktur->status == 'kedaluarsa')
-                        <span class="ml-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">Kedaluarsa</span>
-                    @endif
-                </p>
+            <!-- META -->
+            <div class="show-meta">
+                <p>{{ $faktur->nama_desa }}</p>
             </div>
-        </div>
-    </div>
 
-    <!-- Rincian Pembayaran -->
-    <div class="mt-8 pt-6 border-t">
-        <h3 class="font-semibold text-gray-700 mb-3">Rincian Pembayaran</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-                <p><span class="font-medium">Tanggal Dibuat:</span> {{ $faktur->created_at->format('d F Y') }}</p>
-                
-                {{-- PERBAIKAN LOGIKA TANGGAL PEMBAYARAN --}}
+            <!-- BODY -->
+            <div class="show-body">
+
+                <div class="show-row">
+                    <span class="k">Domain</span>
+                    <span class="v">{{ $faktur->nama_domain }}.desa.id</span>
+                </div>
+
+                <div class="show-row">
+                    <span class="k">No. Invoice</span>
+                    <span class="v">{{ $faktur->no_invoice }}</span>
+                </div>
+
+                <div class="show-row">
+                    <span class="k">Jenis Aplikasi</span>
+                    <span class="v">Informasi Desa</span>
+                </div>
+
+                <div class="show-row">
+                    <span class="k">Durasi</span>
+                    <span class="v">1 Tahun</span>
+                </div>
+
+                <div class="show-row">
+                    <span class="k">Total Pembayaran</span>
+                    <span class="v price">
+                        Rp {{ number_format($faktur->total, 0, ',', '.') }}
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- INFORMASI PEMBAYARAN -->
+            <div class="show-box">
+                <h3>Informasi Pembayaran</h3>
+
+                <div class="item">
+                    <span class="k">Tanggal Terbit</span>
+                    <span class="v">
+                        {{ $faktur->created_at->format('d F Y') }}
+                    </span>
+                </div>
+
                 @if($faktur->status == 'sudah_bayar')
-                    <p>
-                        <span class="font-medium">Tanggal Pembayaran:</span> 
-                        {{-- Gunakan tanggal_konfirmasi jika ada, jika tidak pakai updated_at --}}
+                <div class="item">
+                    <span class="k">Tanggal Pembayaran</span>
+                    <span class="v">
                         {{ $faktur->tanggal_konfirmasi ? $faktur->tanggal_konfirmasi->format('d F Y') : $faktur->updated_at->format('d F Y') }}
-                    </p>
+                    </span>
+                </div>
                 @endif
 
-                <p><span class="font-medium">Batas Pembayaran:</span> {{ $faktur->expired_at->format('d F Y') }}</p>
+                <div class="item">
+                    <span class="k">Batas Pembayaran</span>
+                    <span class="v">
+                        {{ $faktur->expired_at->format('d F Y') }}
+                    </span>
+                </div>
             </div>
-            <div>
-                <p><span class="font-medium">Jenis Aplikasi:</span> Informasi Desa</p>
-                <p><span class="font-medium">Durasi:</span> 1 Tahun</p>
+
+            <!-- CATATAN -->
+            @if($faktur->catatan)
+            <div class="show-box">
+                <h3>Catatan</h3>
+
+                <div class="note-box">
+                    {{ $faktur->catatan }}
+                </div>
             </div>
+            @endif
+
+            <!-- BUKTI PEMBAYARAN -->
+            @if($faktur->status == 'sudah_bayar' && $faktur->bukti_pembayaran_path)
+            <div class="show-bukti">
+                <div class="lbl">Bukti Pembayaran</div>
+
+                <img src="{{ asset('storage/' . $faktur->bukti_pembayaran_path) }}"
+                     alt="Bukti Pembayaran">
+            </div>
+            @endif
+
         </div>
     </div>
-
-    <!-- Catatan -->
-    @if($faktur->catatan)
-    <div class="mt-6 pt-6 border-t">
-        <h3 class="font-semibold text-gray-700 mb-3">Catatan</h3>
-        <p class="text-sm text-gray-600 bg-gray-50 p-3 rounded">{{ $faktur->catatan }}</p>
-    </div>
-    @endif
-
-    <!-- Bukti Pembayaran (jika ada) -->
-    @if($faktur->status == 'sudah_bayar' && $faktur->bukti_pembayaran_path)
-    <div class="mt-6 pt-6 border-t">
-        <h3 class="font-semibold text-gray-700 mb-3">Bukti Pembayaran</h3>
-        <a href="{{ asset('storage/' . $faktur->bukti_pembayaran_path) }}" target="_blank" class="inline-flex items-center text-blue-600 hover:underline">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-            Lihat Bukti Pembayaran
-        </a>
-    </div>
-    @endif
 </div>
 @endsection
