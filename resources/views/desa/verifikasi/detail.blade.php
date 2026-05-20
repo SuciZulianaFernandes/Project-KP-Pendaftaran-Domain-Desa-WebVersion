@@ -24,14 +24,31 @@
                     {{ $pengajuan->nama_domain }}.desa.id
                 </p>
 
+                @php
+                    // LOGIKA BARU: Tentukan status akhir berdasarkan relasi aktivasi
+                    $finalStatus = $pengajuan->status_pengajuan;
+                    
+                    // Jika status pengajuan sudah 'aktif', cek tabel aktivasi
+                    if ($pengajuan->status_pengajuan == 'aktif' && $pengajuan->aktivasi) {
+                        $finalStatus = $pengajuan->aktivasi->status_akt;
+                    }
+                @endphp
+
                 <p class="flex items-center gap-2">
 
+                    {{-- LOGIKA WARNA DOT INDICATOR --}}
                     <span class="w-2 h-2 rounded-full
-                        @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
-                        @elseif($pengajuan->status_pengajuan == 'diproses') bg-blue-500
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') bg-orange-500
-                        @elseif($pengajuan->status_pengajuan == 'aktif') bg-green-600
+                        @if($finalStatus == 'ditinjau') bg-yellow-500
+                        @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
+                        @elseif($finalStatus == 'diproses') bg-blue-500
+                        @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
+                        
+                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
+                        @elseif($finalStatus == 'aktif') bg-green-600
+                        @elseif($finalStatus == 'kadaluarsa') bg-gray-500
+                        @elseif($finalStatus == 'nonaktif') bg-gray-400
+                        
+                        @else bg-gray-400
                         @endif">
                     </span>
 
@@ -39,15 +56,23 @@
                         Status :
                     </span>
 
+                    {{-- LOGIKA WARNA TEKS STATUS --}}
                     <span class="font-semibold
-                        @if($pengajuan->status_pengajuan == 'ditinjau') text-yellow-600
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') text-red-600
-                        @elseif($pengajuan->status_pengajuan == 'diproses') text-blue-600
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') text-orange-600
-                        @elseif($pengajuan->status_pengajuan == 'aktif') text-green-600
+                        @if($finalStatus == 'ditinjau') text-yellow-600
+                        @elseif($finalStatus == 'perlu_perbaikan') text-red-600
+                        @elseif($finalStatus == 'diproses') text-blue-600
+                        @elseif($finalStatus == 'menunggu_aktivasi') text-orange-600
+                        
+                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
+                        @elseif($finalStatus == 'aktif') text-green-600
+                        @elseif($finalStatus == 'kadaluarsa') text-gray-600
+                        @elseif($finalStatus == 'nonaktif') text-gray-500
+                        
+                        @else text-gray-500
                         @endif">
 
-                        {{ ucfirst(str_replace('_', ' ', $pengajuan->status_pengajuan)) }}
+                        {{-- LOGIKA DISPLAY TEKS --}}
+                        {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
 
                     </span>
 
@@ -71,10 +96,10 @@
                     Detail Pengajuan
                 </h2>
 
-                <a href="{{ url('/desa/verifikasi') }}"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
-                    <i class="fas fa-arrow-left mr-2"></i> Kembali
-                </a>
+                <a href="{{ url()->previous() }}"
+   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+    <i class="fas fa-arrow-left mr-2"></i> Kembali
+</a>
 
             </div>
 
@@ -225,31 +250,48 @@
             @if($pengajuan->status_pengajuan == 'diproses')
 
             <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-
                 <p class="text-blue-700 font-semibold">
                     Pengajuan sedang diproses oleh admin.
                 </p>
-
             </div>
 
             @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
 
             <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-
                 <p class="text-orange-700 font-semibold">
                     Pengajuan telah diverifikasi dan sedang menunggu aktivasi domain.
                 </p>
-
             </div>
 
             @elseif($pengajuan->status_pengajuan == 'aktif')
+                
+                {{-- LOGIKA BARU: Ambil info dari tabel aktivasi --}}
+                @if($pengajuan->aktivasi && $pengajuan->aktivasi->status_akt == 'kadaluarsa')
+                    <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                        <p class="text-gray-700 font-semibold">
+                            Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($pengajuan->aktivasi->masa_berlaku)->format('d M Y') }}. Silakan lakukan perpanjangan.
+                        </p>
+                    </div>
+                @elseif($pengajuan->aktivasi && $pengajuan->aktivasi->status_akt == 'nonaktif')
+                    <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                        <p class="text-gray-700 font-semibold">
+                            Domain saat ini dalam status nonaktif.
+                        </p>
+                    </div>
+                @else
+                    <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+                        <p class="text-green-700 font-semibold">
+                            Domain sudah aktif dan dapat digunakan.
+                        </p>
+                    </div>
+                @endif
 
-            <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+            @elseif($pengajuan->status_pengajuan == 'kadaluarsa')
 
-                <p class="text-green-700 font-semibold">
-                    Domain sudah aktif dan dapat digunakan.
+            <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                <p class="text-gray-700 font-semibold">
+                    Masa berlaku domain ini telah kadaluarsa.
                 </p>
-
             </div>
 
             @endif
@@ -259,5 +301,4 @@
     </div>
 
 </div>
-
 @endsection

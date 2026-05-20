@@ -67,8 +67,8 @@
                     Detail Pengajuan
                 </h2>
 
-                <a href="{{ route('admin.pengajuan.index') }}"
-                class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+                <a href="{{ url()->previous() }}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
 
@@ -172,27 +172,74 @@
 
             </div>
 
-            <!-- FAKTUR -->
-            @if($pengajuan->faktur->isNotEmpty())
+           <!-- FAKTUR -->
+@if($pengajuan->faktur->isNotEmpty())
 
-            <div class="mb-6 bg-gray-50 p-4 rounded border">
+<div class="mb-6 bg-gray-50 p-4 rounded border">
 
-                <h3 class="font-bold text-lg mb-3">
-                    Riwayat Data Faktur
-                </h3>
+    <h3 class="font-bold text-lg mb-4">
+        Riwayat Data Faktur
+    </h3>
 
-                @foreach($pengajuan->faktur as $f)
+    <div class="space-y-4">
 
-                <div class="mb-3 p-3 bg-white border rounded">
-                    <p><strong>{{ $f->no_invoice }}</strong></p>
-                    <p>Total: Rp {{ number_format($f->total,0,',','.') }}</p>
+        @foreach($pengajuan->faktur as $fakturItem)
+
+        <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200">
+
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                <!-- INFORMASI FAKTUR -->
+                <div class="space-y-1 text-sm">
+
+                    <p class="font-semibold text-gray-800">
+                        {{ $fakturItem->no_invoice }}
+                    </p>
+
+                    <p class="text-gray-600">
+                        Total :
+                        <span class="font-medium text-gray-800">
+                            Rp {{ number_format($fakturItem->total,0,',','.') }}
+                        </span>
+                    </p>
+
+                    <p class="text-gray-600">
+                        Status :
+                        <span class="
+                            @if($fakturItem->status == 'belum_bayar') text-yellow-600
+                            @elseif($fakturItem->status == 'sudah_bayar') text-green-600
+                            @elseif($fakturItem->status == 'kedaluarsa') text-red-600
+                            @endif
+                            font-semibold
+                        ">
+                            {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
+                        </span>
+                    </p>
+
                 </div>
 
-                @endforeach
+                <!-- BUTTON DETAIL -->
+                <div class="flex justify-start md:justify-end">
+
+                    <a href="{{ route('admin.faktur.show', $fakturItem->id) }}"
+                       class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
+                        <i class="fas fa-eye"></i>
+                        Detail
+                    </a>
+
+                </div>
 
             </div>
 
-            @endif
+        </div>
+
+        @endforeach
+
+    </div>
+
+</div>
+
+@endif
 
             <hr class="my-4">
 
@@ -207,7 +254,6 @@
                 <h3 class="font-semibold mb-3">
                     Hasil Verifikasi
                 </h3>
-
                 <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-4">
 
                     <label>
@@ -244,7 +290,6 @@
                     </button>
 
                 </div>
-
             </form>
 
             <script>
@@ -273,7 +318,6 @@
                 <h3 class="font-bold text-lg mb-2">
                     Aktivasi Domain
                 </h3>
-
                 <p class="text-sm text-gray-600 mb-4">
                     Status saat ini:
                     <strong>Menunggu Aktivasi</strong>
@@ -300,18 +344,71 @@
 
             </div>
 
-            @else
+            @elseif($pengajuan->status_pengajuan == 'diproses')
+            
+            @php
+                // Logika Cek Respon Desa
+                $adaKonfirmasiDesa = $pengajuan->pesan->where('judul', 'Konfirmasi Pembayaran Disetujui')->isNotEmpty();
+                $fakturSudahAda = $pengajuan->faktur->where('tipe', '!=', 'perpanjangan')->isNotEmpty();
+            @endphp
+
+            <div class="bg-blue-50 p-4 rounded border border-blue-200">
+
+                @if($adaKonfirmasiDesa && !$fakturSudahAda)
+                    
+                    <!-- Desa Sudah Setuju, Faktur Belum Ada -->
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-green-100 p-2 rounded-full text-green-600">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Desa Menyetujui Pembayaran</h4>
+                            <p class="text-sm text-gray-600">Desa telah mengkonfirmasi kesiapan pembayaran. Silakan terbitkan faktur.</p>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('admin.faktur.store', $pengajuan->id_pengajuan) }}" method="POST" class="mt-2">
+                        @csrf
+                        <button type="submit" 
+                                class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center"
+                                data-confirm-message="Apakah Anda yakin ingin menerbitkan dan mencetak faktur untuk domain ini?">
+                            <i class="fas fa-print mr-2"></i> Cetak Faktur
+                        </button>
+                    </form>
+
+                @elseif($fakturSudahAda)
+
+                    <!-- Faktur Sudah Ada -->
+                    <p class="text-blue-700 font-semibold flex items-center gap-2">
+                        <i class="fas fa-file-invoice"></i>
+                        Faktur telah diterbitkan.
+                        <a href="{{ route('admin.faktur.index') }}" class="ml-2 text-sm underline hover:text-red-700 font-normal">
+                            Lihat di Manajemen Faktur
+                        </a>
+                    </p>
+
+                @else
+
+                    <!-- Belum Ada Respon -->
+                    <p class="text-blue-700 font-semibold flex items-center gap-2">
+                        <i class="fas fa-hourglass-half"></i>
+                        Menunggu persetujuan desa untuk penerbitan faktur.
+                    </p>
+
+                @endif
+
+            </div>
+
+            @elseif($pengajuan->status_pengajuan == 'aktif')
 
             <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
 
                 <p class="text-green-700 font-semibold">
-                    Data sudah diverifikasi. Menunggu konfirmasi persetujuan pembayaran.
+                    Domain Sudah Aktif
                 </p>
 
             </div>
-
             @endif
-
         </div>
 
     </div>
@@ -339,7 +436,6 @@
             <h3 class="text-lg leading-6 font-medium text-gray-900">
                 Konfirmasi
             </h3>
-
             <div class="mt-2 px-7 py-3">
 
                 <p id="modalConfirmMessage" class="text-sm text-gray-500">
@@ -349,7 +445,6 @@
             </div>
 
         </div>
-
         <div class="items-center px-4 py-3 flex justify-center gap-3">
 
             <button id="modalNoBtn"

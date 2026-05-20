@@ -34,6 +34,7 @@ class AktivasiController extends Controller
 
         DB::beginTransaction();
         try {
+            // Tetap 'aktif' sesuai enum yang ada
             $pengajuan->status_pengajuan = 'aktif';
             $pengajuan->save();
 
@@ -41,7 +42,7 @@ class AktivasiController extends Controller
             $faktur->save();
 
             // KONFIGURASI MASA BERLAKU
-            $masaBerlaku = now()->addMinutes(3); 
+            $masaBerlaku = now()->addMinutes(30); 
 
             Aktivasi::create([
                 'id_pengajuan' => $pengajuan->id_pengajuan,
@@ -66,6 +67,7 @@ class AktivasiController extends Controller
     public function adminDaftarAktif(Request $request)
     {
         // Update kadaluarsa otomatis
+        // HANYA update tabel aktivasi, jangan sentuh tabel pengajuan
         $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
             ->get();
@@ -73,16 +75,21 @@ class AktivasiController extends Controller
         foreach ($expiredDomains as $aktivasi) {
             $aktivasi->status_akt = 'kadaluarsa';
             $aktivasi->save();
-            $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
-            if ($pengajuan) {
-                $pengajuan->status_pengajuan = 'kadaluarsa';
-                $pengajuan->save();
-            }
+            
+            // HAPUS BARIS INI jika enum pengajuan tidak punya 'kadaluarsa'
+            // $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
+            // if ($pengajuan) {
+            //     $pengajuan->status_pengajuan = 'kadaluarsa'; // JANGAN LAKUKAN INI
+            //     $pengajuan->save();
+            // }
         }
 
         $statusFilter = $request->get('status', 'all');
+        
+        // Karena status_pengajuan tidak akan berubah jadi kadaluarsa,
+        // kita cari yang status_pengajuannya 'aktif' lalu filter berdasarkan relasi aktivasi
         $query = Pengajuan::with('faktur', 'aktivasi')
-            ->whereIn('status_pengajuan', ['aktif', 'kadaluarsa']);
+            ->where('status_pengajuan', 'aktif'); 
 
         if ($statusFilter == 'aktif') {
             $query->whereHas('aktivasi', function ($q) { $q->where('status_akt', 'aktif'); });
@@ -91,7 +98,8 @@ class AktivasiController extends Controller
         }
 
         $data = $query->latest()->paginate(10);
-        $baseQuery = Pengajuan::whereIn('status_pengajuan', ['aktif', 'kadaluarsa']);
+        
+        $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
         
         $totalDomain = $baseQuery->count();
         $totalAktif = (clone $baseQuery)->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'aktif'))->count();
@@ -106,7 +114,7 @@ class AktivasiController extends Controller
      */
     public function desaPerpanjang()
     {
-        // Update status kadaluarsa
+        // Update status kadaluarsa di tabel aktivasi saja
         $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
             ->get();
@@ -114,11 +122,8 @@ class AktivasiController extends Controller
         foreach ($expiredDomains as $aktivasi) {
             $aktivasi->status_akt = 'kadaluarsa';
             $aktivasi->save();
-            $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
-            if ($pengajuan) {
-                $pengajuan->status_pengajuan = 'kadaluarsa';
-                $pengajuan->save();
-            }
+            
+            // JANGAN update tabel pengajuan agar tetap 'aktif'
         }
         
         $query = Pengajuan::where('id_user', auth()->id())

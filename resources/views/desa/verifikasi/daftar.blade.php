@@ -51,12 +51,16 @@
             <table class="inv-table" id="invTable">
                 <thead>
                     <tr>
-                        {{-- Kolom No (Non-sortable) --}}
+                        {{-- Kolom No --}}
                         <th>No</th>
                         
                         <th data-type="string" class="sortable">Nama Domain <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Tanggal Pengajuan <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Status <i class="sort-icon"></i></th>
+                        
+                        {{-- KOLOM CATATAN (BARU) --}}
+                        <th data-type="string" class="sortable">Catatan <i class="sort-icon"></i></th>
+                        
                         <th style="text-align:center; cursor: default;">Aksi</th>
                     </tr>
                 </thead>
@@ -98,6 +102,13 @@
                                 @endif
                             </td>
 
+                            {{-- ISI CATATAN (BARU) --}}
+                            <td>
+                                <span style="font-size:13px; color:#64748b;">
+                                    {{ $row->catatan_umum ?? '-' }}
+                                </span>
+                            </td>
+
                             <td style="text-align:center">
                                 <div style="display:flex;justify-content:center;gap:8px;">
                                     <!-- DETAIL (Icon) -->
@@ -108,7 +119,7 @@
                             </td>
                         </tr>
                     @empty
-                        {{-- Update colspan menjadi 6 karena ada tambahan 1 kolom --}}
+                        {{-- colspan diubah menjadi 6 sesuai jumlah kolom baru --}}
                         <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
                     @endforelse
                 </tbody>

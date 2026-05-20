@@ -248,9 +248,12 @@ public function updateDokumen(Request $request, $id)
     return back()->with('success', 'Dokumen berhasil diperbarui');
 }
 
-    public function adminIndex()
+        public function adminIndex()
     {
         $data = Pengajuan::where('status_pengajuan', '!=', 'aktif')
+            ->whereDoesntHave('faktur', function ($query) {
+                $query->where('tipe', 'perpanjangan');
+            })
             ->latest()
             ->paginate(10);
 
@@ -259,7 +262,9 @@ public function updateDokumen(Request $request, $id)
 
 public function adminDetail($id)
 {
-    $pengajuan = Pengajuan::with('dokumenPersyaratan')->findOrFail($id);
+    // Tambahkan 'pesan' dan 'faktur' dalam with()
+    $pengajuan = Pengajuan::with('dokumenPersyaratan', 'pesan', 'faktur')->findOrFail($id);
+    
     return view('admin.pengajuan.detail', compact('pengajuan'));
 }
 
