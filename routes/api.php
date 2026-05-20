@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PengajuanApiController as UserPengajuanController;
 use App\Http\Controllers\Api\PesanControllerApi;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DomainTerdaftarController;
 use App\Http\Controllers\Api\PerpanjanganApiController;
 
@@ -113,10 +114,8 @@ Route::prefix('admin')->group(function () {
         [AdminPengajuanController::class, 'aktivasi']);
 
     Route::get('/faktur',[AdminPengajuanController::class, 'fakturMobile']);
-
     Route::get('/faktur/{id}',[AdminPengajuanController::class, 'detailFakturMobile']);
-    Route::get('/notifikasi', [PesanControllerApi::class,'adminNotif'
-]);
-
+    Route::get('/notifikasi', [PesanControllerApi::class,'adminNotif']);
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
 });
