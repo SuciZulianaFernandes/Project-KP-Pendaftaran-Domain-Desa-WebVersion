@@ -12,7 +12,6 @@ use Carbon\Carbon;
 
 class PerpanjanganApiController extends Controller
 {
-
     // USER - LIST DOMAIN AKTIF
 public function listDomain(Request $request)
 {
