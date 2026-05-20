@@ -60,9 +60,20 @@
                 <tbody>
                     @forelse($fakturs as $indexPerpanjang => $item)
                         @php
-                            // Ambil data relasi untuk pengecekan null
+                            // Ambil data relasi
                             $pengajuan = $item->pengajuan;
-                            $pengajuanStatus = $pengajuan ? $pengajuan->status_pengajuan : 'unknown';
+                            
+                            // --- LOGIKA BARU STATUS PENGAJUAN (SAMA DENGAN DETAIL VERIFIKASI) ---
+                            $statusAkhir = $pengajuan ? $pengajuan->status_pengajuan : 'unknown';
+                            
+                            // 1. Jika faktur belum bayar, tampilkan status 'diproses' (Sesuai Request)
+                            if ($item->status == 'belum_bayar') {
+                                $statusAkhir = 'diproses';
+                            }
+                            // 2. Jika status pengajuan aktif, cek tabel aktivasi (kadaluarsa/nonaktif)
+                            elseif ($statusAkhir == 'aktif' && $pengajuan && $pengajuan->aktivasi) {
+                                $statusAkhir = $pengajuan->aktivasi->status_akt;
+                            }
                         @endphp
 
                         <tr data-status="{{ $item->status }}" style="animation-delay:{{$indexPerpanjang*0.05}}s">
@@ -73,23 +84,31 @@
                             {{-- DOMAIN --}}
                             <td style="font-weight:500;color:#334155">{{ $item->nama_domain }}.desa.id</td>
                             
-                            {{-- STATUS DOMAIN --}}
+                            {{-- STATUS DOMAIN (MENGGUNAKAN $statusAkhir) --}}
                             <td>
-                                @if($pengajuanStatus == 'menunggu_aktivasi')
+                                @if($statusAkhir == 'menunggu_aktivasi')
                                     <span class="px-2 py-1 rounded text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200">
                                         Menunggu Aktivasi
                                     </span>
-                                @elseif($pengajuanStatus == 'diproses')
+                                @elseif($statusAkhir == 'diproses')
                                     <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
                                         Diproses
                                     </span>
-                                @elseif($pengajuanStatus == 'aktif')
+                                @elseif($statusAkhir == 'aktif')
                                     <span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
                                         Aktif
                                     </span>
+                                @elseif($statusAkhir == 'kadaluarsa')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-300">
+                                        Kadaluarsa
+                                    </span>
+                                @elseif($statusAkhir == 'nonaktif')
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-300">
+                                        Nonaktif
+                                    </span>
                                 @else
                                     <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                        {{ ucfirst(str_replace('_', ' ', $pengajuanStatus)) }}
+                                        {{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
                                     </span>
                                 @endif
                             </td>

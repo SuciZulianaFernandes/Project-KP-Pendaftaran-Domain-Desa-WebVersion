@@ -5,7 +5,7 @@
 
 <div class="flex flex-col lg:flex-row gap-6">
 
-    <!-- SIDEBAR KIRI (SAMA DENGAN TEMA REFERENCE) -->
+    <!-- SIDEBAR KIRI -->
     <div class="w-full lg:w-64 flex-shrink-0 space-y-4">
 
         <!-- STATUS DOMAIN -->
@@ -24,13 +24,33 @@
                     {{ $pengajuan->nama_domain }}.desa.id
                 </p>
 
+                @php
+                    // --- LOGIKA BARU: Tentukan status akhir berdasarkan relasi aktivasi ---
+                    $finalStatus = $pengajuan->status_pengajuan;
+
+                    // 1. Jika faktur belum bayar, tampilkan status 'diproses'
+                    if ($faktur->status == 'belum_bayar') {
+                        $finalStatus = 'diproses';
+                    }
+                    // 2. Jika status pengajuan aktif, cek tabel aktivasi
+                    elseif ($finalStatus == 'aktif' && $pengajuan->aktivasi) {
+                        $finalStatus = $pengajuan->aktivasi->status_akt;
+                    }
+                @endphp
+
                 <p class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full
-                        @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
-                        @elseif($pengajuan->status_pengajuan == 'diproses') bg-blue-500
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') bg-orange-500
-                        @elseif($pengajuan->status_pengajuan == 'aktif') bg-green-600
+                        @if($finalStatus == 'ditinjau') bg-yellow-500
+                        @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
+                        @elseif($finalStatus == 'diproses') bg-blue-500
+                        @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
+                        
+                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
+                        @elseif($finalStatus == 'aktif') bg-green-600
+                        @elseif($finalStatus == 'kadaluarsa') bg-gray-500
+                        @elseif($finalStatus == 'nonaktif') bg-gray-400
+                        
+                        @else bg-gray-400
                         @endif">
                     </span>
 
@@ -39,13 +59,19 @@
                     </span>
 
                     <span class="font-semibold
-                        @if($pengajuan->status_pengajuan == 'ditinjau') text-yellow-600
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') text-red-600
-                        @elseif($pengajuan->status_pengajuan == 'diproses') text-blue-600
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') text-orange-600
-                        @elseif($pengajuan->status_pengajuan == 'aktif') text-green-600
+                        @if($finalStatus == 'ditinjau') text-yellow-600
+                        @elseif($finalStatus == 'perlu_perbaikan') text-red-600
+                        @elseif($finalStatus == 'diproses') text-blue-600
+                        @elseif($finalStatus == 'menunggu_aktivasi') text-orange-600
+                        
+                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
+                        @elseif($finalStatus == 'aktif') text-green-600
+                        @elseif($finalStatus == 'kadaluarsa') text-gray-600
+                        @elseif($finalStatus == 'nonaktif') text-gray-500
+                        
+                        @else text-gray-500
                         @endif">
-                        {{ ucfirst(str_replace('_', ' ', $pengajuan->status_pengajuan)) }}
+                        {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
                     </span>
                 </p>
 
@@ -74,7 +100,7 @@
 
             </div>
 
-            <!-- INFORMASI INSTANSI (MENGGUNAKAN GRID TEMA REFERENCE) -->
+            <!-- INFORMASI INSTANSI -->
             <h3 class="font-semibold mb-4">
                 Informasi Instansi
             </h3>
@@ -113,7 +139,7 @@
 
             </div>
 
-            <!-- DATA PERPANJANGAN / FAKTUR (DISESUAIKAN GAYANYA) -->
+            <!-- DATA PERPANJANGAN / FAKTUR -->
             <div class="mb-6 bg-gray-50 p-4 rounded border">
 
                 <h3 class="font-bold text-lg mb-3 text-blue-800">
@@ -155,7 +181,7 @@
                 </div>
             </div>
 
-            <!-- RIWAYAT DOMAIN (DISUSUN MENGGUNAKAN GAYA BOX) -->
+            <!-- RIWAYAT DOMAIN -->
             <div class="mb-6 bg-gray-50 p-4 rounded border">
 
                 <h3 class="font-bold text-lg mb-3">
@@ -183,7 +209,7 @@
             <hr class="my-4">
 
             <!-- AKTIVASI PERPANJANGAN -->
-            @if($pengajuan->status_pengajuan == 'menunggu_aktivasi' && $faktur->status == 'sudah_bayar')
+            @if($finalStatus == 'menunggu_aktivasi' && $faktur->status == 'sudah_bayar')
                 
                 <!-- FORM AKTIVASI KHUSUS -->
                 <div class="bg-blue-50 p-4 rounded border border-blue-200">
@@ -219,7 +245,7 @@
 
                 </div>
 
-            @elseif($pengajuan->status_pengajuan == 'aktif')
+            @elseif($finalStatus == 'aktif')
 
                 <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
 
@@ -229,13 +255,24 @@
 
                 </div>
 
+            @elseif($finalStatus == 'kadaluarsa')
+            
+                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                    <p class="text-gray-700 font-semibold">
+                        Masa berlaku domain ini telah kadaluarsa.
+                    </p>
+                </div>
+
             @else
 
                 <div class="bg-yellow-50 p-4 rounded border border-yellow-200 mt-4">
 
                     <p class="text-yellow-800 font-semibold">
-                        Menunggu pembayaran selesai sebelum dapat diaktivasi.
+                        Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
                     </p>
+                    <a href="{{ route('admin.faktur.index') }}" class="ml-2 text-sm underline hover:text-red-700 font-normal">
+                            Lihat di Manajemen Faktur
+                        </a>
 
                 </div>
 
@@ -278,7 +315,6 @@
             </div>
 
         </div>
-
         <div class="items-center px-4 py-3 flex justify-center gap-3">
 
             <button id="modalNoBtn"

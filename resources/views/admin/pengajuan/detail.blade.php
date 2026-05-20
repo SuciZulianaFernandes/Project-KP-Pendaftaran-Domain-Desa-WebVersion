@@ -381,7 +381,7 @@
                     <!-- Faktur Sudah Ada -->
                     <p class="text-blue-700 font-semibold flex items-center gap-2">
                         <i class="fas fa-file-invoice"></i>
-                        Faktur telah diterbitkan.
+                        Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
                         <a href="{{ route('admin.faktur.index') }}" class="ml-2 text-sm underline hover:text-red-700 font-normal">
                             Lihat di Manajemen Faktur
                         </a>
