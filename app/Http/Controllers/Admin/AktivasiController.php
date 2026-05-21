@@ -65,49 +65,80 @@ class AktivasiController extends Controller
     }
 
     public function adminDaftarAktif(Request $request)
-    {
-        // Update kadaluarsa otomatis
-        // HANYA update tabel aktivasi, jangan sentuh tabel pengajuan
-        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
-            ->where('status_akt', 'aktif')
-            ->get();
+{
+    // Update kadaluarsa otomatis
+    $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
+        ->where('status_akt', 'aktif')
+        ->get();
 
-        foreach ($expiredDomains as $aktivasi) {
-            $aktivasi->status_akt = 'kadaluarsa';
-            $aktivasi->save();
-            
-            // HAPUS BARIS INI jika enum pengajuan tidak punya 'kadaluarsa'
-            // $pengajuan = Pengajuan::find($aktivasi->id_pengajuan);
-            // if ($pengajuan) {
-            //     $pengajuan->status_pengajuan = 'kadaluarsa'; // JANGAN LAKUKAN INI
-            //     $pengajuan->save();
-            // }
-        }
-
-        $statusFilter = $request->get('status', 'all');
-        
-        // Karena status_pengajuan tidak akan berubah jadi kadaluarsa,
-        // kita cari yang status_pengajuannya 'aktif' lalu filter berdasarkan relasi aktivasi
-        $query = Pengajuan::with('faktur', 'aktivasi')
-            ->where('status_pengajuan', 'aktif'); 
-
-        if ($statusFilter == 'aktif') {
-            $query->whereHas('aktivasi', function ($q) { $q->where('status_akt', 'aktif'); });
-        } elseif ($statusFilter == 'kadaluarsa') {
-            $query->whereHas('aktivasi', function ($q) { $q->where('status_akt', 'kadaluarsa'); });
-        }
-
-        $data = $query->latest()->paginate(10);
-        
-        $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
-        
-        $totalDomain = $baseQuery->count();
-        $totalAktif = (clone $baseQuery)->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'aktif'))->count();
-        $totalKadaluarsa = (clone $baseQuery)->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'kadaluarsa'))->count();
-        $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
-
-        return view('admin.domain_terdaftar', compact('data', 'statusFilter', 'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'));
+    foreach ($expiredDomains as $aktivasi) {
+        $aktivasi->status_akt = 'kadaluarsa';
+        $aktivasi->save();
     }
+
+    $statusFilter = $request->get('status', 'all');
+
+    // FILTER KECAMATAN
+    $kecamatanFilter = $request->get('kecamatan');
+
+    $query = Pengajuan::with('faktur', 'aktivasi')
+        ->where('status_pengajuan', 'aktif');
+
+    // FILTER STATUS
+    if ($statusFilter == 'aktif') {
+        $query->whereHas('aktivasi', function ($q) {
+            $q->where('status_akt', 'aktif');
+        });
+    } elseif ($statusFilter == 'kadaluarsa') {
+        $query->whereHas('aktivasi', function ($q) {
+            $q->where('status_akt', 'kadaluarsa');
+        });
+    }
+
+    // FILTER KECAMATAN
+    if (!empty($kecamatanFilter)) {
+        $query->where('kecamatan', $kecamatanFilter);
+    }
+
+    $data = $query->latest()->paginate(10);
+
+    // AGAR FILTER TIDAK HILANG SAAT PINDAH HALAMAN
+    $data->appends([
+        'status' => $statusFilter,
+        'kecamatan' => $kecamatanFilter
+    ]);
+
+    // LIST KECAMATAN UNTUK DROPDOWN
+    $kecamatanList = Pengajuan::select('kecamatan')
+        ->distinct()
+        ->orderBy('kecamatan')
+        ->pluck('kecamatan');
+
+    $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
+
+    $totalDomain = $baseQuery->count();
+
+    $totalAktif = (clone $baseQuery)
+        ->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'aktif'))
+        ->count();
+
+    $totalKadaluarsa = (clone $baseQuery)
+        ->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'kadaluarsa'))
+        ->count();
+
+    $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
+
+    return view('admin.domain_terdaftar', compact(
+        'data',
+        'statusFilter',
+        'kecamatanFilter',
+        'kecamatanList',
+        'totalDomain',
+        'totalAktif',
+        'totalNonaktif',
+        'totalKadaluarsa'
+    ));
+}
 
     /**
      * LIST DESA: Halaman perpanjang

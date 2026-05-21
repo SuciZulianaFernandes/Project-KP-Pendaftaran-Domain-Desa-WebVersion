@@ -11,6 +11,7 @@ use App\Http\Controllers\FakturController;
 use App\Http\Controllers\FakturDesaController;
 use App\Http\Controllers\ProfileDesaController;
 use App\Http\Controllers\Admin\AktivasiController; 
+use App\Http\Controllers\DashboardController;
 
 // Route untuk tamu (guest)
 Route::get('/', function () {
@@ -76,6 +77,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         
     Route::get('/pesan', [PesanController::class, 'adminIndex'])
         ->name('pesan.index');
+        Route::delete('/pesan/{id}/hapus', [PesanController::class, 'destroy'])
+    ->name('pesan.hapus');
+    Route::delete('/pesan/hapus/selected', [PesanController::class, 'destroySelected'])
+    ->name('pesan.hapus.selected');
 
     // --- ROUTE PERPANJANGAN (PERBAIKAN DISINI) ---
     
@@ -89,6 +94,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::post('/faktur/perpanjangan/buat/{id}', [FakturController::class, 'storePerpanjangan'])
         ->name('faktur.storePerpanjangan');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 }); // Penutup Group Admin
 // =====================================================
@@ -127,7 +134,12 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
 
     // Faktur & Pesan
     Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
-    Route::post('/pesan/{id}/konfirmasi', [PesanController::class, 'konfirmasiPembayaran'])->name('konfirmasi.pembayaran');        
+    Route::post('/pesan/{id}/konfirmasi', [PesanController::class, 'konfirmasiPembayaran'])->name('konfirmasi.pembayaran');      
+    Route::delete('/pesan/{id}/hapus', [PesanController::class, 'destroy'])
+    ->name('pesan.hapus');
+    Route::delete('/pesan/hapus/selected', [PesanController::class, 'destroySelected'])
+    ->name('pesan.hapus.selected');
+    
     Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
     Route::get('/faktur/{id}', [FakturDesaController::class, 'show'])->name('faktur.show');
     Route::post('/faktur/{id}/konfirmasi', [FakturDesaController::class, 'konfirmasiPembayaran'])->name('faktur.konfirmasi');
@@ -142,4 +154,7 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
 
     Route::put('/profile/update', [ProfileDesaController::class, 'update'])
         ->name('profile.update');
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 });
