@@ -219,15 +219,18 @@
                 </div>
 
                 <div class="show-row">
-                    <span class="k">Jenis Aplikasi</span>
-                    <span class="v">Informasi Desa</span>
-                </div>
-
-                <div class="show-row">
-                    <span class="k">Durasi</span>
+                    <span class="k">Masa Aktif</span>
                     <span class="v">1 Tahun</span>
                 </div>
 
+                <div class="show-row">
+                    <span class="k">Tipe Pembayaran</span>
+                    <span class="v"> @if($faktur->tipe == 'perpanjangan')
+                        <span class="v">Perpanjangan</span>
+                    @else
+                        <span class="v">Baru (Registrasi)</span>
+                    @endif</span>
+                </div>
                 <div class="show-row">
                     <span class="k">Total Pembayaran</span>
                     <span class="v price">

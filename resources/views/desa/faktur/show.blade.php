@@ -86,16 +86,12 @@
                     <span class="v">{{ $faktur->nama_domain }}.desa.id</span>
                 </div>
                 <div class="show-row">
-                    <span class="k">Aplikasi</span>
-                    <span class="v">Registrasi</span>
+                    <span class="k">No. Invoice</span>
+                    <span class="v">{{ $faktur->no_invoice }}</span>
                 </div>
                 <div class="show-row">
                     <span class="k">Masa Aktif</span>
                     <span class="v">1 Tahun</span>
-                </div>
-                <div class="show-row">
-                    <span class="k">Harga</span>
-                    <span class="v price">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
                 </div>
                 <div class="show-row">
                     <span class="k">Tipe Pembayaran</span>
@@ -104,6 +100,10 @@
                     @else
                         <span class="v">Baru (Registrasi)</span>
                     @endif</span>
+                </div>
+                <div class="show-row">
+                    <span class="k">Total Pembayaran</span>
+                    <span class="v price">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
                 </div>
             </div>
                 

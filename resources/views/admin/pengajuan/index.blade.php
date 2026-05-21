@@ -97,7 +97,7 @@
                             <td style="text-align:center">
                                 <div style="display:flex;justify-content:center;gap:8px;">
                                     <!-- DETAIL -->
-                                    <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat"><i class="fas fa-eye"></i></a>
+                                    <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat"><i class="fas fa-eye"></i>Detail</a>
                                 </div>
                             </td>
                         </tr>

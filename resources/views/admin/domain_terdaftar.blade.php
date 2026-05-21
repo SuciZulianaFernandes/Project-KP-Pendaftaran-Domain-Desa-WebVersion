@@ -234,7 +234,7 @@
                             <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}"
                                 class="inv-btn-d">
 
-                                <i class="fas fa-eye"></i> Lihat Detail
+                                <i class="fas fa-eye"></i>Detail
                             </a>
                         </td>
 
