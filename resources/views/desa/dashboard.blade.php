@@ -20,24 +20,6 @@
         </div>
     </div>
 
-    {{-- PERINGATAN KADALUARSA (Hanya muncul jika ada data) --}}
-    @if($totalKadaluarsa > 0)
-    <div class="bg-red-50 border border-red-200 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm animate-pulse-slow">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-2xl">
-                ⚠️
-            </div>
-            <div>
-                <h3 class="font-bold text-red-800 text-lg">Perhatian! Domain Kadaluarsa</h3>
-                <p class="text-red-600 text-sm">Anda memiliki <span class="font-bold">{{ $totalKadaluarsa }}</span> domain yang masa berlakunya telah habis. Layanan mungkin terganggu.</p>
-            </div>
-        </div>
-        <a href="{{ route('desa.perpanjang') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all transform hover:-translate-y-1 whitespace-nowrap">
-            Perpanjang Sekarang
-        </a>
-    </div>
-    @endif
-
     {{-- STATISTIK BARIS 1 --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
@@ -146,11 +128,6 @@
                     </div>
                 </div>
                 
-                @if($totalKadaluarsa > 0)
-                <div class="mt-4 flex items-center text-xs text-red-500 font-medium bg-red-50 inline-flex px-3 py-1.5 rounded-lg border border-red-100">
-                    <span class="mr-1.5">⚠️</span> Aksi diperlukan
-                </div>
-                @endif
             </div>
         </div>
 
