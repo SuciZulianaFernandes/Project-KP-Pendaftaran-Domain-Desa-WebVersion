@@ -156,7 +156,7 @@
                                 <span class="inv-badge" style="background:#ffedd5;color:#9a3412"><span class="d" style="background:#f97316"></span>Menunggu Faktur</span>
                             
                             @elseif($bisaPerpanjang)
-                                <span class="inv-badge badge-green"><span class="d"></span>Siap Diperpanjang</span>
+                                <span class="inv-badge badge-green"><span class="d"></span>Aktif</span>
                             
                             @else
                                 <span class="inv-badge badge-green"><span class="d"></span>Aktif</span>

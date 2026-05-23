@@ -84,37 +84,37 @@
                             {{-- DOMAIN --}}
                             <td style="font-weight:500;color:#334155">{{ $item->nama_domain }}.desa.id</td>
                             
-                            {{-- STATUS DOMAIN (MENGGUNAKAN $statusAkhir) --}}
-                            <td>
+                            {{-- STATUS DOMAIN (MENGGUNAKAN GAYA INDEX FAKTUR) --}}
+                            <td style="white-space:nowrap">
                                 @if($statusAkhir == 'menunggu_aktivasi')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200">
-                                        Menunggu Aktivasi
+                                    <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
+                                        <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
                                     </span>
                                 @elseif($statusAkhir == 'diproses')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                                        Diproses
+                                    <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
+                                        <span class="d" style="background:#3b82f6"></span>Diproses
                                     </span>
                                 @elseif($statusAkhir == 'aktif')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
-                                        Aktif
+                                    <span class="inv-badge badge-green">
+                                        <span class="d"></span>Aktif
                                     </span>
                                 @elseif($statusAkhir == 'kadaluarsa')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-300">
-                                        Kadaluarsa
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
                                     </span>
                                 @elseif($statusAkhir == 'nonaktif')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-300">
-                                        Nonaktif
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>Nonaktif
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                        {{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>{{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
                                     </span>
                                 @endif
                             </td>
 
                             {{-- TIPE --}}
-                            <td>
+                            <td style="white-space:nowrap">
                                 <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
                                     Perpanjangan
                                 </span>
@@ -125,19 +125,19 @@
                                 <span class="inv-date">{{ $item->created_at->format('d/m/Y') }}</span>
                             </td>
 
-                            {{-- STATUS FAKTUR --}}
-                            <td>
+                            {{-- STATUS FAKTUR (MENGGUNAKAN GAYA INDEX FAKTUR) --}}
+                            <td style="white-space:nowrap">
                                 @if($item->status == 'belum_bayar')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                        Belum Bayar
+                                    <span class="inv-badge badge-red">
+                                        <span class="d"></span>Belum Bayar
                                     </span>
                                 @elseif($item->status == 'sudah_bayar')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
-                                        Sudah Bayar
+                                    <span class="inv-badge badge-green">
+                                        <span class="d"></span>Sudah Bayar
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
-                                        Kadaluarsa
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
                                     </span>
                                 @endif
                             </td>

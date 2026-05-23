@@ -50,7 +50,6 @@
                 </p>
 
             </div>
-
         </div>
 
     </div>
@@ -74,7 +73,7 @@
 
             </div>
 
-            <!-- INFORMASI INSTANSI -->
+            <!-- INFORMASI INSTANSI (TETAP SEMULA) -->
             <h3 class="font-semibold mb-4">
                 Informasi Instansi
             </h3>
@@ -172,14 +171,24 @@
 
             </div>
 
-           <!-- FAKTUR -->
+           <!-- RIWAYAT DATA FAKTUR (GAYA DIUBAH MENJADI SAMA DENGAN SHOW PERPANJANG) -->
 @if($pengajuan->faktur->isNotEmpty())
 
-<div class="mb-6 bg-gray-50 p-4 rounded border">
+<div class="mb-6 bg-gray-50 p-4 rounded-xl border">
 
-    <h3 class="font-bold text-lg mb-4">
-        Riwayat Data Faktur
-    </h3>
+    <div class="flex items-center justify-between mb-4">
+
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800">
+                Riwayat Data Faktur
+            </h3>
+
+            <p class="text-sm text-gray-500">
+                Daftar faktur yang berkaitan dengan domain ini.
+            </p>
+        </div>
+
+    </div>
 
     <div class="space-y-4">
 
@@ -187,44 +196,61 @@
 
         <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200">
 
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                <!-- INFORMASI FAKTUR -->
-                <div class="space-y-1 text-sm">
+                <!-- INFORMASI -->
+                <div class="space-y-2 text-sm">
 
-                    <p class="font-semibold text-gray-800">
-                        {{ $fakturItem->no_invoice }}
-                    </p>
+                    <div>
+                        <p class="text-gray-500 text-xs">
+                            Nomor Invoice
+                        </p>
 
-                    <p class="text-gray-600">
-                        Total :
-                        <span class="font-medium text-gray-800">
-                            Rp {{ number_format($fakturItem->total,0,',','.') }}
-                        </span>
-                    </p>
+                        <p class="font-semibold text-gray-800">
+                            {{ $fakturItem->no_invoice }}
+                        </p>
+                    </div>
 
-                    <p class="text-gray-600">
-                        Status :
-                        <span class="
-                            @if($fakturItem->status == 'belum_bayar') text-yellow-600
-                            @elseif($fakturItem->status == 'sudah_bayar') text-green-600
-                            @elseif($fakturItem->status == 'kedaluarsa') text-red-600
-                            @endif
-                            font-semibold
-                        ">
-                            {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
-                        </span>
-                    </p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+
+                        <div>
+                            <p class="text-gray-500 text-xs">
+                                Total Tagihan
+                            </p>
+
+                            <p class="font-medium text-gray-800">
+                                Rp {{ number_format($fakturItem->total,0,',','.') }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p class="text-gray-500 text-xs">
+                                Status Pembayaran
+                            </p>
+
+                            <p class="font-semibold
+                                @if($fakturItem->status == 'belum_bayar') text-yellow-600
+                                @elseif($fakturItem->status == 'sudah_bayar') text-green-600
+                                @elseif($fakturItem->status == 'kedaluarsa') text-red-600
+                                @endif">
+
+                                {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
+                            </p>
+                        </div>
+
+                    </div>
 
                 </div>
 
-                <!-- BUTTON DETAIL -->
-                <div class="flex justify-start md:justify-end">
+                <!-- BUTTON -->
+                <div class="flex justify-start lg:justify-end">
 
                     <a href="{{ route('admin.faktur.show', $fakturItem->id) }}"
-                       class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
+                    class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
+
                         <i class="fas fa-eye"></i>
-                        Detail
+
+                        Detail Faktur
                     </a>
 
                 </div>

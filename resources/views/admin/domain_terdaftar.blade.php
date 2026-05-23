@@ -56,69 +56,75 @@
     </div>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- HEADER & FILTER DI LUAR CARD -->
+<div class="container-fluid" style="padding:0 24px;max-width:1400px;margin-bottom:20px">
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+
+        <div>
+            <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">
+                Daftar Domain Terdaftar
+            </h1>
+
+            <p style="font-size:14px;color:#64748b;margin:4px 0 0">
+                Kelola status aktivasi dan masa berlaku domain desa
+            </p>
+        </div>
+
+        <!-- FILTER STATUS -->
+        <div style="display:flex; background:#f8fafc; padding:4px; border-radius:6px;">
+            
+            <a href="{{ route('admin.domain_terdaftar', ['status' => 'all', 'kecamatan' => request('kecamatan')]) }}"
+                class="px-4 py-1.5 text-xs font-medium rounded transition-all
+                {{ $statusFilter == 'all' || empty($statusFilter) ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
+                Semua
+            </a>
+
+            <a href="{{ route('admin.domain_terdaftar', ['status' => 'aktif', 'kecamatan' => request('kecamatan')]) }}"
+                class="px-4 py-1.5 text-xs font-medium rounded transition-all
+                {{ $statusFilter == 'aktif' ? 'bg-white shadow-sm text-green-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
+                Aktif
+            </a>
+
+            <a href="{{ route('admin.domain_terdaftar', ['status' => 'kadaluarsa', 'kecamatan' => request('kecamatan')]) }}"
+                class="px-4 py-1.5 text-xs font-medium rounded transition-all
+                {{ $statusFilter == 'kadaluarsa' ? 'bg-white shadow-sm text-red-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
+                Kadaluarsa
+            </a>
+
+        </div>
+
+    </div>
+
+    <!-- FILTER KECAMATAN -->
+    <div>
+        <form method="GET" action="{{ route('admin.domain_terdaftar') }}">
+
+            <input type="hidden" name="status" value="{{ $statusFilter }}">
+
+            <select name="kecamatan"
+                onchange="this.form.submit()"
+                style="padding:10px 14px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-width:250px; outline:none; background:white;">
+
+                <option value="">-- Semua Kecamatan --</option>
+
+                @foreach($kecamatanList as $kecamatan)
+                    <option value="{{ $kecamatan }}"
+                        {{ request('kecamatan') == $kecamatan ? 'selected' : '' }}>
+                        {{ $kecamatan }}
+                    </option>
+                @endforeach
+
+            </select>
+        </form>
+    </div>
+
+</div>
+
+<!-- CARD HANYA SEARCH + TABLE -->
 <div class="container-fluid" style="padding:0 24px;max-width:1400px">
+
     <div class="inv-card">
-
-        <!-- Header -->
-        <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
-            <div>
-                <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">
-                    Daftar Domain Terdaftar
-                </h1>
-
-                <p style="font-size:14px;color:#64748b;margin:4px 0 0">
-                    Kelola status aktivasi dan masa berlaku domain desa
-                </p>
-            </div>
-
-            <!-- FILTER STATUS -->
-            <div style="display:flex; background:#f8fafc; padding:4px; border-radius:6px;">
-                
-                <a href="{{ route('admin.domain_terdaftar', ['status' => 'all', 'kecamatan' => request('kecamatan')]) }}"
-                    class="px-4 py-1.5 text-xs font-medium rounded transition-all
-                    {{ $statusFilter == 'all' || empty($statusFilter) ? 'bg-white shadow-sm text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
-                    Semua
-                </a>
-
-                <a href="{{ route('admin.domain_terdaftar', ['status' => 'aktif', 'kecamatan' => request('kecamatan')]) }}"
-                    class="px-4 py-1.5 text-xs font-medium rounded transition-all
-                    {{ $statusFilter == 'aktif' ? 'bg-white shadow-sm text-green-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
-                    Aktif
-                </a>
-
-                <a href="{{ route('admin.domain_terdaftar', ['status' => 'kadaluarsa', 'kecamatan' => request('kecamatan')]) }}"
-                    class="px-4 py-1.5 text-xs font-medium rounded transition-all
-                    {{ $statusFilter == 'kadaluarsa' ? 'bg-white shadow-sm text-red-600 font-bold' : 'text-gray-500 hover:text-gray-700' }}">
-                    Kadaluarsa
-                </a>
-
-            </div>
-        </div>
-
-        <!-- FILTER KECAMATAN -->
-        <div style="margin-bottom:20px;">
-            <form method="GET" action="{{ route('admin.domain_terdaftar') }}">
-
-                {{-- Supaya status tetap kebawa --}}
-                <input type="hidden" name="status" value="{{ $statusFilter }}">
-
-                <select name="kecamatan"
-                    onchange="this.form.submit()"
-                    style="padding:10px 14px; border:1px solid #e2e8f0; border-radius:6px; font-size:14px; min-width:250px; outline:none;">
-
-                    <option value="">-- Semua Kecamatan --</option>
-
-                    @foreach($kecamatanList as $kecamatan)
-                        <option value="{{ $kecamatan }}"
-                            {{ request('kecamatan') == $kecamatan ? 'selected' : '' }}>
-                            {{ $kecamatan }}
-                        </option>
-                    @endforeach
-
-                </select>
-            </form>
-        </div>
 
         <!-- SEARCH -->
         <div style="margin-bottom:20px; position:relative;">
@@ -141,6 +147,7 @@
                         <th>Nama Desa</th>
                         <th>Kecamatan</th>
                         <th>Domain</th>
+                        <th style="text-align:center">Tipe</th>
                         <th>Tgl Aktivasi</th>
                         <th>Masa Berlaku Hingga</th>
                         <th style="text-align:center">Status</th>
@@ -163,7 +170,6 @@
                             </span>
                         </td>
 
-                        <!-- KOLOM KECAMATAN -->
                         <td>
                             <span class="inv-date">
                                 {{ $row->kecamatan }}
@@ -174,6 +180,29 @@
                             <span class="inv-id">
                                 {{ $row->nama_domain }}.desa.id
                             </span>
+                        </td>
+
+                        <!-- TIPE -->
+                        <td style="text-align:center">
+
+                            @php
+                                $fakturTerakhir = $row->faktur->last();
+                            @endphp
+
+                            @if($fakturTerakhir && $fakturTerakhir->tipe == 'perpanjangan')
+
+                                <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">
+                                    Perpanjangan
+                                </span>
+
+                            @else
+
+                                <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 font-medium">
+                                    Baru
+                                </span>
+
+                            @endif
+
                         </td>
 
                         <td>
@@ -243,7 +272,7 @@
                     @empty
 
                     <tr class="inv-empty">
-                        <td colspan="8">
+                        <td colspan="9">
                             <i class="fas fa-inbox"></i>
                             Tidak ada data domain
                         </td>

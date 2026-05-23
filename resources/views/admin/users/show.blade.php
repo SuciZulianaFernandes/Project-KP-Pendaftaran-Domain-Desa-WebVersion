@@ -59,46 +59,98 @@
         </div>
         @endif
 
-        <!-- Detail Khusus Desa -->
-        @if($user->role === 'desa' && $user->desa)
-        <div class="mb-8">
-            <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Detail Informasi Desa</h3>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex">
-                        <dt class="w-1/3 text-sm font-medium text-gray-500">Nama Desa:</dt>
-                        <dd class="w-2/3 text-sm text-gray-900">{{ $user->desa->nama_desa }}</dd>
-                    </div>
-                    <div class="flex">
-                        <dt class="w-1/3 text-sm font-medium text-gray-500">Nama Kepala Desa:</dt>
-                        <dd class="w-2/3 text-sm text-gray-900">{{ $user->desa->nama_kepala_desa ?? '-' }}</dd>
-                    </div>
-                    <div class="flex md:col-span-2">
-                        <dt class="w-1/6 text-sm font-medium text-gray-500">NIP Kepala Desa:</dt>
-                        <dd class="w-5/6 text-sm text-gray-900">{{ $user->desa->nip_kepala_desa ?? '-' }}</dd>
-                    </div>
-                    <!-- Tambahkan field desa lainnya sesuai kebutuhan -->
-                     <div class="flex md:col-span-2">
-                        <dt class="w-1/6 text-sm font-medium text-gray-500">Provinsi:</dt>
-                        <dd class="w-5/6 text-sm text-gray-900">{{ $user->desa->provinsi ?? '-' }}</dd>
-                    </div>
-                    <div class="flex">
-                        <dt class="w-1/3 text-sm font-medium text-gray-500">Klasifikasi:</dt>
-                        <dd class="w-2/3 text-sm text-gray-900">{{ $user->desa->klasifikasi_instansi ?? '-' }}</dd>
-                    </div>
-                    <div class="flex md:col-span-2">
-                        <dt class="w-1/6 text-sm font-medium text-gray-500">Alamat:</dt>
-                        <dd class="w-5/6 text-sm text-gray-900">{{ $user->desa->alamat ?? '-' }}</dd>
-                    </div>
-                    
-                    <div class="flex md:col-span-2">
-                        <dt class="w-1/6 text-sm font-medium text-gray-500">Kab/Kota:</dt>
-                        <dd class="w-5/6 text-sm text-gray-900">{{ $user->desa->kota_kabupaten ?? '-' }}</dd>
-                    </div>
-                </dl>
+        {{-- DETAIL KHUSUS DESA --}}
+@if($user->role === 'desa' && $user->desa)
+
+<div class="mb-8">
+
+    <div class="border-b pb-3 mb-5">
+        <h3 class="text-lg font-semibold text-gray-800">
+            Detail Informasi Desa
+        </h3>
+
+        <p class="text-sm text-gray-500 mt-1">
+            Informasi lengkap profil desa dan kepala desa.
+        </p>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+
+        <div class="grid grid-cols-1 md:grid-cols-2">
+
+            {{-- Nama Desa --}}
+            <div class="p-5 border-b md:border-r border-gray-200">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    Nama Desa
+                </p>
+
+                <p class="text-base font-semibold text-gray-800 break-words leading-relaxed">
+                    {{ $user->desa->nama_desa ?? '-' }}
+                </p>
             </div>
+
+            {{-- Nama Kepala Desa --}}
+            <div class="p-5 border-b border-gray-200">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    Nama Kepala Desa
+                </p>
+
+                <p class="text-base font-semibold text-gray-800 break-words leading-relaxed">
+                    {{ $user->desa->nama_kepala_desa ?? '-' }}
+                </p>
+            </div>
+
+            {{-- NIP Kepala Desa --}}
+            <div class="p-5 border-b md:border-r border-gray-200">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    NIP Kepala Desa
+                </p>
+
+                <p class="text-base text-gray-800 break-all leading-relaxed">
+                    {{ $user->desa->nip_kepala_desa ?? '-' }}
+                </p>
+            </div>
+
+            {{-- Alamat --}}
+            <div class="p-5 border-b border-gray-200">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    Alamat
+                </p>
+
+                <p class="text-base text-gray-800 whitespace-pre-line break-words leading-relaxed">
+                    {{ $user->desa->alamat ?? '-' }}
+                </p>
+            </div>
+
+            {{-- ID Provinsi --}}
+            <div class="p-5 border-b md:border-r md:border-b-0 border-gray-200">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    ID Provinsi
+                </p>
+
+                <p class="text-base text-gray-800 leading-relaxed">
+                    {{ $user->desa->id_prov ?? '-' }}
+                </p>
+            </div>
+
+            {{-- ID Kabupaten --}}
+            <div class="p-5">
+                <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase mb-2">
+                    ID Kabupaten
+                </p>
+
+                <p class="text-base text-gray-800 leading-relaxed">
+                    {{ $user->desa->id_kab ?? '-' }}
+                </p>
+            </div>
+
         </div>
-        @endif
+
+    </div>
+
+</div>
+
+@endif
 
         <!-- Informasi Waktu -->
         <div class="mb-8">

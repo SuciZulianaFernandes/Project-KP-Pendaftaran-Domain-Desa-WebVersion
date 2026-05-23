@@ -63,11 +63,24 @@
                             </td>
 
                             <td style="text-align:center">
-                                <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
-                                    @csrf
-                                    <!-- Tambahkan class js-confirm-print di sini -->
-                                    <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Cetak Faktur</button>
-                                </form>
+                                {{-- LOGIKA BARU: Cek apakah Desa sudah konfirmasi "Ya, Kirimkan Faktur" --}}
+                                @php
+                                    $isRequested = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
+                                        ->where('judul', 'Konfirmasi Pembayaran Disetujui')
+                                        ->where('role_tujuan', 'admin')
+                                        ->exists();
+                                @endphp
+
+                                @if($isRequested)
+                                    {{-- Tombol Cetak Faktur Hanya Muncul Jika Desa Sudah Minta --}}
+                                    <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
+                                        @csrf
+                                        <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Cetak Faktur</button>
+                                    </form>
+                                @else
+                                    {{-- Jika baru submit pengajuan (index4), muncul teks ini --}}
+                                    <span class="text-xs text-gray-400 italic">Menunggu Konfirmasi</span>
+                                @endif
                             </td>
                         </tr>
                     @else
@@ -129,9 +142,9 @@
                                 </td>
 
                                 <td style="text-align:center">
+                                    {{-- Untuk perpanjangan, tombol tetap muncul karena adanya permintaan perpanjangan --}}
                                     <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
                                         @csrf
-                                        <!-- Tambahkan class js-confirm-print di sini -->
                                         <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Buat Faktur</button>
                                     </form>
                                 </td>

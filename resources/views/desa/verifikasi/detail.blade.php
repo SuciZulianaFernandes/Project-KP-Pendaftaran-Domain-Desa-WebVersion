@@ -3,6 +3,22 @@
 
 @section('content')
 
+@php
+    // --- FIX: Ambil data aktivasi TERBARU berdasarkan masa berlaku ---
+    // Ini untuk memastikan kita membaca data perpanjangan terakhir, bukan data lama yang kadaluarsa.
+    $latestAktivasi = \App\Models\Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
+                            ->orderBy('masa_berlaku', 'desc')
+                            ->first();
+
+    // Tentukan status akhir berdasarkan relasi aktivasi TERBARU
+    $finalStatus = $pengajuan->status_pengajuan;
+    
+    // Jika status pengajuan sudah 'aktif', cek tabel aktivasi TERBARU
+    if ($pengajuan->status_pengajuan == 'aktif' && $latestAktivasi) {
+        $finalStatus = $latestAktivasi->status_akt;
+    }
+@endphp
+
 <div class="flex flex-col lg:flex-row gap-6">
 
     <!-- SIDEBAR KIRI -->
@@ -23,16 +39,6 @@
                     <strong>Domain</strong><br>
                     {{ $pengajuan->nama_domain }}.desa.id
                 </p>
-
-                @php
-                    // LOGIKA BARU: Tentukan status akhir berdasarkan relasi aktivasi
-                    $finalStatus = $pengajuan->status_pengajuan;
-                    
-                    // Jika status pengajuan sudah 'aktif', cek tabel aktivasi
-                    if ($pengajuan->status_pengajuan == 'aktif' && $pengajuan->aktivasi) {
-                        $finalStatus = $pengajuan->aktivasi->status_akt;
-                    }
-                @endphp
 
                 <p class="flex items-center gap-2">
 
@@ -79,7 +85,6 @@
                 </p>
 
             </div>
-
         </div>
 
     </div>
@@ -96,10 +101,9 @@
                     Detail Pengajuan
                 </h2>
 
-                <a href="{{ url()->previous() }}"
-   class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
-    <i class="fas fa-arrow-left mr-2"></i> Kembali
-</a>
+                <a href="{{ url()->previous() }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali
+                </a>
 
             </div>
 
@@ -178,101 +182,207 @@
 
             </div>
 
-            <!-- DOKUMEN -->
-<h3 class="font-semibold mb-4">
-    Dokumen Persyaratan Domain
-</h3>
+            <!-- DOKUMEN (GAYA 100% SAMA DENGAN DETAIL PENGAJUAN ADMIN) -->
+            <h3 class="font-semibold mb-4">
+                Dokumen Persyaratan Domain
+            </h3>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+                
+                @foreach($pengajuan->dokumenPersyaratan as $dok)
+                    
+                    <div>
+                        <!-- Baris List Sama Persis dengan Admin -->
+                        <div class="flex justify-between border-b pb-2 gap-3">
+                            <span class="text-gray-700">{{ $dok->jenis_dokumen }}</span>
 
-    @foreach($pengajuan->dokumenPersyaratan as $dok)
+                            <a href="{{ asset('storage/'.$dok->path_file) }}"
+                            target="_blank"
+                            class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline">
+                                Lihat Dokumen
+                            </a>
+                        </div>
 
-    <div class="bg-white border rounded-lg p-4">
+                        <!-- FORM UPLOAD PERBAIKAN (Hanya Muncul Jika Status Perlu Perbaikan) -->
+                        @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
 
-        <div class="flex justify-between items-center gap-3 border-b pb-2">
+                        <form
+                            action="{{ route('verifikasi.updateDokumen', $dok->id) }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            class="mt-2 space-y-2"
+                        >
 
-            <span class="text-gray-700">
-                {{ $dok->jenis_dokumen }}
-            </span>
+                            @csrf
+                            @method('PUT')
 
-            <a
-                href="{{ asset('storage/'.$dok->path_file) }}"
-                target="_blank"
-                class="text-red-600 text-xs whitespace-nowrap hover:underline"
-            >
-                Lihat Dokumen
-            </a>
+                            <input
+                                type="file"
+                                name="file"
+                                required
+                                class="w-full text-xs border rounded p-1 bg-gray-50"
+                            >
 
-        </div>
+                            <div class="flex justify-end">
 
-        <!-- FORM UPLOAD PERBAIKAN -->
-        @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
+                                <button
+                                    type="submit"
+                                    class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded"
+                                >
+                                    Upload
+                                </button>
 
-        <form
-            action="{{ route('verifikasi.updateDokumen', $dok->id) }}"
-            method="POST"
-            enctype="multipart/form-data"
-            class="mt-4 space-y-3"
-        >
+                            </div>
 
-            @csrf
-            @method('PUT')
+                        </form>
 
-            <input
-                type="file"
-                name="file"
-                required
-                class="w-full text-sm border rounded-lg p-2 bg-gray-50"
-            >
+                        @endif
+                    </div>
 
-            <div class="flex justify-end">
-
-                <button
-                    type="submit"
-                    class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-lg"
-                >
-                    Upload
-                </button>
+                @endforeach
 
             </div>
 
-        </form>
+            {{-- RIWAYAT DATA FAKTUR (TAMBAHAN) --}}
+            @if($pengajuan->faktur->isNotEmpty())
 
-        @endif
+            <div class="mb-6 bg-gray-50 p-4 rounded border">
 
-    </div>
+                <h3 class="font-bold text-lg mb-4">
+                    Riwayat Data Faktur
+                </h3>
 
-    @endforeach
+                <div class="space-y-4">
 
-</div>
+                    @foreach($pengajuan->faktur as $fakturItem)
+
+                    <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200">
+
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+                            <!-- INFORMASI FAKTUR -->
+                            <div class="space-y-1 text-sm">
+
+                                <p class="font-semibold text-gray-800">
+                                    {{ $fakturItem->no_invoice }}
+                                </p>
+
+                                <p class="text-gray-600">
+                                    Total :
+                                    <span class="font-medium text-gray-800">
+                                        Rp {{ number_format($fakturItem->total,0,',','.') }}
+                                    </span>
+                                </p>
+
+                                <p class="text-gray-600">
+                                    Status :
+                                    <span class="
+                                        @if($fakturItem->status == 'belum_bayar') text-yellow-600
+                                        @elseif($fakturItem->status == 'sudah_bayar') text-green-600
+                                        @elseif($fakturItem->status == 'kedaluarsa') text-red-600
+                                        @endif
+                                        font-semibold
+                                    ">
+                                        {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
+                                    </span>
+                                </p>
+
+                            </div>
+
+                            <!-- BUTTON DETAIL (ROUTING DIUBAH KE DESA) -->
+                            <div class="flex justify-start md:justify-end">
+
+                                <a href="{{ route('desa.faktur.show', $fakturItem->id) }}"
+                                class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
+                                    <i class="fas fa-eye"></i>
+                                    Detail
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    @endforeach
+
+                </div>
+
+            </div>
+
+            @endif
+            <!-- END RIWAYAT FAKTUR -->
 
             <!-- STATUS INFO -->
-            @if($pengajuan->status_pengajuan == 'diproses')
+            
+            @php
+                $fakturCollection = $pengajuan->faktur;
+                $notifKonfirmasi = $pengajuan->pesan->where('judul', 'like', '%Konfirmasi Pembayaran%')->first();
+                $isRequestSent = $notifKonfirmasi ? ($notifKonfirmasi->is_read == 1) : false;
+            @endphp
 
-            <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-                <p class="text-blue-700 font-semibold">
-                    Pengajuan sedang diproses oleh admin.
-                </p>
-            </div>
+            @if($fakturCollection && $fakturCollection->isNotEmpty() && $finalStatus == 'diproses')
+                @php $latestFaktur = $fakturCollection->last(); @endphp
+                
+                <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+                    <p class="text-green-800 font-semibold mb-2">
+                        Faktur telah tersedia, silahkan bayar dan upload bukti pembayaran di sini
+                    </p>
+                    <a href="{{ route('desa.faktur.show', $latestFaktur->id) }}" class="text-green-700 underline hover:text-green-900 text-sm font-medium">
+                        (Klik disini untuk melihat detail faktur)
+                    </a>
+                </div>
+
+            @elseif($pengajuan->status_pengajuan == 'diproses')
+                
+                @if($isRequestSent)
+                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+                        <p class="text-blue-700 font-semibold">
+                            Pengajuan sedang diproses oleh admin.
+                        </p>
+                    </div>
+                @else
+                    <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
+                        <p class="text-orange-800 font-semibold mb-3">
+                            Konfirmasi Pembayaran
+                        </p>
+                        <p class="text-sm text-orange-700 mb-3">
+                            Pengajuan domain {{ $pengajuan->nama_domain }}.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan faktur.
+                        </p>
+                        
+                        <form action="{{ route('desa.konfirmasi.pembayaran', $pengajuan->id_pengajuan) }}" method="POST">
+                            @csrf
+                            <button class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded shadow">
+                                Ya, Kirimkan Faktur
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
+            @elseif($pengajuan->status_pengajuan == 'ditinjau')
+                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
+                    <p class="text-orange-700 font-semibold">
+                        Pengajuan sedang ditinjau oleh admin.
+                    </p>
+                </div>
 
             @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
 
-            <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-                <p class="text-orange-700 font-semibold">
-                    Pengajuan telah diverifikasi dan sedang menunggu aktivasi domain.
-                </p>
-            </div>
+                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
+                    <p class="text-orange-700 font-semibold">
+                        Pengajuan telah diverifikasi dan sedang menunggu aktivasi domain.
+                    </p>
+                </div>
 
             @elseif($pengajuan->status_pengajuan == 'aktif')
                 
-                {{-- LOGIKA BARU: Ambil info dari tabel aktivasi --}}
-                @if($pengajuan->aktivasi && $pengajuan->aktivasi->status_akt == 'kadaluarsa')
+                @if($latestAktivasi && $latestAktivasi->status_akt == 'kadaluarsa')
                     <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
                         <p class="text-gray-700 font-semibold">
-                            Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($pengajuan->aktivasi->masa_berlaku)->format('d M Y') }}. Silakan lakukan perpanjangan.
+                            Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}. 
                         </p>
                     </div>
-                @elseif($pengajuan->aktivasi && $pengajuan->aktivasi->status_akt == 'nonaktif')
+                @elseif($latestAktivasi && $latestAktivasi->status_akt == 'nonaktif')
                     <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
                         <p class="text-gray-700 font-semibold">
                             Domain saat ini dalam status nonaktif.
@@ -288,11 +398,11 @@
 
             @elseif($pengajuan->status_pengajuan == 'kadaluarsa')
 
-            <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                <p class="text-gray-700 font-semibold">
-                    Masa berlaku domain ini telah kadaluarsa.
-                </p>
-            </div>
+                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                    <p class="text-gray-700 font-semibold">
+                        Masa berlaku domain ini telah kadaluarsa.
+                    </p>
+                </div>
 
             @endif
 

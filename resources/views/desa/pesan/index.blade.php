@@ -113,7 +113,7 @@
 
 
             <!-- ========================================== -->
-            <!-- KOLOM 2 : KONFIRMASI PEMBAYARAN -->
+            <!-- KOLOM 2 : KONFIRMASI PEMBAYARAN (DIMODIFIKASI) -->
             <!-- ========================================== -->
             <div class="bg-gray-50 p-5 rounded-xl border">
 
@@ -145,15 +145,20 @@
                             {{ $row->judul }}
                         </h3>
 
+                        {{-- LOGIKA PERUBAHAN TEKS --}}
                         <p class="text-sm mt-1">
-                            {{ $row->isi }}
+                            @if($row->is_read == 1)
+                                Silahkan tunggu faktur dari admin kominfo
+                            @else
+                                {{ $row->isi }}
+                            @endif
                         </p>
 
                         <p class="text-xs text-gray-500 mt-2">
                             {{ $row->created_at->format('d M Y H:i') }}
                         </p>
 
-                        {{-- BUTTON KONFIRMASI --}}
+                        {{-- BUTTON KONFIRMASI (Hanya muncul jika belum dibaca/diklik) --}}
                         @if($row->is_read == 0)
 
                             <form action="{{ route('desa.konfirmasi.pembayaran', $row->id_pengajuan ?? 0) }}"

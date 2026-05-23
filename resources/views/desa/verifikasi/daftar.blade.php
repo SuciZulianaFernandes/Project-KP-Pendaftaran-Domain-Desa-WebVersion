@@ -74,36 +74,37 @@
                             
                             <td><span class="inv-date">{{ $row->tgl_pengajuan }}</span></td>
                             
-                            <td>
+                            {{-- STATUS (MENGGUNAKAN GAYA INDEX FAKTUR & RESPONSIVE) --}}
+                            <td style="white-space:nowrap">
                                 @if($row->status_pengajuan == 'ditinjau')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                        Ditinjau
+                                    <span class="inv-badge" style="background:#fef9c3; color:#854d0e; border:1px solid #fde047">
+                                        <span class="d" style="background:#eab308"></span>Ditinjau
                                     </span>
                                 @elseif($row->status_pengajuan == 'perlu_perbaikan')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
-                                        Perlu Perbaikan
+                                    <span class="inv-badge badge-red">
+                                        <span class="d"></span>Perlu Perbaikan
                                     </span>
                                 @elseif($row->status_pengajuan == 'diproses')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                                        Diproses
+                                    <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
+                                        <span class="d" style="background:#3b82f6"></span>Diproses
                                     </span>
                                 @elseif($row->status_pengajuan == 'menunggu_aktivasi')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-orange-100 text-orange-700 border border-orange-200">
-                                        Menunggu Aktivasi
+                                    <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
+                                        <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
                                     </span>
                                 @elseif($row->status_pengajuan == 'aktif')
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
-                                        Aktif
+                                    <span class="inv-badge badge-green">
+                                        <span class="d"></span>Aktif
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                        Draft
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>Draft
                                     </span>
                                 @endif
                             </td>
 
                             {{-- ISI CATATAN (BARU) --}}
-                            <td>
+                            <td style="white-space:nowrap">
                                 <span style="font-size:13px; color:#64748b;">
                                     {{ $row->catatan_umum ?? '-' }}
                                 </span>
