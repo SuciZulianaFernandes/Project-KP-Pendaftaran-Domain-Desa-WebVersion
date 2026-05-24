@@ -131,7 +131,7 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">
-                            ID Provinsi
+                            Provinsi
                         </label>
 
                         <input type="text"
@@ -142,7 +142,7 @@
 
                     <div>
                         <label class="block text-sm font-medium mb-1">
-                            ID Kabupaten
+                            Kabupaten
                         </label>
 
                         <input type="text"

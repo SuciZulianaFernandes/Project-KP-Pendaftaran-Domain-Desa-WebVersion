@@ -163,7 +163,7 @@
                             @endif
                         </td>
 
-                        {{-- KOLOM AKSI --}}
+                       {{-- KOLOM AKSI --}}
 <td style="text-align:center">
     <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
 
@@ -174,9 +174,14 @@
             <i class="fas fa-eye"></i> Lihat
         </a>
 
-        @if($row->ada_faktur_belum_bayar)
+        {{-- JIKA STATUS KADALUARSA → HANYA TAMPILKAN DETAIL --}}
+        @if($kadaluarsa)
 
-            {{-- PERUBAHAN: Link menuju Detail Faktur langsung --}}
+        {{-- TIDAK ADA TOMBOL LAIN --}}
+
+        @elseif($row->ada_faktur_belum_bayar)
+
+            {{-- LINK MENUJU DETAIL FAKTUR --}}
             @if($idFakturBelumBayar)
                 <a href="{{ route('desa.faktur.show', $idFakturBelumBayar) }}" class="inv-btn-d">
                    <i class="fas fa-file-invoice-dollar"></i> Faktur
@@ -208,6 +213,9 @@
             </button>
 
         @endif
+
+    </div>
+</td>
 
     </div>
 </td>

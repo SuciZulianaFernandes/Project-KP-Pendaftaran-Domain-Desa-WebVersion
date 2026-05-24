@@ -3,6 +3,24 @@
 
 @section('content')
 
+@php
+    // LOGIKA BARU: Cek status aktual yang sebenarnya (terutama untuk kasus Kadaluarsa)
+    $finalStatus = $pengajuan->status_pengajuan;
+
+    // Jika status pengajuan 'aktif', cek tabel aktivasi terakhir
+    if ($finalStatus == 'aktif' && $pengajuan->aktivasi) {
+        // Ambil aktivasi terakhir berdasarkan masa berlaku (DESC)
+        $latestAktivasi = \App\Models\Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
+                            ->orderBy('masa_berlaku', 'desc')
+                            ->first();
+        
+        // Jika ada data aktivasi dan statusnya bukan 'aktif', override status tampilan
+        if ($latestAktivasi && $latestAktivasi->status_akt != 'aktif') {
+            $finalStatus = $latestAktivasi->status_akt; // nilain 'kadaluarsa' atau 'nonaktif'
+        }
+    }
+@endphp
+
 <div class="flex flex-col lg:flex-row gap-6">
 
     <!-- SIDEBAR KIRI -->
@@ -26,11 +44,14 @@
 
                 <p class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full
-                        @if($pengajuan->status_pengajuan == 'ditinjau') bg-yellow-500
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') bg-red-500
-                        @elseif($pengajuan->status_pengajuan == 'diproses') bg-blue-500
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') bg-orange-500
-                        @elseif($pengajuan->status_pengajuan == 'aktif') bg-green-600
+                        @if($finalStatus == 'ditinjau') bg-yellow-500
+                        @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
+                        @elseif($finalStatus == 'diproses') bg-blue-500
+                        @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
+                        @elseif($finalStatus == 'aktif') bg-green-600
+                        @elseif($finalStatus == 'kadaluarsa') bg-gray-500
+                        @elseif($finalStatus == 'nonaktif') bg-gray-400
+                        @else bg-gray-400
                         @endif">
                     </span>
 
@@ -39,13 +60,16 @@
                     </span>
 
                     <span class="font-semibold
-                        @if($pengajuan->status_pengajuan == 'ditinjau') text-yellow-600
-                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan') text-red-600
-                        @elseif($pengajuan->status_pengajuan == 'diproses') text-blue-600
-                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi') text-orange-600
-                        @elseif($pengajuan->status_pengajuan == 'aktif') text-green-600
+                        @if($finalStatus == 'ditinjau') text-yellow-600
+                        @elseif($finalStatus == 'perlu_perbaikan') text-red-600
+                        @elseif($finalStatus == 'diproses') text-blue-600
+                        @elseif($finalStatus == 'menunggu_aktivasi') text-orange-600
+                        @elseif($finalStatus == 'aktif') text-green-600
+                        @elseif($finalStatus == 'kadaluarsa') text-gray-600
+                        @elseif($finalStatus == 'nonaktif') text-gray-500
+                        @else text-gray-500
                         @endif">
-                        {{ ucfirst(str_replace('_', ' ', $pengajuan->status_pengajuan)) }}
+                        {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
                     </span>
                 </p>
 
@@ -405,13 +429,15 @@
                 @elseif($fakturSudahAda)
 
                     <!-- Faktur Sudah Ada -->
-                    <p class="text-blue-700 font-semibold flex items-center gap-2">
-                        <i class="fas fa-file-invoice"></i>
-                        Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
-                        <a href="{{ route('admin.faktur.index') }}" class="ml-2 text-sm underline hover:text-red-700 font-normal">
-                            Lihat di Manajemen Faktur
-                        </a>
-                    </p>
+                <p class="text-blue-800 font-semibold mb-2">
+                    Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
+                </p>
+
+                <a href="{{ route('admin.faktur.index') }}"
+                class="text-sm underline hover:text-blue-700">
+
+                    Lihat di Manajemen Faktur
+                </a>
 
                 @else
 
@@ -425,12 +451,21 @@
 
             </div>
 
-            @elseif($pengajuan->status_pengajuan == 'aktif')
+            @elseif($finalStatus == 'aktif')
 
             <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
 
                 <p class="text-green-700 font-semibold">
                     Domain Sudah Aktif
+                </p>
+
+            </div>
+            @elseif($finalStatus == 'kadaluarsa')
+
+            <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+
+                <p class="text-gray-700 font-semibold">
+                    Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}.
                 </p>
 
             </div>

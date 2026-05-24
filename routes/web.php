@@ -120,7 +120,8 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         Route::post('/dokumen', [PengajuanController::class, 'storeDokumenForm'])->name('dokumen.store');
         Route::get('/tinjau', [PengajuanController::class, 'showTinjauForm'])->name('tinjau');
         Route::post('/submit', [PengajuanController::class, 'submitPengajuan'])->name('submit');
-        
+        Route::get('/dokumen/view/{id}', [PengajuanController::class, 'viewDokumen'])
+    ->name('dokumen.view');
     });
     
     // Route Verifikasi Dokumen

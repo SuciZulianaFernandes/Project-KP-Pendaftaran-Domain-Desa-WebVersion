@@ -42,7 +42,7 @@ class AktivasiController extends Controller
             $faktur->save();
 
             // KONFIGURASI MASA BERLAKU
-            $masaBerlaku = now()->addMinutes(30); 
+            $masaBerlaku = now()->addYears(); 
 
             Aktivasi::create([
                 'id_pengajuan' => $pengajuan->id_pengajuan,
@@ -253,20 +253,66 @@ class AktivasiController extends Controller
             ->with('success', 'Permintaan perpanjangan berhasil dikirim ke admin.');
     }
 
+        /**
+     * LIST ADMIN: Halaman index perpanjangan
+     * LOGIKA DIUBAH: Agar bisa menampilkan status "Belum Dibuat"
+     */
     public function adminPerpanjangList()
     {
-        $fakturs = Faktur::where('tipe', 'perpanjangan')
-            ->with('pengajuan') 
-            ->latest()
-            ->paginate(10);
+        // Ambil semua data pengajuan beserta relasi fakturnya
+        $data = Pengajuan::with([
+            'faktur' => function ($query) {
+                $query->latest();
+            }
+        ])->latest()->paginate(10);
 
-        return view('admin.perpanjang.index', compact('fakturs'));
+        // Ambil ID pengajuan yang sudah minta perpanjangan (ada pesan) tapi fakturnya belum dibuat
+        $perpanjanganBelumBuat = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
+            ->pluck('id_pengajuan')
+            ->filter(function ($id_pengajuan) {
+                return !Faktur::where('id_pengajuan', $id_pengajuan)
+                    ->where('tipe', 'perpanjangan')
+                    ->exists();
+            })
+            ->toArray();
+
+        return view('admin.perpanjang.index', compact(
+            'data',
+            'perpanjanganBelumBuat'
+        ));
     }
 
-    public function adminPerpanjangDetail($id)
+    /**
+     * DETAIL ADMIN: Halaman show perpanjangan
+     * LOGIKA DIUBAH: Bisa menerima ID Faktur atau ID Pengajuan
+     */
+       public function adminPerpanjangDetail($id)
     {
-        $faktur = Faktur::with('pengajuan')->findOrFail($id);
-        $pengajuan = $faktur->pengajuan;
+        // PERBAIKAN LOGIKA:
+        // 1. Cek dulu apakah ID tersebut milik Pengajuan (untuk kasus Belum Dibuat)
+        $pengajuan = Pengajuan::find($id);
+
+        if ($pengajuan) {
+            // Jika ID ditemukan di tabel Pengajuan, gunakan data tersebut.
+            // Cari faktur perpanjangan terbaru yang terkait (jika ada).
+            $faktur = $pengajuan->faktur()->where('tipe', 'perpanjangan')->latest()->first();
+            
+            if (!$faktur) {
+                $faktur = null; // Pastikan null jika belum ada faktur
+            }
+        } else {
+            // 2. Jika tidak ada di Pengajuan, baru cari di tabel Faktur (untuk kasus Invoice Sudah Ada)
+            $faktur = Faktur::find($id);
+            
+            if ($faktur) {
+                $pengajuan = $faktur->pengajuan;
+            } else {
+                // Jika tidak ketemu di Pengajuan maupun Faktur
+                abort(404, 'Data tidak ditemukan');
+            }
+        }
+
+        // Load relasi yang dibutuhkan view
         $pengajuan->load('dokumenPersyaratan', 'faktur', 'aktivasi');
 
         return view('admin.perpanjang.show', compact('faktur', 'pengajuan'));

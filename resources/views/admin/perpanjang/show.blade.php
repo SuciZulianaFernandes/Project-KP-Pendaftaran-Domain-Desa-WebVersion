@@ -25,11 +25,18 @@
                 </p>
 
                 @php
+                    // Logika Status
                     $finalStatus = $pengajuan->status_pengajuan;
 
-                    if ($faktur->status == 'belum_bayar') {
+                    // Jika faktur belum ada, statusnya 'diproses'
+                    if (!$faktur) {
                         $finalStatus = 'diproses';
-                    }
+                    } 
+                    // Jika faktur ada tapi belum bayar, status 'diproses'
+                    elseif ($faktur->status == 'belum_bayar') {
+                        $finalStatus = 'diproses';
+                    } 
+                    // Jika status aktif, cek tabel aktivasi
                     elseif ($finalStatus == 'aktif' && $pengajuan->aktivasi) {
                         $finalStatus = $pengajuan->aktivasi->status_akt;
                     }
@@ -48,9 +55,7 @@
                         @endif">
                     </span>
 
-                    <span class="text-gray-700">
-                        Status :
-                    </span>
+                    <span class="text-gray-700">Status :</span>
 
                     <span class="font-semibold
                         @if($finalStatus == 'ditinjau') text-yellow-600
@@ -99,7 +104,26 @@
 
             </div>
 
-            <!-- INFORMASI INSTANSI (ISI DIUBAH MENJADI LENGKAP SEPERTI DETAIL PENGAJUAN) -->
+            {{-- NOTIFIKASI: FAKTUR BELUM DIBUAT --}}
+            @if(!$faktur)
+                <div class="mb-6 bg-blue-50 p-5 rounded-xl border border-blue-200">
+                    <h3 class="font-bold text-lg mb-2 text-blue-800">
+                        Desa Menyetujui Pembayaran
+                    </h3>
+                    <p class="text-sm text-blue-700 mb-4">
+                        Desa telah mengkonfirmasi kesiapan pembayaran. Silakan terbitkan faktur.
+                    </p>
+                    
+                    <form action="{{ route('admin.faktur.store', $pengajuan->id_pengajuan) }}" method="POST" style="display:inline">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm js-confirm-print">
+                            <i class="fas fa-print"></i> Cetak Faktur
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            <!-- INFORMASI INSTANSI -->
             <div class="mb-6">
 
                 <div class="border-b pb-3 mb-5">
@@ -115,166 +139,99 @@
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-4 text-sm">
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Nama Organisasi
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Nama Organisasi</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->nama_desa }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->nama_desa }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Provinsi
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Provinsi</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->provinsi }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->provinsi }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Kabupaten
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Kabupaten</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->kota_kabupaten }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->kota_kabupaten }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Kecamatan
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Kecamatan</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->kecamatan }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->kecamatan }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Desa
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Desa</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->desa_kelurahan }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- FIELD TAMBAHAN DARI DETAIL PENGAJUAN -->
-                    <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Telepon
-                        </span>
-
-                        <div class="flex">
-                            <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->telepon }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->desa_kelurahan }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Faksimili
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Telepon</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->faksimili }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->telepon }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Kode Pos
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Faksimili</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->kode_pos }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->faksimili }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Email Registran
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Kode Pos</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->kode_pos }}</span>
+                        </div>
+                    </div>
 
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->email }}
-                            </span>
+                    <div class="flex flex-col sm:flex-row">
+                        <span class="sm:w-52 text-gray-500 font-medium">Email Registran</span>
+                        <div class="flex">
+                            <span class="hidden sm:inline w-4 text-center">:</span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->email }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row xl:col-span-2">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Alamat
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Alamat</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->alamat }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->alamat }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row xl:col-span-2">
-                        <span class="sm:w-52 text-gray-500 font-medium">
-                            Tanggal Pembuatan
-                        </span>
-
+                        <span class="sm:w-52 text-gray-500 font-medium">Tanggal Pembuatan</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="text-gray-800 break-words">
-                                {{ $pengajuan->created_at->format('d M Y') }}
-                            </span>
+                            <span class="text-gray-800 break-words">{{ $pengajuan->created_at->format('d M Y') }}</span>
                         </div>
                     </div>
-                    <!-- END FIELD TAMBAHAN -->
 
                 </div>
 
             </div>
 
-            <!-- DATA PERPANJANGAN -->
+            {{-- DATA PERPANJANGAN (Hanya muncul jika faktur sudah dibuat) --}}
+            @if($faktur)
             <div class="mb-6 bg-gray-50 p-5 rounded-xl border">
 
                 <div class="border-b pb-3 mb-5">
@@ -290,41 +247,25 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 text-sm">
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-44 text-gray-500 font-medium">
-                            No Invoice
-                        </span>
-
+                        <span class="sm:w-44 text-gray-500 font-medium">No Invoice</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="font-semibold text-gray-800">
-                                {{ $faktur->no_invoice }}
-                            </span>
+                            <span class="font-semibold text-gray-800">{{ $faktur->no_invoice }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-44 text-gray-500 font-medium">
-                            Tanggal Faktur
-                        </span>
-
+                        <span class="sm:w-44 text-gray-500 font-medium">Tanggal Faktur</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="font-semibold text-gray-800">
-                                {{ $faktur->created_at->format('d M Y H:i') }}
-                            </span>
+                            <span class="font-semibold text-gray-800">{{ $faktur->created_at->format('d M Y H:i') }}</span>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-44 text-gray-500 font-medium">
-                            Status Pembayaran
-                        </span>
-
+                        <span class="sm:w-44 text-gray-500 font-medium">Status Pembayaran</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
                             <span class="font-semibold">
                                 @if($faktur->status == 'sudah_bayar')
                                     <span class="text-green-600">Lunas</span>
@@ -336,22 +277,17 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-44 text-gray-500 font-medium">
-                            Total Tagihan
-                        </span>
-
+                        <span class="sm:w-44 text-gray-500 font-medium">Total Tagihan</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
-                            <span class="font-semibold text-gray-800">
-                                Rp {{ number_format($faktur->total,0,',','.') }}
-                            </span>
+                            <span class="font-semibold text-gray-800">Rp {{ number_format($faktur->total,0,',','.') }}</span>
                         </div>
                     </div>
 
                 </div>
 
             </div>
+            @endif
 
             <!-- RIWAYAT DATA FAKTUR -->
             @if($pengajuan->faktur->isNotEmpty())
@@ -384,32 +320,19 @@
                             <div class="space-y-2 text-sm">
 
                                 <div>
-                                    <p class="text-gray-500 text-xs">
-                                        Nomor Invoice
-                                    </p>
-
-                                    <p class="font-semibold text-gray-800">
-                                        {{ $fakturItem->no_invoice }}
-                                    </p>
+                                    <p class="text-gray-500 text-xs">Nomor Invoice</p>
+                                    <p class="font-semibold text-gray-800">{{ $fakturItem->no_invoice }}</p>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
 
                                     <div>
-                                        <p class="text-gray-500 text-xs">
-                                            Total Tagihan
-                                        </p>
-
-                                        <p class="font-medium text-gray-800">
-                                            Rp {{ number_format($fakturItem->total,0,',','.') }}
-                                        </p>
+                                        <p class="text-gray-500 text-xs">Total Tagihan</p>
+                                        <p class="font-medium text-gray-800">Rp {{ number_format($fakturItem->total,0,',','.') }}</p>
                                     </div>
 
                                     <div>
-                                        <p class="text-gray-500 text-xs">
-                                            Status Pembayaran
-                                        </p>
-
+                                        <p class="text-gray-500 text-xs">Status Pembayaran</p>
                                         <p class="font-semibold
                                             @if($fakturItem->status == 'belum_bayar') text-yellow-600
                                             @elseif($fakturItem->status == 'sudah_bayar') text-green-600
@@ -465,13 +388,9 @@
                 <div class="space-y-4 text-sm">
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-60 text-gray-500 font-medium">
-                            Tanggal Aktivasi Terakhir
-                        </span>
-
+                        <span class="sm:w-60 text-gray-500 font-medium">Tanggal Aktivasi Terakhir</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
                             <span class="font-semibold text-gray-800">
                                 {{ $pengajuan->aktivasi ? $pengajuan->aktivasi->tgl_aktivasi->format('d M Y') : '-' }}
                             </span>
@@ -479,13 +398,9 @@
                     </div>
 
                     <div class="flex flex-col sm:flex-row">
-                        <span class="sm:w-60 text-gray-500 font-medium">
-                            Masa Berlaku Hingga
-                        </span>
-
+                        <span class="sm:w-60 text-gray-500 font-medium">Masa Berlaku Hingga</span>
                         <div class="flex">
                             <span class="hidden sm:inline w-4 text-center">:</span>
-
                             <span class="font-semibold text-gray-800">
                                 {{ $pengajuan->aktivasi ? $pengajuan->aktivasi->masa_berlaku->format('d M Y') : '-' }}
                             </span>
@@ -498,15 +413,14 @@
 
             <hr class="my-5">
 
-            <!-- AKTIVASI -->
-            @if($finalStatus == 'menunggu_aktivasi' && $faktur->status == 'sudah_bayar')
+            {{-- BAGIAN AKTIVASI (Hanya muncul jika faktur ada & status sesuai) --}}
+            @if($faktur && $finalStatus == 'menunggu_aktivasi' && $faktur->status == 'sudah_bayar')
 
             <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
 
                 <h3 class="font-bold text-lg mb-2 text-gray-800">
                     Aktivasi Perpanjangan
                 </h3>
-
                 <p class="text-sm text-gray-600 mb-4">
                     Status saat ini:
                     <strong>Menunggu Aktivasi</strong>.
@@ -535,7 +449,7 @@
 
             </div>
 
-            @elseif($finalStatus == 'aktif')
+            @elseif($faktur && $finalStatus == 'aktif')
 
             <div class="bg-green-50 p-4 rounded-xl border border-green-200">
 
@@ -545,26 +459,25 @@
 
             </div>
 
-            @elseif($finalStatus == 'kadaluarsa')
+            @elseif($faktur && $finalStatus == 'kadaluarsa')
 
             <div class="bg-gray-100 p-4 rounded-xl border border-gray-300">
 
                 <p class="text-gray-700 font-semibold">
-                    Masa berlaku domain ini telah kadaluarsa.
+                    Masa berlaku domain ini telah kadaluarsa 
                 </p>
 
             </div>
 
-            @else
+            @elseif($faktur)
 
-            <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
 
-                <p class="text-yellow-800 font-semibold mb-2">
+                <p class="text-blue-800 font-semibold mb-2">
                     Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
                 </p>
-
                 <a href="{{ route('admin.faktur.index') }}"
-                class="text-sm underline hover:text-red-700">
+                class="text-sm underline hover:text-blue-700">
 
                     Lihat di Manajemen Faktur
                 </a>

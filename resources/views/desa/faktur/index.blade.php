@@ -179,7 +179,7 @@
                                 class="inv-btn-d"
                             >
 
-                                <i class="fas fa-eye"></i> Lihat
+                                <i class="fas fa-eye"></i> Detail
 
                             </a>
 

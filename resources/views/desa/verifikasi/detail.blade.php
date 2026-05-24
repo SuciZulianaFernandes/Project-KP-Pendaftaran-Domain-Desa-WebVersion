@@ -4,19 +4,85 @@
 @section('content')
 
 @php
-    // --- FIX: Ambil data aktivasi TERBARU berdasarkan masa berlaku ---
-    // Ini untuk memastikan kita membaca data perpanjangan terakhir, bukan data lama yang kadaluarsa.
+    // =========================
+    // LOGIKA STATUS FINAL
+    // =========================
+
+    $finalStatus = $pengajuan->status_pengajuan;
+
+    // Ambil aktivasi terbaru
     $latestAktivasi = \App\Models\Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
                             ->orderBy('masa_berlaku', 'desc')
                             ->first();
 
-    // Tentukan status akhir berdasarkan relasi aktivasi TERBARU
-    $finalStatus = $pengajuan->status_pengajuan;
-    
-    // Jika status pengajuan sudah 'aktif', cek tabel aktivasi TERBARU
-    if ($pengajuan->status_pengajuan == 'aktif' && $latestAktivasi) {
-        $finalStatus = $latestAktivasi->status_akt;
+    // Cek faktur belum bayar
+    $hasUnpaidInvoice = $pengajuan->faktur
+        ->where('status', 'belum_bayar')
+        ->count() > 0;
+
+    // Cek pesan perpanjangan terbaru
+    $perpanjanganMsg = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+        ->where('judul', 'Permintaan Perpanjangan Domain')
+        ->latest()
+        ->first();
+
+    // =========================
+    // PRIORITAS STATUS
+    // =========================
+
+    // 1. Jika status pengajuan menunggu aktivasi
+    if ($pengajuan->status_pengajuan == 'menunggu_aktivasi') {
+
+        $finalStatus = 'menunggu_aktivasi';
+
     }
+    // 2. Jika status aktif → cek aktivasi terbaru
+    elseif ($pengajuan->status_pengajuan == 'aktif') {
+
+        if ($latestAktivasi) {
+            $finalStatus = $latestAktivasi->status_akt;
+        } else {
+            $finalStatus = 'aktif';
+        }
+
+    }
+    // 3. Jika ada faktur belum bayar
+    elseif ($hasUnpaidInvoice) {
+
+        // Tetap diproses
+        $finalStatus = 'diproses';
+
+    }
+    // 4. Jika ada permintaan perpanjangan & admin belum kirim faktur
+    elseif ($perpanjanganMsg) {
+
+        $fakturPerpanjangan = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+            ->where('tipe', 'perpanjangan')
+            ->where('created_at', '>', $perpanjanganMsg->created_at)
+            ->exists();
+
+        if (!$fakturPerpanjangan) {
+
+            // Tetap diproses
+            $finalStatus = 'diproses';
+
+        } else {
+
+            // Faktur sudah ada → tetap diproses
+            $finalStatus = 'diproses';
+        }
+
+    }
+
+    // Konfirmasi pembayaran
+    $konfirmasiMsg = $pengajuan->pesan()
+        ->where('role_tujuan', 'desa') 
+        ->where('judul', 'Konfirmasi Pembayaran')
+        ->latest()
+        ->first();
+
+    $hasConfirmedPayment = $konfirmasiMsg && $konfirmasiMsg->is_read == 1;
+
 @endphp
 
 <div class="flex flex-col lg:flex-row gap-6">
@@ -42,42 +108,31 @@
 
                 <p class="flex items-center gap-2">
 
-                    {{-- LOGIKA WARNA DOT INDICATOR --}}
                     <span class="w-2 h-2 rounded-full
                         @if($finalStatus == 'ditinjau') bg-yellow-500
                         @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
                         @elseif($finalStatus == 'diproses') bg-blue-500
                         @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
-                        
-                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
                         @elseif($finalStatus == 'aktif') bg-green-600
                         @elseif($finalStatus == 'kadaluarsa') bg-gray-500
                         @elseif($finalStatus == 'nonaktif') bg-gray-400
-                        
                         @else bg-gray-400
                         @endif">
                     </span>
 
-                    <span class="text-gray-700">
-                        Status :
-                    </span>
+                    <span class="text-gray-700">Status :</span>
 
-                    {{-- LOGIKA WARNA TEKS STATUS --}}
                     <span class="font-semibold
                         @if($finalStatus == 'ditinjau') text-yellow-600
                         @elseif($finalStatus == 'perlu_perbaikan') text-red-600
                         @elseif($finalStatus == 'diproses') text-blue-600
                         @elseif($finalStatus == 'menunggu_aktivasi') text-orange-600
-                        
-                        {{-- LOGIKA KHUSUS DARI TABEL AKTIVASI --}}
                         @elseif($finalStatus == 'aktif') text-green-600
                         @elseif($finalStatus == 'kadaluarsa') text-gray-600
                         @elseif($finalStatus == 'nonaktif') text-gray-500
-                        
                         @else text-gray-500
                         @endif">
 
-                        {{-- LOGIKA DISPLAY TEKS --}}
                         {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
 
                     </span>
@@ -182,7 +237,7 @@
 
             </div>
 
-            <!-- DOKUMEN (GAYA 100% SAMA DENGAN DETAIL PENGAJUAN ADMIN) -->
+            <!-- DOKUMEN -->
             <h3 class="font-semibold mb-4">
                 Dokumen Persyaratan Domain
             </h3>
@@ -192,7 +247,6 @@
                 @foreach($pengajuan->dokumenPersyaratan as $dok)
                     
                     <div>
-                        <!-- Baris List Sama Persis dengan Admin -->
                         <div class="flex justify-between border-b pb-2 gap-3">
                             <span class="text-gray-700">{{ $dok->jenis_dokumen }}</span>
 
@@ -203,7 +257,6 @@
                             </a>
                         </div>
 
-                        <!-- FORM UPLOAD PERBAIKAN (Hanya Muncul Jika Status Perlu Perbaikan) -->
                         @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
 
                         <form
@@ -243,14 +296,24 @@
 
             </div>
 
-            {{-- RIWAYAT DATA FAKTUR (TAMBAHAN) --}}
+            {{-- RIWAYAT DATA FAKTUR --}}
             @if($pengajuan->faktur->isNotEmpty())
 
-            <div class="mb-6 bg-gray-50 p-4 rounded border">
+            <div class="mb-6 bg-gray-50 p-4 rounded-xl border">
 
-                <h3 class="font-bold text-lg mb-4">
-                    Riwayat Data Faktur
-                </h3>
+                <div class="flex items-center justify-between mb-4">
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            Riwayat Data Faktur
+                        </h3>
+
+                        <p class="text-sm text-gray-500">
+                            Daftar faktur yang berkaitan dengan domain ini.
+                        </p>
+                    </div>
+
+                </div>
 
                 <div class="space-y-4">
 
@@ -258,44 +321,59 @@
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200">
 
-                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                            <!-- INFORMASI FAKTUR -->
-                            <div class="space-y-1 text-sm">
+                            <div class="space-y-2 text-sm">
 
-                                <p class="font-semibold text-gray-800">
-                                    {{ $fakturItem->no_invoice }}
-                                </p>
+                                <div>
+                                    <p class="text-gray-500 text-xs">
+                                        Nomor Invoice
+                                    </p>
 
-                                <p class="text-gray-600">
-                                    Total :
-                                    <span class="font-medium text-gray-800">
-                                        Rp {{ number_format($fakturItem->total,0,',','.') }}
-                                    </span>
-                                </p>
+                                    <p class="font-semibold text-gray-800">
+                                        {{ $fakturItem->no_invoice }}
+                                    </p>
+                                </div>
 
-                                <p class="text-gray-600">
-                                    Status :
-                                    <span class="
-                                        @if($fakturItem->status == 'belum_bayar') text-yellow-600
-                                        @elseif($fakturItem->status == 'sudah_bayar') text-green-600
-                                        @elseif($fakturItem->status == 'kedaluarsa') text-red-600
-                                        @endif
-                                        font-semibold
-                                    ">
-                                        {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
-                                    </span>
-                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+
+                                    <div>
+                                        <p class="text-gray-500 text-xs">
+                                            Total Tagihan
+                                        </p>
+
+                                        <p class="font-medium text-gray-800">
+                                            Rp {{ number_format($fakturItem->total,0,',','.') }}
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-gray-500 text-xs">
+                                            Status Pembayaran
+                                        </p>
+
+                                        <p class="font-semibold
+                                            @if($fakturItem->status == 'belum_bayar') text-yellow-600
+                                            @elseif($fakturItem->status == 'sudah_bayar') text-green-600
+                                            @elseif($fakturItem->status == 'kedaluarsa') text-red-600
+                                            @endif">
+
+                                            {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
+                                        </p>
+                                    </div>
+
+                                </div>
 
                             </div>
 
-                            <!-- BUTTON DETAIL (ROUTING DIUBAH KE DESA) -->
-                            <div class="flex justify-start md:justify-end">
+                            <div class="flex justify-start lg:justify-end">
 
                                 <a href="{{ route('desa.faktur.show', $fakturItem->id) }}"
                                 class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
+
                                     <i class="fas fa-eye"></i>
-                                    Detail
+
+                                    Detail Faktur
                                 </a>
 
                             </div>
@@ -311,96 +389,115 @@
             </div>
 
             @endif
-            <!-- END RIWAYAT FAKTUR -->
 
             <!-- STATUS INFO -->
-            
-            @php
-                $fakturCollection = $pengajuan->faktur;
-                $notifKonfirmasi = $pengajuan->pesan->where('judul', 'like', '%Konfirmasi Pembayaran%')->first();
-                $isRequestSent = $notifKonfirmasi ? ($notifKonfirmasi->is_read == 1) : false;
-            @endphp
 
-            @if($fakturCollection && $fakturCollection->isNotEmpty() && $finalStatus == 'diproses')
-                @php $latestFaktur = $fakturCollection->last(); @endphp
-                
-                <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
-                    <p class="text-green-800 font-semibold mb-2">
-                        Faktur telah tersedia, silahkan bayar dan upload bukti pembayaran di sini
+            {{-- DIPROSES --}}
+@if($finalStatus == 'diproses')
+
+    @php
+        $fakturPerpanjanganAda = false;
+
+        if ($perpanjanganMsg) {
+
+            $fakturPerpanjanganAda = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                ->where('tipe', 'perpanjangan')
+                ->where('created_at', '>', $perpanjanganMsg->created_at)
+                ->exists();
+        }
+
+        // Ambil faktur belum bayar terbaru
+        $fakturDesa = $pengajuan->faktur
+            ->where('status', 'belum_bayar')
+            ->sortByDesc('created_at')
+            ->first();
+    @endphp
+
+    {{-- SUDAH ADA FAKTUR --}}
+    @if($hasUnpaidInvoice || $fakturPerpanjanganAda)
+
+        <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+
+            <p class="text-blue-800 font-semibold mb-2">
+                Faktur telah diterbitkan. Silahkan upload bukti pembayaran.
+            </p>
+
+            @if($fakturDesa)
+
+                <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}"
+                class="text-sm underline hover:text-blue-700">
+
+                    Lihat Detail Faktur
+                </a>
+
+            @endif
+
+        </div>
+
+    {{-- BELUM ADA FAKTUR --}}
+    @else
+
+        <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+
+            <p class="text-blue-800 font-semibold">
+                Menunggu faktur dari admin kominfo
+            </p>
+
+        </div>
+
+    @endif
+
+            {{-- MENUNGGU AKTIVASI --}}
+            @elseif($finalStatus == 'menunggu_aktivasi')
+
+                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
+                    <p class="text-orange-800 font-semibold">
+                        Menunggu aktivasi dari admin kominfo
                     </p>
-                    <a href="{{ route('desa.faktur.show', $latestFaktur->id) }}" class="text-green-700 underline hover:text-green-900 text-sm font-medium">
-                        (Klik disini untuk melihat detail faktur)
-                    </a>
                 </div>
 
-            @elseif($pengajuan->status_pengajuan == 'diproses')
-                
-                @if($isRequestSent)
-                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-                        <p class="text-blue-700 font-semibold">
-                            Pengajuan sedang diproses oleh admin.
-                        </p>
-                    </div>
-                @else
-                    <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-                        <p class="text-orange-800 font-semibold mb-3">
-                            Konfirmasi Pembayaran
-                        </p>
-                        <p class="text-sm text-orange-700 mb-3">
-                            Pengajuan domain {{ $pengajuan->nama_domain }}.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan faktur.
-                        </p>
-                        
-                        <form action="{{ route('desa.konfirmasi.pembayaran', $pengajuan->id_pengajuan) }}" method="POST">
-                            @csrf
-                            <button class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded shadow">
-                                Ya, Kirimkan Faktur
-                            </button>
-                        </form>
-                    </div>
-                @endif
+            {{-- AKTIF --}}
+            @elseif($finalStatus == 'aktif')
 
-            @elseif($pengajuan->status_pengajuan == 'ditinjau')
+                <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+                    <p class="text-green-700 font-semibold">
+                        Domain sudah aktif.
+                    </p>
+                </div>
+
+            {{-- KADALUARSA --}}
+            @elseif($finalStatus == 'kadaluarsa')
+
+                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                    <p class="text-gray-700 font-semibold">
+                        Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}.
+                    </p>
+                </div>
+
+            {{-- NONAKTIF --}}
+            @elseif($finalStatus == 'nonaktif')
+
+                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
+                    <p class="text-gray-700 font-semibold">
+                        Domain saat ini dalam status nonaktif.
+                    </p>
+                </div>
+
+            {{-- DITINJAU --}}
+            @elseif($finalStatus == 'ditinjau')
+
                 <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
                     <p class="text-orange-700 font-semibold">
                         Pengajuan sedang ditinjau oleh admin.
                     </p>
                 </div>
 
-            @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
+            {{-- PERLU PERBAIKAN --}}
+            @elseif($finalStatus == 'perlu_perbaikan')
 
-                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-                    <p class="text-orange-700 font-semibold">
-                        Pengajuan telah diverifikasi dan sedang menunggu aktivasi domain.
-                    </p>
-                </div>
-
-            @elseif($pengajuan->status_pengajuan == 'aktif')
-                
-                @if($latestAktivasi && $latestAktivasi->status_akt == 'kadaluarsa')
-                    <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                        <p class="text-gray-700 font-semibold">
-                            Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}. 
-                        </p>
-                    </div>
-                @elseif($latestAktivasi && $latestAktivasi->status_akt == 'nonaktif')
-                    <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                        <p class="text-gray-700 font-semibold">
-                            Domain saat ini dalam status nonaktif.
-                        </p>
-                    </div>
-                @else
-                    <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
-                        <p class="text-green-700 font-semibold">
-                            Domain sudah aktif dan dapat digunakan.
-                        </p>
-                    </div>
-                @endif
-
-            @elseif($pengajuan->status_pengajuan == 'kadaluarsa')
-
-                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                    <p class="text-gray-700 font-semibold">
-                        Masa berlaku domain ini telah kadaluarsa.
+                <div class="bg-red-50 p-4 rounded border border-red-200 mt-4">
+                    <p class="text-red-700 font-semibold">
+                        Dokumen perlu diperbaiki sesuai catatan admin.
                     </p>
                 </div>
 
