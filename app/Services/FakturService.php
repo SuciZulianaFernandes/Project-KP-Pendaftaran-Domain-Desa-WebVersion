@@ -14,7 +14,7 @@ class FakturService
             substr(md5(uniqid()), 0, 5)
         );
 
-        return "INV/{$date}/{$random}";
+        return "INV-".$date."-".rand(10000,99999);
     }
 
     public static function createFaktur(
@@ -24,13 +24,15 @@ class FakturService
         // =========================
         // CEK FAKTUR BELUM BAYAR DULU
         // =========================
+        // ✓ PENTING: Tambahkan filter 'tipe' agar hanya cek faktur dengan tipe SAMA
         $existing = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-            ->where('tipe', $tipe)
+            ->where('tipe', $tipe)  // ← TAMBAH INI
             ->where('status', 'belum_bayar')
+            ->latest()
             ->first();
 
         if ($existing) {
-            return $existing; // jangan bikin baru
+            return $existing; 
         }
 
         // =========================

@@ -12,13 +12,11 @@ use App\Services\FakturService;
 use App\Services\UploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class PerpanjanganApiController extends Controller
 {
-    // =========================
-    // USER - LIST DOMAIN (dengan status perpanjangan)
-    // =========================
     public function listDomain(Request $request)
     {
         $user = auth()->user();
@@ -30,36 +28,34 @@ class PerpanjanganApiController extends Controller
             ], 401);
         }
 
-        // Update status kadaluarsa otomatis
-        $expiredDomains = Aktivasi::where('masa_berlaku', '<', now())
+        // UPDATE STATUS KADALUARSA
+        Aktivasi::where('masa_berlaku', '<', now())
             ->where('status_akt', 'aktif')
+            ->update([
+                'status_akt' => 'kadaluarsa'
+            ]);
+
+        // AMBIL DATA DOMAIN USER
+        $data = Pengajuan::with('aktivasi')
+            ->where('id_user', $user->id_user)
+            ->where('status_pengajuan', 'aktif')
+            ->latest()
             ->get();
 
-        foreach ($expiredDomains as $aktivasi) {
-            $aktivasi->status_akt = 'kadaluarsa';
-            $aktivasi->save();
-        }
-
-        $data = Pengajuan::with(['aktivasi' => function ($query) {
-            $query->orderByDesc('id_aktivasi');
-        }])
-        ->where('id_user', $user->id_user)
-        ->where('status_pengajuan', 'aktif')
-        ->latest()
-        ->get();
-
+        // FORMAT DATA
         $data = $data->map(function ($pengajuan) {
-            $semuaAktivasi = $pengajuan->aktivasi;
-            $aktivasiTerakhir = $semuaAktivasi->first();
-            
-            $pengajuan->aktivasi_terakhir = $aktivasiTerakhir;
-            
-            // ✓ CEK STATUS PERPANJANGAN
-            if ($aktivasiTerakhir) {
-                $masaBerlaku = Carbon::parse($aktivasiTerakhir->masa_berlaku);
-                $hariIni = Carbon::now();
-                $hariSisa = $hariIni->diffInDays($masaBerlaku);
-                
+            $aktivasi = $pengajuan->aktivasi;
+            $pengajuan->aktivasi_terakhir = $aktivasi;
+
+            $pengajuan->status_perpanjangan = 'tidak_aktif';
+            $pengajuan->hari_sisa = 0;
+            $pengajuan->menunggu_faktur = false;
+            $pengajuan->ada_faktur_belum_bayar = false;
+
+            if ($aktivasi) {
+                $masaBerlaku = Carbon::parse($aktivasi->masa_berlaku);
+                $hariSisa = now()->diffInDays($masaBerlaku, false);
+
                 if ($hariSisa <= 0) {
                     $pengajuan->status_perpanjangan = 'kadaluarsa';
                     $pengajuan->hari_sisa = 0;
@@ -70,32 +66,39 @@ class PerpanjanganApiController extends Controller
                     $pengajuan->status_perpanjangan = 'aktif';
                     $pengajuan->hari_sisa = $hariSisa;
                 }
-                
-                // CEK FAKTUR BELUM BAYAR
-                $pengajuan->ada_faktur_belum_bayar = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-                    ->where('status', 'belum_bayar')
-                    ->exists();
-                
-                // CEK STATUS MENUNGGU FAKTUR
-                $latestPesan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
-                    ->where('judul', 'Permintaan Perpanjangan Domain')
-                    ->latest('created_at')
-                    ->first();
-                
-                $pengajuan->menunggu_faktur = false;
-                
-                if ($latestPesan) {
-                    $fakturAdaSetelahPesan = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-                        ->where('tipe', 'perpanjangan')
-                        ->where('created_at', '>=', $latestPesan->created_at)
-                        ->exists();
-                    
-                    if (!$fakturAdaSetelahPesan) {
-                        $pengajuan->menunggu_faktur = true;
-                    }
+            }
+
+            // CEK FAKTUR YANG BELUM SELESAI
+            $fakturPerpanjangan = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                ->where('tipe', 'perpanjangan')
+                ->latest()
+                ->first();
+
+            if ($fakturPerpanjangan) {
+                if ($fakturPerpanjangan->status == 'belum_bayar') {
+                    $pengajuan->ada_faktur_belum_bayar = true;
+                } elseif ($fakturPerpanjangan->status == 'sudah_bayar' && $pengajuan->status_perpanjangan != 'aktif') {
+                    $pengajuan->ada_faktur_belum_bayar = true;
                 }
             }
-            
+
+            // CEK MENUNGGU FAKTUR
+            $latestPesan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+                ->where('judul', 'Permintaan Perpanjangan Domain')
+                ->latest()
+                ->first();
+
+            if ($latestPesan) {
+                $fakturAda = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                    ->where('tipe', 'perpanjangan')
+                    ->where('created_at', '>=', $latestPesan->created_at)
+                    ->exists();
+
+                if (!$fakturAda) {
+                    $pengajuan->menunggu_faktur = true;
+                }
+            }
+
             return $pengajuan;
         });
 
@@ -106,7 +109,7 @@ class PerpanjanganApiController extends Controller
     }
 
     // =========================
-    // USER - AJUKAN PERPANJANGAN (LOGIKA DIPERBAIKI)
+    // USER - AJUKAN PERPANJANGAN
     // =========================
     public function ajukan($id)
     {
@@ -116,37 +119,29 @@ class PerpanjanganApiController extends Controller
             ->where('id_user', $user->id_user)
             ->firstOrFail();
 
-        // 1. Cari pesan perpanjangan terakhir untuk domain ini
         $latestPesan = Pesan::where('id_pengajuan', $id)
             ->where('judul', 'Permintaan Perpanjangan Domain')
             ->latest()
             ->first();
 
-        // 2. Jika ada pesan lama yang masih belum dibaca (is_read = 0)
         if ($latestPesan && $latestPesan->is_read == 0) {
-            
-            // Cek apakah admin sudah merespons dengan membuat Faktur Perpanjangan?
             $fakturRespons = Faktur::where('id_pengajuan', $id)
                 ->where('tipe', 'perpanjangan')
                 ->where('created_at', '>', $latestPesan->created_at)
                 ->exists();
 
             if (!$fakturRespons) {
-                // Admin belum merespons -> TOLAK request baru
                 return response()->json([
                     'success' => false,
                     'message' => 'Permintaan perpanjangan sebelumnya masih diproses admin. Silakan tunggu.'
                 ]);
             } else {
-                // Admin sudah merespons. Update pesan lama jadi read.
                 $latestPesan->is_read = 1;
                 $latestPesan->save();
             }
         }
 
-        // 3. Buat pesan baru ke admin
         $adminId = User::where('role', 'admin')->value('id_user');
-        
         if (!$adminId) {
             return response()->json([
                 'success' => false,
@@ -158,9 +153,7 @@ class PerpanjanganApiController extends Controller
             'id_user'       => $adminId,
             'id_pengajuan'  => $pengajuan->id_pengajuan,
             'judul'         => 'Permintaan Perpanjangan Domain',
-            'isi'           => 'Desa ' . $pengajuan->nama_desa . 
-                                ' ingin melakukan perpanjangan domain ' . 
-                                $pengajuan->nama_domain . '.desa.id, kirimkan faktur.',
+            'isi'           => 'Desa ' . $pengajuan->nama_desa . ' ingin melakukan perpanjangan domain ' . $pengajuan->nama_domain . ', kirimkan faktur.',
             'role_tujuan'   => 'admin',
             'is_read'       => 0
         ]);
@@ -176,8 +169,9 @@ class PerpanjanganApiController extends Controller
     // =========================
     public function adminList()
     {
+        ///PERBAIKAN: Gunakan whereIn untuk memanggil 2 jenis pesan yang belum dibaca
         $data = Pesan::with('pengajuan')
-            ->where('judul', 'Permintaan Perpanjangan Domain')
+            ->whereIn('judul', ['Permintaan Perpanjangan Domain', 'Bukti Pembayaran Perpanjangan'])
             ->where('is_read', 0)
             ->latest()
             ->get();
@@ -193,48 +187,41 @@ class PerpanjanganApiController extends Controller
     // =========================
     public function buatFaktur($id)
     {
-        $pengajuan = Pengajuan::findOrFail($id);
-
-        // CEK SUDAH ADA FAKTUR PERPANJANGAN BELUM BAYAR
-        $cek = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-            ->where('tipe', 'perpanjangan')
-            ->where('status', 'belum_bayar')
-            ->exists();
-
-        if ($cek) {
+        $user = auth()->user();
+        if ($user->role !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'Faktur perpanjangan masih ada dan belum dibayar'
+                'message' => 'Hanya admin yang dapat membuat faktur'
+            ], 403);
+        }
+
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        // Cek apakah ada faktur perpanjangan yang menggantung
+        $fakturTerakhir = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+            ->where('tipe', 'perpanjangan')
+            ->latest()
+            ->first();
+
+        if ($fakturTerakhir && $fakturTerakhir->status == 'belum_bayar') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Faktur perpanjangan sebelumnya sudah ada dan belum dibayar.'
             ]);
         }
 
-        // GENERATE FAKTUR
         $faktur = FakturService::createFaktur($pengajuan, 'perpanjangan');
 
-        // MARK PESAN LAMA SEBAGAI READ
         Pesan::where('id_pengajuan', $id)
             ->where('judul', 'Permintaan Perpanjangan Domain')
             ->update(['is_read' => 1]);
 
-        // NOTIF USER
         Pesan::create([
             'id_user'       => $pengajuan->id_user,
             'id_pengajuan'  => $pengajuan->id_pengajuan,
             'judul'         => 'Faktur Perpanjangan',
-            'isi'           => 'Faktur perpanjangan domain ' . $pengajuan->nama_domain .
-                                '.desa.id telah tersedia. Silakan lakukan pembayaran dan upload bukti.',
+            'isi'           => 'Faktur perpanjangan domain ' . $pengajuan->nama_domain . '.desa.id telah tersedia. Silakan lakukan pembayaran dan upload bukti.',
             'role_tujuan'   => 'desa',
-            'is_read'       => 0
-        ]);
-
-        // NOTIF ADMIN
-        Pesan::create([
-            'id_user'       => 1,
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'Faktur Perpanjangan Dibuat',
-            'isi'           => 'Faktur perpanjangan domain ' . $pengajuan->nama_domain .
-                                '.desa.id telah dibuat. Menunggu pembayaran dari ' . $pengajuan->nama_desa,
-            'role_tujuan'   => 'admin',
             'is_read'       => 0
         ]);
 
@@ -250,8 +237,16 @@ class PerpanjanganApiController extends Controller
     // =========================
     public function uploadBukti(Request $request, $id)
     {
+        $user = auth()->user();
         $pengajuan = Pengajuan::findOrFail($id);
+        if ($pengajuan->id_user !== $user->id_user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki izin untuk upload bukti domain ini'
+            ], 403);
+        }
 
+        // Cari faktur perpanjangan terakhir
         $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'perpanjangan')
             ->where('status', 'belum_bayar')
@@ -261,11 +256,14 @@ class PerpanjanganApiController extends Controller
         if (!$faktur) {
             return response()->json([
                 'success' => false,
-                'message' => 'Faktur tidak ditemukan atau sudah dibayar'
-            ]);
+                'message' => 'Faktur perpanjangan tidak ditemukan atau sudah dibayar.'
+            ], 404);
         }
 
-        // VALIDASI FILE
+        $request->validate([
+            'bukti_pembayaran' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'
+        ]);
+
         if (!$request->hasFile('bukti_pembayaran')) {
             return response()->json([
                 'success' => false,
@@ -273,85 +271,91 @@ class PerpanjanganApiController extends Controller
             ], 422);
         }
 
-        $path = UploadService::uploadDokumen(
-            $request->file('bukti_pembayaran'),
-            'bukti_pembayaran',
-            'bukti_pembayaran'
-        );
+        try {
+            // Hapus file lama
+            if ($faktur->bukti_pembayaran_path) {
+                UploadService::deleteFile($faktur->bukti_pembayaran_path);
+            }
 
-        $faktur->update([
-            'bukti_pembayaran_path' => $path,
-            'status' => 'menunggu_verifikasi',
-            'tanggal_konfirmasi' => now(),
-        ]);
+            // Upload file baru
+            $path = UploadService::uploadDokumen(
+                $request->file('bukti_pembayaran'),
+                'bukti_pembayaran',
+                'bukti_pembayaran'
+            );
 
-        // NOTIF ADMIN
-        Pesan::create([
-            'id_user'       => 1,
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'Bukti Pembayaran Perpanjangan',
-            'isi'           => 'Desa ' . $pengajuan->nama_desa .
-                                ' telah mengirim bukti pembayaran perpanjangan domain ' .
-                                $pengajuan->nama_domain . '.desa.id. Silakan verifikasi.',
-            'role_tujuan'   => 'admin',
-            'is_read'       => 0
-        ]);
+            // Update faktur
+            $faktur->update([
+                'bukti_pembayaran_path' => $path,
+                'status' => 'sudah_bayar',
+                'tanggal_konfirmasi' => now(),
+            ]);
 
-        // NOTIF USER
-        Pesan::create([
-            'id_user'       => $pengajuan->id_user,
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'Bukti Pembayaran Diterima',
-            'isi'           => 'Bukti pembayaran Anda telah diterima. Menunggu verifikasi dari admin.',
-            'role_tujuan'   => 'desa',
-            'is_read'       => 0
-        ]);
+            // Notif admin
+            Pesan::create([
+                'id_user'       => 1,
+                'id_pengajuan'  => $pengajuan->id_pengajuan,
+                'judul'         => 'Bukti Pembayaran Perpanjangan',
+                'isi'           => 'Desa ' . $pengajuan->nama_desa . ' telah mengirim bukti pembayaran perpanjangan domain ' . $pengajuan->nama_domain . '.desa.id. Silakan aktivasi domain.',
+                'role_tujuan'   => 'admin',
+                'is_read'       => 0
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Bukti pembayaran berhasil dikirim'
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Bukti pembayaran berhasil dikirim. Menunggu aktivasi admin.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('uploadBukti perpanjangan error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload bukti: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // =========================
-    // ADMIN - VERIFIKASI PEMBAYARAN
+    // ADMIN - VERIFIKASI PEMBAYARAN (OPTIONAL - bisa dihapus jika tidak perlu)
     // =========================
     public function verifikasiPembayaran($id)
     {
+        $user = auth()->user();
+
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya admin yang dapat verifikasi'
+            ], 403);
+        }
+
         $pengajuan = Pengajuan::findOrFail($id);
 
         $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'perpanjangan')
-            ->where('status', 'menunggu_verifikasi')
+            ->where('status', 'sudah_bayar') 
             ->latest()
             ->first();
 
         if (!$faktur) {
             return response()->json([
                 'success' => false,
-                'message' => 'Faktur tidak ditemukan atau sudah diverifikasi'
-            ]);
+                'message' => 'Faktur dengan bukti pembayaran tidak ditemukan'
+            ], 404);
         }
 
-        // UPDATE STATUS FAKTUR
-        $faktur->update([
-            'status' => 'sudah_bayar'
-        ]);
-
-        // NOTIF USER
         Pesan::create([
             'id_user'       => $pengajuan->id_user,
             'id_pengajuan'  => $pengajuan->id_pengajuan,
             'judul'         => 'Pembayaran Terverifikasi',
-            'isi'           => 'Pembayaran perpanjangan domain ' . $pengajuan->nama_domain .
-                                '.desa.id telah diverifikasi. Domainmu akan diaktifkan kembali.',
+            'isi'           => 'Pembayaran perpanjangan domain ' . $pengajuan->nama_domain . ' telah diverifikasi oleh admin. Silakan tunggu aktivasi ulang domain Anda.',
             'role_tujuan'   => 'desa',
             'is_read'       => 0
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Pembayaran terverifikasi'
+            'message' => 'Pembayaran berhasil diverifikasi'
         ]);
     }
 
@@ -360,9 +364,19 @@ class PerpanjanganApiController extends Controller
     // =========================
     public function aktivasi($id)
     {
+        $user = auth()->user();
+
+        // ✅ Validasi: Hanya admin yang bisa aktivasi
+        if ($user->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya admin yang dapat melakukan aktivasi domain'
+            ], 403);
+        }
+
         $pengajuan = Pengajuan::findOrFail($id);
 
-        // FAKTUR TERBARU
+        // ✅ Cari faktur perpanjangan dengan status 'sudah_bayar'
         $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'perpanjangan')
             ->where('status', 'sudah_bayar')
@@ -372,11 +386,10 @@ class PerpanjanganApiController extends Controller
         if (!$faktur) {
             return response()->json([
                 'success' => false,
-                'message' => 'Faktur pembayaran tidak ditemukan atau belum terverifikasi'
-            ]);
+                'message' => 'Faktur perpanjangan dengan status sudah bayar tidak ditemukan'
+            ], 404);
         }
 
-        // AMBIL AKTIVASI TERBARU
         $aktivasi = Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->orderByDesc('id_aktivasi')
             ->first();
@@ -385,12 +398,12 @@ class PerpanjanganApiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Data aktivasi domain tidak ditemukan'
-            ]);
+            ], 404);
         }
 
         DB::beginTransaction();
         try {
-            // ✓ PENTING: Tambah 1 TAHUN dari masa berlaku saat ini
+            // ✅ Tambah 1 TAHUN dari masa berlaku saat ini
             $masaBaru = Carbon::parse($aktivasi->masa_berlaku)->addYear();
 
             $aktivasi->update([
@@ -398,24 +411,17 @@ class PerpanjanganApiController extends Controller
                 'masa_berlaku' => $masaBaru,
             ]);
 
-            // UPDATE STATUS FAKTUR MENJADI SELESAI
-            $faktur->update([
-                'status' => 'selesai'
-            ]);
-
-            // MARK PESAN LAMA SEBAGAI READ
+            // Mark pesan sebagai read
             Pesan::where('id_pengajuan', $id)
                 ->whereIn('judul', ['Bukti Pembayaran Perpanjangan', 'Pembayaran Terverifikasi'])
                 ->update(['is_read' => 1]);
 
-            // NOTIF USER
+            // Notif user
             Pesan::create([
                 'id_user'       => $pengajuan->id_user,
                 'id_pengajuan'  => $pengajuan->id_pengajuan,
                 'judul'         => 'Perpanjangan Domain Berhasil',
-                'isi'           => 'Domain ' . $pengajuan->nama_domain .
-                                    '.desa.id berhasil diperpanjang hingga ' .
-                                    $masaBaru->format('d-m-Y'),
+                'isi'           => 'Domain ' . $pengajuan->nama_domain . '.desa.id berhasil diperpanjang hingga ' . $masaBaru->format('d-m-Y'),
                 'role_tujuan'   => 'desa',
                 'is_read'       => 0
             ]);
@@ -432,10 +438,12 @@ class PerpanjanganApiController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('aktivasi perpanjangan error: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -484,7 +492,8 @@ class PerpanjanganApiController extends Controller
         if (!$faktur) {
             return response()->json([
                 'success' => false,
-                'message' => 'Faktur tidak ditemukan'
+                'message' => 'Faktur perpanjangan tidak ditemukan',
+                'data' => null
             ]);
         }
 

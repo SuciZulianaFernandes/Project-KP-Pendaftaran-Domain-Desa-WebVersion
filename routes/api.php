@@ -64,6 +64,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/update/{id}',
             [UserPengajuanController::class, 'update']);
+            
+        Route::get('/detail-faktur/{id}',
+        [UserPengajuanController::class, 'detailFakturPengajuan']);
 
         Route::post('/bukti-pembayaran/{id}',
             [UserPengajuanController::class, 'uploadBuktiPembayaran']);
