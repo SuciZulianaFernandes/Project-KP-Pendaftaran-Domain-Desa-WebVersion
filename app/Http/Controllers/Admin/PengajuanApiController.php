@@ -135,22 +135,22 @@ class PengajuanApiController extends Controller
     // =========================
     public function pembayaran()
     {
-        /**
-         * LOGIKA DIPERBAIKI:
-         * Saat user sudah upload bukti bayar,
-         * otomatis ubah status pengajuan jadi menunggu_aktivasi
-         */
-
         $fakturs = Faktur::with('pengajuan')
             ->where('status', 'sudah_bayar')
+            ->where('tipe', 'baru')
             ->latest()
             ->get();
 
         foreach ($fakturs as $faktur) {
-            if ($faktur->pengajuan &&
-                $faktur->pengajuan->status_pengajuan == 'diproses') {
 
-                $faktur->pengajuan->status_pengajuan = 'menunggu_aktivasi';
+            if (
+                $faktur->pengajuan &&
+                $faktur->pengajuan->status_pengajuan == 'diproses'
+            ) {
+
+                $faktur->pengajuan->status_pengajuan =
+                    'menunggu_aktivasi';
+
                 $faktur->pengajuan->save();
             }
         }
@@ -160,124 +160,117 @@ class PengajuanApiController extends Controller
             'data' => $fakturs
         ]);
     }
-
-    // =========================
-    // VERIFIKASI PEMBAYARAN
-    // =========================
-    public function verifikasiPembayaran($id)
-    {
-        $faktur = Faktur::findOrFail($id);
-
-        if ($faktur->tanggal_konfirmasi != null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pembayaran sudah diverifikasi'
-            ], 400);
-        }
-
-        $faktur->tanggal_konfirmasi = now();
-        $faktur->save();
-
-        $pengajuan = Pengajuan::findOrFail($faktur->id_pengajuan);
-
-        $pengajuan->status_pengajuan = 'menunggu_aktivasi';
-        $pengajuan->save();
-
-        Pesan::create([
-            'id_user'      => $pengajuan->id_user,
-            'id_pengajuan' => $pengajuan->id_pengajuan,
-            'judul'        => 'Pembayaran Berhasil Diverifikasi',
-            'isi'          => 'Pembayaran domain '
-                                . $pengajuan->nama_domain .
-                                '.desa.id telah berhasil diverifikasi. '
-                                . 'Domain siap untuk diaktivasi.',
-            'role_tujuan'  => 'desa'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Pembayaran berhasil diverifikasi'
-        ]);
-    }
-
     // =========================
     // AKTIVASI DOMAIN
     // =========================
     public function aktivasi($id)
-    {
-        $pengajuan = Pengajuan::findOrFail($id);
+{
+    $pengajuan = Pengajuan::findOrFail($id);
 
-        if ($pengajuan->status_pengajuan != 'menunggu_aktivasi') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Domain belum siap diaktivasi'
-            ], 400);
-        }
+    if (
+        $pengajuan->status_pengajuan
+        != 'menunggu_aktivasi'
+    ) {
 
-        DB::beginTransaction();
-
-        try {
-
-            // update pengajuan
-            $pengajuan->status_pengajuan = 'aktif';
-            $pengajuan->save();
-
-            // cek sudah ada aktivasi?
-            $cek = Aktivasi::where(
-                'id_pengajuan',
-                $pengajuan->id_pengajuan
-            )->first();
-
-            $masaBerlaku = now()->addDays(365);
-
-            if ($cek) {
-
-                $cek->status_akt = 'aktif';
-                $cek->tgl_aktivasi = now();
-                $cek->masa_berlaku = $masaBerlaku;
-                $cek->save();
-
-            } else {
-
-                Aktivasi::create([
-                    'id_pengajuan' => $pengajuan->id_pengajuan,
-                    'status_akt'   => 'aktif',
-                    'tgl_aktivasi' => now(),
-                    'masa_berlaku' => $masaBerlaku,
-                ]);
-            }
-
-            // notif user
-            Pesan::create([
-                'id_user'      => $pengajuan->id_user,
-                'id_pengajuan' => $pengajuan->id_pengajuan,
-                'judul'        => 'Domain Aktif',
-                'isi'          => 'Domain '
-                                    .$pengajuan->nama_domain.
-                                    '.desa.id berhasil diaktifkan.',
-                'role_tujuan'  => 'desa'
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Domain berhasil diaktifkan'
-            ]);
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal aktivasi domain'
-            ], 500);
-        }
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Domain belum siap diaktivasi'
+        ], 400);
     }
+
+    DB::beginTransaction();
+
+    try {
+
+        // UPDATE STATUS
+        $pengajuan->status_pengajuan =
+            'aktif';
+
+        $pengajuan->save();
+
+        // CEK AKTIVASI
+        $cek = Aktivasi::where(
+            'id_pengajuan',
+            $pengajuan->id_pengajuan
+        )->first();
+
+        if ($cek) {
+
+            // TAMBAH 1 TAHUN
+            $cek->status_akt = 'aktif';
+
+            $cek->tgl_aktivasi = now();
+
+            $cek->masa_berlaku =
+                \Carbon\Carbon::parse(
+                    $cek->masa_berlaku
+                )->addYear();
+
+            $cek->save();
+
+        } else {
+
+            // AKTIVASI BARU
+            Aktivasi::create([
+
+                'id_pengajuan' =>
+                    $pengajuan->id_pengajuan,
+
+                'status_akt' =>
+                    'aktif',
+
+                'tgl_aktivasi' =>
+                    now(),
+
+                'masa_berlaku' =>
+                    now()->addYear(),
+            ]);
+        }
+
+        // NOTIF USER
+        Pesan::create([
+
+            'id_user' =>
+                $pengajuan->id_user,
+
+            'id_pengajuan' =>
+                $pengajuan->id_pengajuan,
+
+            'judul' =>
+                'Domain Aktif',
+
+            'isi' =>
+                'Domain ' .
+                $pengajuan->nama_domain .
+                '.desa.id berhasil diaktifkan.',
+
+            'role_tujuan' => 'desa'
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' =>
+                'Domain berhasil diaktifkan'
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Gagal aktivasi domain'
+        ], 500);
+    }
+}
     public function fakturMobile()
 {
     $data = Faktur::with('pengajuan')
+        ->whereNotNull('no_invoice')
         ->latest()
         ->get();
 
@@ -307,8 +300,9 @@ class PengajuanApiController extends Controller
                     $item->tipe,
 
                 'tanggal_konfirmasi' =>
-                    optional($item->tanggal_konfirmasi)
-                        ?->format('Y-m-d'),
+                    optional(
+                        $item->tanggal_konfirmasi
+                    )?->format('Y-m-d'),
             ];
         })
     ]);

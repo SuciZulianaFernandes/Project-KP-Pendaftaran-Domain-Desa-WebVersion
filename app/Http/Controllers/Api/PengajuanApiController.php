@@ -88,11 +88,9 @@ class PengajuanApiController extends Controller
             PesanService::toAdmin(
                 $pengajuan->id_pengajuan,
                 'Pengajuan Baru',
-                'Desa ' .
                 $pengajuan->nama_desa .
                 ' mengajukan domain ' .
-                $pengajuan->nama_domain .
-                '.desa.id'
+                $pengajuan->nama_domain
             );
 
             return response()->json([
@@ -116,27 +114,57 @@ class PengajuanApiController extends Controller
     // DATA USER
     // =========================
     public function getPengajuanUser(Request $request)
-    {
-        try {
+{
+    try {
 
-            $data =
-                PengajuanService::getUserPengajuan(
-                    $request->id_user
-                );
+        $user = auth()->user();
 
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-            ]);
+        $data = Pengajuan::with([
+            'faktur' => function ($query) {
+                $query->latest();
+            }
+        ])
+        ->where('id_user', $user->id_user)
+        ->latest()
+        ->get();
 
-        } catch (\Exception $e) {
+        $data = $data->map(function ($item) {
 
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+            $faktur = $item->faktur->first();
+
+            $item->no_invoice =
+                $faktur->no_invoice ?? '';
+
+            $item->faktur_status =
+                $faktur->status ?? '';
+
+            $item->total_faktur =
+                $faktur->total ?? '';
+
+            $item->bukti_pembayaran_url =
+                $faktur && $faktur->bukti_pembayaran_path
+                    ? asset('storage/' . $faktur->bukti_pembayaran_path)
+                    : '';
+
+            $item->tipe_faktur =
+                $faktur->tipe ?? '';
+
+            return $item;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
     // =========================
     // RIWAYAT
@@ -164,7 +192,7 @@ class PengajuanApiController extends Controller
             'Faktur Baru',
             'Invoice pembayaran domain '
             . $pengajuan->nama_domain .
-            '.desa.id telah tersedia.'
+            'telah tersedia.'
         );
 
         PesanService::toAdmin(

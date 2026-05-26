@@ -12,30 +12,42 @@ use App\Http\Controllers\Api\PerpanjanganApiController;
 
 use App\Http\Controllers\Admin\PengajuanApiController as AdminPengajuanController;
 
-
-// ================= AUTH =================
+// ================= PUBLIC =================
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+Route::get(
+    '/domain-terdaftar',
+    [DomainTerdaftarController::class, 'index']
+);
 
-Route::get('/domain-terdaftar', [DomainTerdaftarController::class, 'index']);
-// ================= ROUTE LOGIN =================
+// ================= AUTHENTICATED =================
 Route::middleware('auth:sanctum')->group(function () {
 
-    // PROFILE
-    Route::post('/profile', [AuthController::class, 'profile']);
-    Route::post('/profile/update', [AuthController::class, 'updateProfile']);
-
-    // INSTANSI
-    Route::post('/instansi', [AuthController::class, 'instansi']);
-    Route::post('/instansi/update', [AuthController::class, 'updateInstansi']);
-
-    // USER LOGIN
+    // ================= USER INFO =================
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    // ================= USER / DESA =================
+    // ================= PROFILE =================
+    Route::prefix('profile')->group(function () {
+
+        Route::post('/', [AuthController::class, 'profile']);
+
+        Route::post('/update',
+            [AuthController::class, 'updateProfile']);
+    });
+
+    // ================= INSTANSI =================
+    Route::prefix('instansi')->group(function () {
+
+        Route::post('/', [AuthController::class, 'instansi']);
+
+        Route::post('/update',
+            [AuthController::class, 'updateInstansi']);
+    });
+
+    // ================= PENGAJUAN USER =================
     Route::prefix('pengajuan')->group(function () {
 
         Route::post('/check-domain',
@@ -60,62 +72,90 @@ Route::middleware('auth:sanctum')->group(function () {
             [UserPengajuanController::class, 'lanjutkanPembayaran']);
     });
 
-    // ================= NOTIFIKASI =================
-    Route::get('/notifikasi',[PesanControllerApi::class, 'index']);
- });
-    // ================= PERPANJANGAN =================
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get(
-            '/perpanjangan/domain',
-            [PerpanjanganApiController::class, 'listDomain']
-        );
+    // ================= PERPANJANGAN USER =================
+    Route::prefix('perpanjangan')->group(function () {
 
-        Route::post(
-            '/perpanjangan/ajukan/{id}',
-            [PerpanjanganApiController::class, 'ajukan']
-        );
+        Route::get('/domain',
+            [PerpanjanganApiController::class, 'listDomain']);
 
-        // ADMIN
-        Route::get(
-            '/admin/perpanjangan',
-            [PerpanjanganApiController::class, 'adminList']
-        );
+        Route::post('/ajukan/{id}',
+            [PerpanjanganApiController::class, 'ajukan']);
 
-        Route::post(
-            '/admin/perpanjangan/faktur/{id}',
-            [PerpanjanganApiController::class, 'generateFaktur']
-        );
+        Route::get('/detail-faktur/{id}',
+            [PerpanjanganApiController::class, 'detailFaktur']);
 
-        Route::post(
-            '/admin/perpanjangan/aktivasi/{id}',
-            [PerpanjanganApiController::class, 'aktivasi']
-        );
+        Route::post('/upload-bukti/{id}',
+            [PerpanjanganApiController::class, 'uploadBukti']);
+
+        Route::get('/reminder',
+            [PerpanjanganApiController::class, 'cekReminder']);
     });
 
-// ================= ADMIN =================
-Route::prefix('admin')->group(function () {
+    // ================= NOTIFIKASI USER =================
+    Route::get('/notifikasi',
+        [PesanControllerApi::class, 'index']);
 
-    Route::get('/pengajuan',
-        [AdminPengajuanController::class, 'index']);
+    // =====================================================
+    // ================= ADMIN ONLY ========================
+    // =====================================================
 
-    Route::get('/pengajuan/{id}',
-        [AdminPengajuanController::class, 'show']);
+    Route::middleware('api.role:admin')->prefix('admin')->group(function () {
 
-    Route::post('/verifikasi/{id}',
-        [AdminPengajuanController::class, 'verifikasi']);
+        // ================= DASHBOARD =================
+        Route::get('/dashboard',
+            [DashboardController::class, 'index']);
 
-    Route::get('/pembayaran',
-        [AdminPengajuanController::class, 'pembayaran']);
+        // ================= PENGAJUAN =================
+        Route::prefix('pengajuan')->group(function () {
 
-    Route::post('/verifikasi-pembayaran/{id}',
-        [AdminPengajuanController::class, 'verifikasiPembayaran']);
+            Route::get('/',
+                [AdminPengajuanController::class, 'index']);
 
-    Route::post('/aktivasi/proses/{id}',
-        [AdminPengajuanController::class, 'aktivasi']);
+            Route::get('/{id}',
+                [AdminPengajuanController::class, 'show']);
+        });
 
-    Route::get('/faktur',[AdminPengajuanController::class, 'fakturMobile']);
-    Route::get('/faktur/{id}',[AdminPengajuanController::class, 'detailFakturMobile']);
-    Route::get('/notifikasi', [PesanControllerApi::class,'adminNotif']);
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+        // ================= VERIFIKASI =================
+        Route::post('/verifikasi/{id}',
+            [AdminPengajuanController::class, 'verifikasi']);
 
+        Route::get('/pembayaran',
+            [AdminPengajuanController::class, 'pembayaran']);
+
+        Route::post('/verifikasi-pembayaran/{id}',
+            [AdminPengajuanController::class, 'verifikasiPembayaran']);
+
+        Route::post('/aktivasi/proses/{id}',
+            [AdminPengajuanController::class, 'aktivasi']);
+
+        // ================= FAKTUR =================
+        Route::get('/faktur',
+            [AdminPengajuanController::class, 'fakturMobile']);
+
+        Route::get('/faktur/{id}',
+            [AdminPengajuanController::class, 'detailFakturMobile']);
+
+        // ================= NOTIFIKASI ADMIN =================
+        Route::get('/notifikasi',
+            [PesanControllerApi::class, 'adminNotif']);
+
+        // ================= PERPANJANGAN ADMIN =================
+        Route::prefix('perpanjangan')->group(function () {
+
+            Route::get('/list',
+                [PerpanjanganApiController::class, 'adminList']);
+
+            Route::post('/buat-faktur/{id}',
+                [PerpanjanganApiController::class, 'buatFaktur']);
+
+            Route::post('/verifikasi/{id}',
+                [PerpanjanganApiController::class, 'verifikasiPembayaran']);
+
+            Route::post('/aktivasi/{id}',
+                [PerpanjanganApiController::class, 'aktivasi']);
+
+            Route::get('/list-faktur',
+                [PerpanjanganApiController::class, 'adminListFaktur']);
+        });
+    });
 });
