@@ -64,6 +64,24 @@ class Pengajuan extends Model
         );
     }
 
+    public function fakturBaru()
+    {
+        return $this->hasMany(
+            Faktur::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        )->where('tipe', 'baru');
+    }
+
+    public function fakturPerpanjangan()
+    {
+        return $this->hasMany(
+            Faktur::class,
+            'id_pengajuan',
+            'id_pengajuan'
+        )->where('tipe', 'perpanjangan');
+    }
+
     public function aktivasi()
     {
         return $this->hasOne(

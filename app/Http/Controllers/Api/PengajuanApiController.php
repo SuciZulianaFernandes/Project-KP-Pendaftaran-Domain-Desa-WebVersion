@@ -88,11 +88,9 @@ class PengajuanApiController extends Controller
             PesanService::toAdmin(
                 $pengajuan->id_pengajuan,
                 'Pengajuan Baru',
-                'Desa ' .
                 $pengajuan->nama_desa .
                 ' mengajukan domain ' .
-                $pengajuan->nama_domain .
-                '.desa.id'
+                $pengajuan->nama_domain
             );
 
             return response()->json([
@@ -116,27 +114,57 @@ class PengajuanApiController extends Controller
     // DATA USER
     // =========================
     public function getPengajuanUser(Request $request)
-    {
-        try {
+{
+    try {
 
-            $data =
-                PengajuanService::getUserPengajuan(
-                    $request->id_user
-                );
+        $user = auth()->user();
 
-            return response()->json([
-                'success' => true,
-                'data' => $data,
-            ]);
+        $data = Pengajuan::with([
+            'faktur' => function ($query) {
+                $query->latest();
+            }
+        ])
+        ->where('id_user', $user->id_user)
+        ->latest()
+        ->get();
 
-        } catch (\Exception $e) {
+        $data = $data->map(function ($item) {
 
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
-        }
+            $faktur = $item->faktur->first();
+
+            $item->no_invoice =
+                $faktur->no_invoice ?? '';
+
+            $item->faktur_status =
+                $faktur->status ?? '';
+
+            $item->total_faktur =
+                $faktur->total ?? '';
+
+            $item->bukti_pembayaran_url =
+                $faktur && $faktur->bukti_pembayaran_path
+                    ? asset('storage/' . $faktur->bukti_pembayaran_path)
+                    : '';
+
+            $item->tipe_faktur =
+                $faktur->tipe ?? '';
+
+            return $item;
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+
+    } catch (\Exception $e) {
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
     // =========================
     // RIWAYAT
@@ -149,67 +177,87 @@ class PengajuanApiController extends Controller
     // =========================
     // LANJUTKAN PEMBAYARAN
     // =========================
-    public function lanjutkanPembayaran($id)
-    {
-        try {
+public function lanjutkanPembayaran($id)
+{
+    try {
+        $pengajuan = Pengajuan::findOrFail($id);
 
-            $pengajuan = Pengajuan::findOrFail($id);
+        // ✓ Pastikan tipe 'baru' untuk pengajuan awal
+        $faktur = FakturService::createFaktur($pengajuan, 'baru');
 
-            $faktur =
-                FakturService::createFaktur($pengajuan);
-
-            PesanService::toUser(
+        PesanService::toUser(
             $pengajuan->id_user,
             $pengajuan->id_pengajuan,
             'Faktur Baru',
-            'Invoice pembayaran domain '
-            . $pengajuan->nama_domain .
-            '.desa.id telah tersedia.'
+            'Invoice pembayaran domain ' . $pengajuan->nama_domain . ' telah tersedia.'
         );
 
         PesanService::toAdmin(
             $pengajuan->id_pengajuan,
             'Faktur Baru',
-            'Faktur baru dibuat untuk domain '
-            . $pengajuan->nama_domain
+            'Faktur baru dibuat untuk domain ' . $pengajuan->nama_domain
         );
 
-            return response()->json([
-                'success' => true,
-                'data' => $faktur
-            ]);
+        return response()->json([
+            'success' => true,
+            'data' => $faktur
+        ]);
 
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 
     // =========================
     // UPLOAD BUKTI
     // =========================
-    public function uploadBuktiPembayaran(
-        Request $request,
-        $id
-    ) {
-
+    public function uploadBuktiPembayaran(Request $request, $id)
+    {
         DB::beginTransaction();
 
         try {
-
+            $user = auth()->user();
             $pengajuan = Pengajuan::findOrFail($id);
 
-            $faktur =
-                FakturService::createFaktur($pengajuan);
+            // ✅ Validasi: Hanya pemilik yang bisa upload
+            if ($pengajuan->id_user !== $user->id_user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki izin untuk upload bukti'
+                ], 403);
+            }
+
+            // ✅ PENTING: Hanya ambil faktur PENGAJUAN AWAL (tipe='baru')
+            $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                ->where('tipe', 'baru')  // ← TAMBAH INI
+                ->where('status', 'belum_bayar')
+                ->latest()
+                ->first();
+
+            if (!$faktur) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Faktur pengajuan tidak ditemukan'
+                ], 404);
+            }
+
+            // ✅ Validasi file
+            $request->validate([
+                'bukti_pembayaran' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'
+            ]);
+
+            if (!$request->hasFile('bukti_pembayaran')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File bukti pembayaran diperlukan'
+                ], 422);
+            }
 
             if ($faktur->bukti_pembayaran_path) {
-
-                UploadService::deleteFile(
-                    $faktur->bukti_pembayaran_path
-                );
+                UploadService::deleteFile($faktur->bukti_pembayaran_path);
             }
 
             $path = UploadService::uploadDokumen(
@@ -225,15 +273,13 @@ class PengajuanApiController extends Controller
             ]);
 
             $pengajuan->update([
-                'status_pengajuan' =>
-                    'menunggu_aktivasi'
+                'status_pengajuan' => 'menunggu_aktivasi'
             ]);
 
-           PesanService::toAdmin(
+            PesanService::toAdmin(
                 $pengajuan->id_pengajuan,
                 'Pembayaran Baru',
-                'Desa '
-                . $pengajuan->nama_desa .
+                'Desa ' . $pengajuan->nama_desa .
                 ' telah upload bukti pembayaran'
             );
 
@@ -241,18 +287,52 @@ class PengajuanApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' =>
-                    'Bukti pembayaran berhasil dikirim'
+                'message' => 'Bukti pembayaran berhasil dikirim',
+                'data' => $faktur
             ]);
 
         } catch (\Exception $e) {
-
             DB::rollBack();
+            Log::error('uploadBuktiPembayaran error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+    // ================= PENGAJUAN - GET DETAIL FAKTUR =================
+    public function detailFakturPengajuan($id)
+    {
+        $user = auth()->user();
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        // ✅ Validasi: Hanya pemilik
+        if ($pengajuan->id_user !== $user->id_user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+                'data' => null
+            ], 403);
+        }
+
+        // ✅ HANYA ambil faktur PENGAJUAN AWAL (tipe='baru')
+        $faktur = Faktur::where('id_pengajuan', $id)
+            ->where('tipe', 'baru')  // ← PENTING
+            ->latest()
+            ->first();
+
+        if (!$faktur) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Faktur pengajuan tidak ditemukan',
+                'data' => null
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $faktur
+        ]);
     }
 }
