@@ -13,7 +13,7 @@
         <div class="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-red-500 opacity-20 rounded-full blur-2xl"></div>
         
         <div class="relative z-10">
-            <h1 class="text-3xl font-bold mb-2">Selamat Datang, Admin! 👋</h1>
+            <h1 class="text-3xl font-bold mb-2">Selamat Datang, Admin!</h1>
             <p class="text-red-100 text-lg">Berikut adalah ringkasan statistik domain desa hari ini.</p>
             <div class="mt-4 inline-block bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-medium border border-white/20">
                 📅 {{ now()->translatedFormat('l, d F Y') }}

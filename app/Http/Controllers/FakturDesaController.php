@@ -10,17 +10,35 @@ use App\Http\Controllers\PesanController;
 
 class FakturDesaController extends Controller
 {
-    public function index()
+        public function index(Request $request) // Tambahkan Request $request
     {
         $user = Auth::user();
         $pengajuanIds = Pengajuan::where('id_user', $user->id_user)->pluck('id_pengajuan');
 
-        $fakturs = Faktur::whereIn('id_pengajuan', $pengajuanIds)->latest()->get();
+        // 1. AMBIL INPUT PENCARIAN
+        $search = $request->get('search');
 
-        if ($fakturs->isEmpty()) {
-            return view('desa.faktur.empty');
+        // 2. QUERY FAKTUR
+        $query = Faktur::whereIn('id_pengajuan', $pengajuanIds);
+
+        // 3. LOGIKA PENCARIAN (Cari No Invoice atau Nama Domain)
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('no_invoice', 'like', "%$search%")
+                  ->orWhereHas('pengajuan', function($pq) use ($search) {
+                      $pq->where('nama_domain', 'like', "%$search%");
+                  });
+            });
         }
 
+        // 4. UBAH GET() MENJADI PAGINATE(10)
+        $fakturs = $query->latest()->paginate(10);
+
+        // 5. APPEND PARAMETER
+        $fakturs->appends(['search' => $search]);
+
+        // Hapus pengecekan isEmpty() di controller biar flow paginationnya rapi
+        // Empty state sudah ditangani di Blade (@forelse @empty)
         return view('desa.faktur.index', compact('fakturs'));
     }
 

@@ -45,7 +45,25 @@
 
         @endif
 
-        @include('components.inv-search-filter')
+        {{-- PENCARIAN DENGAN FORM GET --}}
+        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
+            <form action="{{ route('desa.faktur.index') }}" method="GET" style="display:flex; flex:1; gap:10px;">
+                <div style="position:relative;flex:1">
+                    <input type="text" name="search" id="invSearch" placeholder="Cari No Invoice atau Domain..." value="{{ request('search') }}"
+                        style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
+                    <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 0 20px; border-radius: 8px;">Cari</button>
+            </form>
+            
+            <div style="width: 180px;">
+                <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
+                    <option value="">Semua Status</option>
+                    <option value="belum_bayar">Belum Dibayar</option>
+                    <option value="sudah_bayar">Sudah Dibayar</option>
+                </select>
+            </div>
+        </div>
 
         <div style="overflow-x:auto">
 
@@ -79,7 +97,7 @@
                     >
 
                         <td>
-                            {{ $loop->iteration }}
+                            {{ $fakturs->firstItem() + $loop->index }}
                         </td>
 
                         <td>
@@ -209,7 +227,8 @@
 
         </div>
 
-        @include('components.inv-pagination')
+        {{-- PASTIKAN MENGIRIM VARIABEL PAGINATOR --}}
+        @include('components.inv-pagination', ['paginator' => $fakturs])
 
     </div>
 
@@ -218,41 +237,31 @@
 <script>
 document.addEventListener('DOMContentLoaded', function(){
 
-    var searchInvoice = document.getElementById('invSearch'),
-        filterInvoice = document.getElementById('invFilter'),
+    // Filter Dropdown Status (Client Side Only)
+    var filterInvoice = document.getElementById('invFilter'),
         rowsInvoice = Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
         emptyInvoice = document.querySelector('.inv-empty');
 
-    function filterInvoiceTable(){
-
-        var keywordInvoice = searchInvoice.value.trim().toLowerCase(),
-            statusInvoice = filterInvoice.value,
+    function filterStatusOnly(){
+        var statusInvoice = filterInvoice.value,
             totalVisibleInvoice = 0;
 
         rowsInvoice.forEach(function(rowInvoice){
+            var statusMatch = (!statusInvoice || rowInvoice.dataset.status === statusInvoice);
+            
+            rowInvoice.style.display = statusMatch ? '' : 'none';
 
-            var showInvoice =
-                (!keywordInvoice || rowInvoice.textContent.toLowerCase().includes(keywordInvoice))
-                &&
-                (!statusInvoice || rowInvoice.dataset.status === statusInvoice);
-
-            rowInvoice.style.display = showInvoice ? '' : 'none';
-
-            if(showInvoice){
+            if(statusMatch){
                 totalVisibleInvoice++;
             }
-
         });
 
         if(emptyInvoice){
             emptyInvoice.style.display = totalVisibleInvoice ? 'none' : '';
         }
-
     }
-
-    searchInvoice.addEventListener('input', filterInvoiceTable);
-
-    filterInvoice.addEventListener('change', filterInvoiceTable);
+    
+    if(filterInvoice) filterInvoice.addEventListener('change', filterStatusOnly);
 
 });
 </script>

@@ -16,24 +16,73 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        // Default sorting: ID User Ascending (1, 2, 3 ...)
-        $sort = $request->get('sort', 'id_user');
-        $order = $request->get('order', 'asc');
+{
+    // SORT
+    $sort = $request->get('sort', 'id_user');
+    $order = $request->get('order', 'asc');
 
-        // Validasi kolom yang boleh di-sort (untuk keamanan)
-        $allowedSorts = ['id_user', 'username', 'name', 'email', 'role'];
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'id_user';
-        }
+    // KOLOM YANG BOLEH DI SORT
+    $allowedSorts = [
+        'id_user',
+        'username',
+        'name',
+        'email',
+        'role'
+    ];
 
-        $users = User::orderBy($sort, $order)->paginate(10);
-        
-        // Pertahankan parameter sort & order saat pagination
-        $users->appends(['sort' => $sort, 'order' => $order]);
-
-        return view('admin.users.index', compact('users', 'sort', 'order'));
+    if (!in_array($sort, $allowedSorts)) {
+        $sort = 'id_user';
     }
+
+    // AMBIL INPUT SEARCH & FILTER
+    $search = $request->get('search');
+    $role = $request->get('role');
+
+    // QUERY DASAR
+    $query = User::query();
+
+    // SEARCH
+    if (!empty($search)) {
+        $query->where(function ($q) use ($search) {
+            $q->where('username', 'like', '%' . $search . '%')
+              ->orWhere('name', 'like', '%' . $search . '%')
+              ->orWhere('email', 'like', '%' . $search . '%');
+        });
+    }
+
+    // FILTER ROLE
+    if (!empty($role)) {
+        $query->where('role', $role);
+    }
+
+    // SORT
+    $query->orderBy($sort, $order);
+
+    // PAGINATION
+    $users = $query->paginate(10)->withQueryString();
+$users = $query->paginate(10)->withQueryString();
+
+// ======================
+// WIDGET TOTAL USER
+// ======================
+
+$totalUser = User::count();
+
+$totalAdmin = User::where('role', 'admin')->count();
+
+$totalDesa = User::where('role', 'desa')->count();
+
+return view('admin.users.index', compact(
+    'users',
+    'sort',
+    'order',
+    'search',
+    'role',
+    'totalUser',
+    'totalAdmin',
+    'totalDesa'
+));
+}
 
     /**
      * Show the form for creating a new resource.

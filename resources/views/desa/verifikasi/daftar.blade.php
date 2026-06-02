@@ -28,13 +28,20 @@
             </div>
         @endif
 
-        {{-- Search & Filter --}}
+        {{-- Search & Filter (PERBAIKAN: Menggunakan Form GET) --}}
         <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
-            <div style="position:relative;flex:1">
-                <input type="text" id="invSearch" placeholder="Cari berdasarkan nama domain..." 
-                    style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
-                <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
-            </div>
+            {{-- FORM PENCARIAN --}}
+            <form action="{{ route('desa.verifikasi.daftar') }}" method="GET" style="display:flex; flex:1; gap:10px;">
+                <div style="position:relative;flex:1">
+                    <input type="text" name="search" placeholder="Cari berdasarkan nama domain..." value="{{ request('search') }}"
+                        style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
+                    <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+                </div>
+                <button type="submit" class="btn btn-primary" style="padding: 0 20px; border-radius: 8px;">
+                    Cari
+                </button>
+            </form>
+            
             <div style="width: 180px;">
                 <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
                     <option value="">Semua Status</option>
@@ -51,16 +58,11 @@
             <table class="inv-table" id="invTable">
                 <thead>
                     <tr>
-                        {{-- Kolom No --}}
                         <th>No</th>
-                        
                         <th data-type="string" class="sortable">Nama Domain <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Tanggal Pengajuan <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Status <i class="sort-icon"></i></th>
-                        
-                        {{-- KOLOM CATATAN (BARU) --}}
                         <th data-type="string" class="sortable">Catatan <i class="sort-icon"></i></th>
-                        
                         <th style="text-align:center; cursor: default;">Aksi</th>
                     </tr>
                 </thead>
@@ -74,7 +76,6 @@
                             
                             <td><span class="inv-date">{{ $row->tgl_pengajuan }}</span></td>
                             
-                            {{-- STATUS (MENGGUNAKAN GAYA INDEX FAKTUR & RESPONSIVE) --}}
                             <td style="white-space:nowrap">
                                 @if($row->status_pengajuan == 'ditinjau')
                                     <span class="inv-badge" style="background:#fef9c3; color:#854d0e; border:1px solid #fde047">
@@ -103,7 +104,6 @@
                                 @endif
                             </td>
 
-                            {{-- ISI CATATAN (BARU) --}}
                             <td style="white-space:nowrap">
                                 <span style="font-size:13px; color:#64748b;">
                                     {{ $row->catatan_umum ?? '-' }}
@@ -112,7 +112,6 @@
 
                             <td style="text-align:center">
                                 <div style="display:flex;justify-content:center;gap:8px;">
-                                    <!-- DETAIL (Icon) -->
                                     <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
                                         <i class="fas fa-eye"></i> Lihat
                                     </a>    
@@ -120,7 +119,6 @@
                             </td>
                         </tr>
                     @empty
-                        {{-- colspan diubah menjadi 6 sesuai jumlah kolom baru --}}
                         <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
                     @endforelse
                 </tbody>
@@ -133,34 +131,34 @@
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-    // --- LOGIC SEARCH & FILTER (Adapted for Verifikasi) ---
-    var s=document.getElementById('invSearch'),
-        f=document.getElementById('invFilter'),
+    // Filter Dropdown Status (Client Side Only - untuk mempercepat jika data sudah diload)
+    var f=document.getElementById('invFilter'),
         rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
         empty=document.querySelector('.inv-empty');
 
-    function filter(){
-        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
-        rows.forEach(function(r){
-            var textMatch = (!q || r.textContent.toLowerCase().includes(q));
-            // Menggunakan data-status untuk filter
-            var statusMatch = (!v || r.dataset.status === v);
-            var show = textMatch && statusMatch;
-            r.style.display=show?'':'none';
-            if(show)n++;
-        });
-        if(empty)empty.style.display=n?'none':'';
-    }
-    if(s) s.addEventListener('input',filter);
-    if(f) f.addEventListener('change',filter);
+    // Hapus listener search yang lama agar tidak bentrok dengan form GET
+    // var s=document.getElementById('invSearch'); -> Tidak dipakai lagi karena sudah jadi form
 
-    // --- LOGIC SORTING (New: Client Side Instant Sort) ---
+    if(f) {
+        f.addEventListener('change',function(){
+            var v=f.value, n=0;
+            rows.forEach(function(r){
+                var statusMatch = (!v || r.dataset.status === v);
+                r.style.display=statusMatch?'':'none';
+                if(statusMatch)n++;
+            });
+            if(empty)empty.style.display=n?'none':'';
+        });
+        
+        // Trigger filter saat halaman dimuat jika ada value di dropdown (opsional)
+        // f.dispatchEvent(new Event('change'));
+    }
+
+    // --- LOGIC SORTING ---
     const sortHeaders = document.querySelectorAll('th.sortable');
     
     sortHeaders.forEach(header => {
         header.style.cursor = 'pointer';
-        
-        // Tambahkan hover effect sederhana
         header.addEventListener('mouseenter', () => header.style.backgroundColor = '#f8fafc');
         header.addEventListener('mouseleave', () => header.style.backgroundColor = '');
 
@@ -169,35 +167,26 @@ document.addEventListener('DOMContentLoaded',function(){
             const tbody = table.querySelector('tbody');
             const allRows = Array.from(tbody.querySelectorAll('tr'));
             
-            // Ambil tipe data (number/string) dari atribut th
+            // Kolom No di-skip karena tidak ada data-type
             const type = header.dataset.type;
+            if(!type) return;
+
             const icon = header.querySelector('.sort-icon');
-            // colIndex dikurangi 1 karena kolom pertama (No) tidak sortable
             const colIndex = Array.from(header.parentNode.children).indexOf(header);
 
-            // 1. Reset icon di header lain
             document.querySelectorAll('th.sortable .sort-icon').forEach(i => i.textContent = '');
             
-            // 2. Tentukan arah urutan (toggle asc/desc)
             let isAsc = !header.classList.contains('asc');
-            
-            // 3. Reset kelas di semua header
             sortHeaders.forEach(h => h.classList.remove('asc', 'desc'));
-            
-            // 4. Set state ke header yang diklik
             header.classList.add(isAsc ? 'asc' : 'desc');
             icon.textContent = isAsc ? ' ▲' : ' ▼';
 
-            // 5. Proses Sorting
             allRows.sort((a, b) => {
                 let aVal = a.cells[colIndex].textContent.trim();
                 let bVal = b.cells[colIndex].textContent.trim();
-
-                // Sorting String biasa (abaikan huruf besar/kecil)
                 return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             });
 
-            // 6. Re-append baris yang sudah terurut ke tabel
             allRows.forEach(row => tbody.appendChild(row));
         });
     });

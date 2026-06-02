@@ -227,16 +227,6 @@
                     <h1 class="display-4 fw-bold mb-4">The best web hosting service for your website.</h1>
                     <p class="lead mb-5">Dapatkan hosting terbaik dengan performa tinggi dan keamanan terjamin</p>
                     
-                    <div class="domain-search">
-                        <div class="row">
-                            <div class="col-lg-9">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Cari domain Anda...">
-                                    <button class="btn" type="button">Cari</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

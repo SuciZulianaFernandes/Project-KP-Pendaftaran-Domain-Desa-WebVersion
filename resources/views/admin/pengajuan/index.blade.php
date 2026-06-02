@@ -14,6 +14,68 @@
         </div>
     </div>
 
+    {{-- WIDGET STATUS --}}
+<div style="display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:16px;
+            margin-bottom:22px;">
+
+    {{-- Ditinjau --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #eab308">
+        <div style="font-size:14px;color:#64748b">Ditinjau</div>
+
+        <div style="font-size:28px;
+                    font-weight:800;
+                    color:#854d0e;
+                    margin-top:8px">
+            {{ $totalDitinjau }}
+        </div>
+    </div>
+
+    {{-- Perlu Perbaikan --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #ef4444">
+        <div style="font-size:14px;color:#64748b">
+            Perlu Perbaikan
+        </div>
+
+        <div style="font-size:28px;
+                    font-weight:800;
+                    color:#b91c1c;
+                    margin-top:8px">
+            {{ $totalPerbaikan }}
+        </div>
+    </div>
+
+    {{-- Diproses --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #3b82f6">
+        <div style="font-size:14px;color:#64748b">
+            Diproses
+        </div>
+
+        <div style="font-size:28px;
+                    font-weight:800;
+                    color:#1d4ed8;
+                    margin-top:8px">
+            {{ $totalDiproses }}
+        </div>
+    </div>
+
+    {{-- Menunggu Aktivasi --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #f97316">
+        <div style="font-size:14px;color:#64748b">
+            Menunggu Aktivasi
+        </div>
+
+        <div style="font-size:28px;
+                    font-weight:800;
+                    color:#c2410c;
+                    margin-top:8px">
+            {{ $totalAktivasi }}
+        </div>
+    </div>
+
+</div>
+
     <div class="inv-card">
         @if(session('success'))
             <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">

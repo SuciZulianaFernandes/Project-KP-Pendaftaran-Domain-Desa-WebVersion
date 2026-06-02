@@ -17,6 +17,61 @@
         </a>
     </div>
 
+    {{-- WIDGET USER --}}
+<div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin-bottom:22px;
+">
+
+    {{-- Total User --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #0f172a">
+        <div style="font-size:14px;color:#64748b">
+            Total User
+        </div>
+
+        <div style="
+            font-size:28px;
+            font-weight:800;
+            color:#0f172a;
+            margin-top:8px">
+            {{ $totalUser }}
+        </div>
+    </div>
+
+    {{-- Admin --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #9333ea">
+        <div style="font-size:14px;color:#64748b">
+            Total Admin
+        </div>
+
+        <div style="
+            font-size:28px;
+            font-weight:800;
+            color:#7e22ce;
+            margin-top:8px">
+            {{ $totalAdmin }}
+        </div>
+    </div>
+
+    {{-- Desa --}}
+    <div class="inv-card" style="padding:20px;border-left:5px solid #2563eb">
+        <div style="font-size:14px;color:#64748b">
+            Total Desa
+        </div>
+
+        <div style="
+            font-size:28px;
+            font-weight:800;
+            color:#1d4ed8;
+            margin-top:8px">
+            {{ $totalDesa }}
+        </div>
+    </div>
+
+</div>
+
     <div class="inv-card">
         @if(session('success'))
             <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">
@@ -31,21 +86,49 @@
             </div>
         @endif
 
-        {{-- Search & Filter --}}
-        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
-            <div style="position:relative;flex:1">
-                <input type="text" id="invSearch" placeholder="Cari berdasarkan nama, username, atau email..." 
-                    style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
-                <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
-            </div>
-            <div style="width: 150px;">
-                <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
-                    <option value="">Semua Role</option>
-                    <option value="admin">Admin</option>
-                    <option value="desa">Desa</option>
-                </select>
-            </div>
-        </div>
+       {{-- Search & Filter --}}
+<form method="GET"
+      action="{{ route('admin.users.index') }}"
+      style="padding:16px;border-bottom:1px solid #e2e8f0;display:flex;gap:10px;align-items:center;">
+
+    <div style="position:relative;flex:1">
+        <input
+            type="text"
+            name="search"
+            value="{{ request('search') }}"
+            placeholder="Cari berdasarkan nama, username, atau email..."
+            style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s"
+        >
+
+        <i class="fas fa-search"
+           style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+    </div>
+
+    <div style="width:150px;">
+        <select
+            name="role"
+            style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;"
+        >
+            <option value="">Semua Role</option>
+
+            <option value="admin"
+                {{ request('role') == 'admin' ? 'selected' : '' }}>
+                Admin
+            </option>
+
+            <option value="desa"
+                {{ request('role') == 'desa' ? 'selected' : '' }}>
+                Desa
+            </option>
+        </select>
+    </div>
+
+    <button type="submit"
+        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+        Cari
+    </button>
+
+</form>
 
         <div style="overflow-x:auto">
             <table class="inv-table" id="invTable">
@@ -112,81 +195,87 @@
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-    // --- LOGIC SEARCH & FILTER (Original Logic) ---
-    var s=document.getElementById('invSearch'),
-        f=document.getElementById('invFilter'),
-        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-role]')),
-        empty=document.querySelector('.inv-empty');
 
-    function filter(){
-        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
-        rows.forEach(function(r){
-            var textMatch = (!q || r.textContent.toLowerCase().includes(q));
-            var roleMatch = (!v || r.dataset.role === v);
-            var show = textMatch && roleMatch;
-            r.style.display=show?'':'none';
-            if(show)n++;
-        });
-        if(empty)empty.style.display=n?'none':'';
-    }
-    if(s) s.addEventListener('input',filter);
-    if(f) f.addEventListener('change',filter);
-
-    // --- LOGIC SORTING (New: Client Side Instant Sort) ---
+    // --- LOGIC SORTING ---
     const sortHeaders = document.querySelectorAll('th.sortable');
-    
+
     sortHeaders.forEach(header => {
+
         header.style.cursor = 'pointer';
-        
-        // Tambahkan hover effect sederhana
-        header.addEventListener('mouseenter', () => header.style.backgroundColor = '#f8fafc');
-        header.addEventListener('mouseleave', () => header.style.backgroundColor = '');
+
+        header.addEventListener('mouseenter', () => {
+            header.style.backgroundColor = '#f8fafc';
+        });
+
+        header.addEventListener('mouseleave', () => {
+            header.style.backgroundColor = '';
+        });
 
         header.addEventListener('click', () => {
+
             const table = header.closest('table');
             const tbody = table.querySelector('tbody');
             const allRows = Array.from(tbody.querySelectorAll('tr'));
-            
-            // Ambil tipe data (number/string) dari atribut th
+
             const type = header.dataset.type;
             const icon = header.querySelector('.sort-icon');
-            // colIndex dikurangi 1 karena kolom pertama (No) tidak sortable
-            const colIndex = Array.from(header.parentNode.children).indexOf(header);
 
-            // 1. Reset icon di header lain
-            document.querySelectorAll('th.sortable .sort-icon').forEach(i => i.textContent = '');
-            
-            // 2. Tentukan arah urutan (toggle asc/desc)
+            const colIndex =
+                Array.from(header.parentNode.children)
+                .indexOf(header);
+
+            document
+                .querySelectorAll('th.sortable .sort-icon')
+                .forEach(i => i.textContent = '');
+
             let isAsc = !header.classList.contains('asc');
-            
-            // 3. Reset kelas di semua header
-            sortHeaders.forEach(h => h.classList.remove('asc', 'desc'));
-            
-            // 4. Set state ke header yang diklik
-            header.classList.add(isAsc ? 'asc' : 'desc');
-            icon.textContent = isAsc ? ' ▲' : ' ▼';
 
-            // 5. Proses Sorting
-            allRows.sort((a, b) => {
-                let aVal = a.cells[colIndex].textContent.trim();
-                let bVal = b.cells[colIndex].textContent.trim();
-
-                // Sorting String biasa (abaikan huruf besar/kecil)
-                // Catatan: Tipe 'number' hanya tersedia jika ditambahkan di atribut th.
-                // Untuk kolom No, sorting dinonaktifkan.
-                if (type === 'number') {
-                     aVal = parseInt(aVal.replace(/\D/g, ''), 10);
-                     bVal = parseInt(bVal.replace(/\D/g, ''), 10);
-                     return isAsc ? aVal - bVal : bVal - aVal;
-                }
-
-                return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            sortHeaders.forEach(h => {
+                h.classList.remove('asc', 'desc');
             });
 
-            // 6. Re-append baris yang sudah terurut ke tabel
-            allRows.forEach(row => tbody.appendChild(row));
+            header.classList.add(isAsc ? 'asc' : 'desc');
+
+            icon.textContent = isAsc ? ' ▲' : ' ▼';
+
+            allRows.sort((a, b) => {
+
+                let aVal =
+                    a.cells[colIndex].textContent.trim();
+
+                let bVal =
+                    b.cells[colIndex].textContent.trim();
+
+                if (type === 'number') {
+
+                    aVal = parseInt(
+                        aVal.replace(/\D/g, ''),
+                        10
+                    );
+
+                    bVal = parseInt(
+                        bVal.replace(/\D/g, ''),
+                        10
+                    );
+
+                    return isAsc
+                        ? aVal - bVal
+                        : bVal - aVal;
+                }
+
+                return isAsc
+                    ? aVal.localeCompare(bVal)
+                    : bVal.localeCompare(aVal);
+            });
+
+            allRows.forEach(row => {
+                tbody.appendChild(row);
+            });
+
         });
+
     });
+
 });
 </script>
 @endsection
