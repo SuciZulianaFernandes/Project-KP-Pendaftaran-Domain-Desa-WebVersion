@@ -166,7 +166,8 @@
 
                         <td>
                             <span class="inv-date">
-                                {{ $row->nama_desa }}
+                                {{-- PERUBAHAN: Mengambil dari kolom 'desa_kelurahan' bukan 'nama_desa' --}}
+                                {{ $row->desa_kelurahan }}
                             </span>
                         </td>
 
