@@ -24,32 +24,29 @@
 
     </div>
 
-    <!-- FORM HAPUS -->
-    <form action="{{ route('desa.pesan.hapus.selected') }}"
-        method="POST"
-        id="deleteForm">
+    {{-- 
+        FORM HAPUS DIHAPUS DARI SINI UNTUK MENCEGAH NESTED FORM.
+        LOGIKA HAPUS AKAN DIBUAT OTOMATIS OLEH JAVASCRIPT DI BAWAH.
+    --}}
 
-        @csrf
-        @method('DELETE')
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ========================================== -->
+        <!-- KOLOM 1 : DOMAIN & FAKTUR -->
+        <!-- ========================================== -->
+        <div class="bg-gray-50 p-5 rounded-xl border">
 
-            <!-- ========================================== -->
-            <!-- KOLOM 1 : DOMAIN & FAKTUR -->
-            <!-- ========================================== -->
-            <div class="bg-gray-50 p-5 rounded-xl border">
+            <h2 class="text-xl font-bold mb-4 text-green-600">
+                Domain & Faktur
+            </h2>
 
-                <h2 class="text-xl font-bold mb-4 text-green-600">
-                    Domain & Faktur
-                </h2>
+            @forelse(
+                $data->filter(function($item){
 
-                @forelse(
-                    $data->filter(function($item){
-
-                        return
-                            str_contains($item->judul, 'Domain Aktif') ||
-                            str_contains($item->judul, 'Faktur Telah Dibuat') ||
-                            str_contains($item->judul, 'Faktur Perpanjangan Dibuat');
+                    return
+                        str_contains($item->judul, 'Domain Aktif') ||
+                        str_contains($item->judul, 'Faktur Telah Dibuat') ||
+                        str_contains($item->judul, 'Faktur Perpanjangan Dibuat');
 
                     }) as $row
                 )
@@ -161,6 +158,7 @@
                         {{-- BUTTON KONFIRMASI (Hanya muncul jika belum dibaca/diklik) --}}
                         @if($row->is_read == 0)
 
+                            {{-- FORM INI SEKARANG BERDIRI SENDIRI, TIDAK TERSANGKUT NESTED FORM --}}
                             <form action="{{ route('desa.konfirmasi.pembayaran', $row->id_pengajuan ?? 0) }}"
                                 method="POST"
                                 class="mt-3">
@@ -251,8 +249,6 @@
 
         </div>
 
-    </form>
-
 </div>
 
 
@@ -291,8 +287,39 @@ function handleDeleteButton()
     // popup konfirmasi
     if(confirm('Apakah Anda yakin ingin menghapus pesan yang dipilih?')){
 
-        document.getElementById('deleteForm').submit();
+        // BUAT FORM SECARA DINAMIS UNTUK MENGHINDARI NESTED FORM
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ route('desa.pesan.hapus.selected') }}";
 
+        // Tambahkan CSRF Token
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        form.appendChild(csrfInput);
+
+        // Tambahkan Method DELETE
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        form.appendChild(methodInput);
+
+        // Pindahkan semua checkbox yang dicentang ke dalam form baru ini
+        checked.forEach((checkbox) => {
+            // Kita clone elemen input agar tidak hilang dari tampilan, tapi submit valuenya
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'pesan_ids[]';
+            input.value = checkbox.value;
+            form.appendChild(input);
+        });
+
+        // Submit dan hapus form dari DOM
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
     }
 }
 

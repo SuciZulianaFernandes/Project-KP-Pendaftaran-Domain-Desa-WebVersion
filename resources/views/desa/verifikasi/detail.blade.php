@@ -1,4 +1,4 @@
-@extends('layouts.desa') 
+@extends('layouts.desa')  
 @section('title', 'Detail Pengajuan')
 
 @section('content')
@@ -136,7 +136,6 @@
                         {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
 
                     </span>
-
                 </p>
 
             </div>
@@ -393,59 +392,68 @@
             <!-- STATUS INFO -->
 
             {{-- DIPROSES --}}
-@if($finalStatus == 'diproses')
+            @if($finalStatus == 'diproses')
 
-    @php
-        $fakturPerpanjanganAda = false;
+                @php
+                    // Cek apakah desa sudah pernah mengkonfirmasi pembayaran (mengirim pesan ke admin)
+                    $sudahKonfirmasiBayar = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+                        ->where('role_tujuan', 'admin')
+                        ->where('judul', 'Konfirmasi Pembayaran Disetujui')
+                        ->exists();
+                    
+                    // Ambil faktur belum bayar terbaru (jika ada)
+                    $fakturDesa = $pengajuan->faktur
+                        ->where('status', 'belum_bayar')
+                        ->sortByDesc('created_at')
+                        ->first();
 
-        if ($perpanjanganMsg) {
+                    // Cek apakah ada faktur perpanjangan yang belum bayar
+                    $fakturPerpanjanganAda = false;
 
-            $fakturPerpanjanganAda = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-                ->where('tipe', 'perpanjangan')
-                ->where('created_at', '>', $perpanjanganMsg->created_at)
-                ->exists();
-        }
+                    if ($perpanjanganMsg) {
+                        $fakturPerpanjanganAda = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                            ->where('tipe', 'perpanjangan')
+                            ->where('created_at', '>', $perpanjanganMsg->created_at)
+                            ->exists();
+                    }
+                @endphp
 
-        // Ambil faktur belum bayar terbaru
-        $fakturDesa = $pengajuan->faktur
-            ->where('status', 'belum_bayar')
-            ->sortByDesc('created_at')
-            ->first();
-    @endphp
+                {{-- SCENARIO 1: BELUM DIKLIK (Belum ada konfirmasi dari desa) --}}
+                @if(!$sudahKonfirmasiBayar && !$fakturPerpanjanganAda)
 
-    {{-- SUDAH ADA FAKTUR --}}
-    @if($hasUnpaidInvoice || $fakturPerpanjanganAda)
+                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+                        <p class="text-blue-800 font-semibold mb-3">
+                            Pengajuan sedang diproses. Apakah Anda siap melakukan pembayaran?
+                        </p>
+                        <form action="{{ route('desa.konfirmasi.pembayaran', $pengajuan->id_pengajuan) }}" method="POST">
+                            @csrf
+                            <button class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center"
+                                    data-confirm-message="Apakah Anda yakin ingin mengonfirmasi dan meminta faktur?">
+                                <i class="fas fa-paper-plane mr-2"></i> Ya, Kirimkan Faktur
+                            </button>
+                        </form>
+                    </div>
 
-        <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+                {{-- SCENARIO 2: SUDAH DIKLIK / ADA FAKTUR --}}
+                @else
 
-            <p class="text-blue-800 font-semibold mb-2">
-                Faktur telah diterbitkan. Silahkan upload bukti pembayaran.
-            </p>
+                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
+                        <p class="text-blue-800 font-semibold mb-2">
+                            @if($hasUnpaidInvoice || $fakturPerpanjanganAda)
+                                Faktur telah diterbitkan. Silahkan upload bukti pembayaran.
+                            @else
+                                Menunggu faktur dari admin kominfo
+                            @endif
+                        </p>
 
-            @if($fakturDesa)
+                        @if($fakturDesa)
+                            <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}" class="text-sm underline hover:text-blue-700">
+                                Lihat Detail Faktur
+                            </a>
+                        @endif
+                    </div>
 
-                <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}"
-                class="text-sm underline hover:text-blue-700">
-
-                    Lihat Detail Faktur
-                </a>
-
-            @endif
-
-        </div>
-
-    {{-- BELUM ADA FAKTUR --}}
-    @else
-
-        <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-
-            <p class="text-blue-800 font-semibold">
-                Menunggu faktur dari admin kominfo
-            </p>
-
-        </div>
-
-    @endif
+                @endif
 
             {{-- MENUNGGU AKTIVASI --}}
             @elseif($finalStatus == 'menunggu_aktivasi')
