@@ -172,7 +172,7 @@
 
             </div>
 
-            <!-- DOKUMEN -->
+                        <!-- DOKUMEN -->
             <h3 class="font-semibold mb-4">
                 Dokumen Persyaratan Domain
             </h3>
@@ -181,20 +181,45 @@
 
                 @foreach($pengajuan->dokumenPersyaratan as $dok)
 
-                <div class="flex justify-between border-b pb-2 gap-3">
-                    <span>{{ $dok->jenis_dokumen }}</span>
+                <div class="flex flex-col border-b pb-2 gap-2">
+                    
+                    <div class="flex justify-between items-start gap-3">
+                        
+                        <div class="flex flex-col">
+                            <span class="text-gray-700 font-medium">{{ $dok->jenis_dokumen }}</span>
+                            
+                            {{-- LOGIKA NOTIFIKASI DOKUMEN DIPERBARUI --}}
+                            {{-- Cek jika status perlu perbaikan DAN dokumen diupdate setelah pengajuan terakhir diupdate --}}
+                            @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && $dok->updated_at > $pengajuan->updated_at)
+                                <span class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
+                                        <circle cx="4" cy="4" r="3" />
+                                    </svg>
+                                    Sudah Diperbarui
+                                </span>
+                            @endif
+                        </div>
 
-                    <a href="{{ asset('storage/'.$dok->path_file) }}"
-                    target="_blank"
-                    class="text-red-600 text-xs whitespace-nowrap">
-                        Lihat Dokumen
-                    </a>
+                        <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
+                        target="_blank"
+                        class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline flex items-center gap-1">
+                            <i class="fas fa-eye"></i> Lihat
+                        </a>
+                    </div>
+
+                    {{-- Opsional: Tampilkan tanggal update agar admin lebih yakin --}}
+                    @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
+                        <p class="text-xs text-gray-400">
+                            Diupdate: {{ $dok->updated_at->format('d M Y, H:i') }}
+                        </p>
+                    @endif
+
                 </div>
 
                 @endforeach
 
             </div>
-
+            
            <!-- RIWAYAT DATA FAKTUR (GAYA DIUBAH MENJADI SAMA DENGAN SHOW PERPANJANG) -->
 @if($pengajuan->faktur->isNotEmpty())
 

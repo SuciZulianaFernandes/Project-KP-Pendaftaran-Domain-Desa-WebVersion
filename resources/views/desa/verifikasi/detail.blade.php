@@ -249,7 +249,7 @@
                         <div class="flex justify-between border-b pb-2 gap-3">
                             <span class="text-gray-700">{{ $dok->jenis_dokumen }}</span>
 
-                            <a href="{{ asset('storage/'.$dok->path_file) }}"
+                            <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
                             target="_blank"
                             class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline">
                                 Lihat Dokumen
@@ -259,11 +259,11 @@
                         @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
 
                         <form
-                            action="{{ route('verifikasi.updateDokumen', $dok->id) }}"
-                            method="POST"
-                            enctype="multipart/form-data"
-                            class="mt-2 space-y-2"
-                        >
+    action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
+    method="POST"
+    enctype="multipart/form-data"
+    class="mt-2 space-y-2"
+>
 
                             @csrf
                             @method('PUT')
