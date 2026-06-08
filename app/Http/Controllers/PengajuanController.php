@@ -119,7 +119,7 @@ class PengajuanController extends Controller
 
         foreach ($inputs as $jenis => $file) {
             if ($request->hasFile($jenis)) {
-                $path = $request->file($jenis)->store('pengajuan/dokumen', 'public');
+                $path = $request->file($jenis)->store('/pengajuan/dokumen');
                 $dokumen[$jenis] = [
                     'nama_file' => $file->getClientOriginalName(),
                     'path_file' => $path,
@@ -221,7 +221,7 @@ class PengajuanController extends Controller
     {
         $pengajuan = Pengajuan::findOrFail($id);
         foreach ($pengajuan->dokumenPersyaratan as $dok) {
-            \Storage::disk('public')->delete($dok->path_file);
+            Storage::disk('local')->delete($dok->path_file);
         }
         $pengajuan->delete();
         return back()->with('success', 'Pengajuan berhasil dihapus');
@@ -232,7 +232,7 @@ class PengajuanController extends Controller
         $dok = DokumenPersyaratan::findOrFail($id);
         if ($request->hasFile('file')) {
             \Storage::disk('public')->delete($dok->path_file);
-            $path = $request->file('file')->store('pengajuan/dokumen', 'public');
+            $path = $request->file('file')->store('/pengajuan/dokumen');
             $dok->update([
                 'nama_file' => $request->file('file')->getClientOriginalName(),
                 'path_file' => $path,
@@ -327,4 +327,24 @@ return view('admin.pengajuan.index', compact(
         return redirect()->route('admin.pengajuan.index')
             ->with('success', 'Berhasil verifikasi pengajuan');
     }
+
+    public function lihatDokumen($id)
+{
+    $dokumen = DokumenPersyaratan::findOrFail($id);
+
+    $pengajuan = $dokumen->pengajuan;
+
+    if (
+        auth()->user()->role !== 'admin' &&
+        $pengajuan->id_user !== auth()->id()
+    ) {
+        abort(403);
+    }
+
+    $file = storage_path('app/private/' . $dokumen->path_file);
+
+    abort_unless(file_exists($file), 404);
+
+    return response()->file($file);
+}
 }

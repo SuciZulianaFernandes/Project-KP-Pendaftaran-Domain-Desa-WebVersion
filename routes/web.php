@@ -25,6 +25,14 @@ Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+// Route dokumen untuk semua user yang sudah login
+Route::middleware('auth')->group(function () {
+
+    Route::get('/dokumen/{id}', [PengajuanController::class, 'lihatDokumen'])
+        ->name('dokumen.lihat');
+
+});
+
 
 // =====================================================
 // ROUTE UNTUK ADMIN (Memerlukan login dan role admin)
