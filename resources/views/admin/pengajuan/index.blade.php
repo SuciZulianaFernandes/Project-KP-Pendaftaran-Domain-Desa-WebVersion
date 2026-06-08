@@ -15,66 +15,39 @@
     </div>
 
     {{-- WIDGET STATUS --}}
-<div style="display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-            gap:16px;
-            margin-bottom:22px;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-bottom:22px;">
+        {{-- Ditinjau --}}
+        <div class="inv-card" style="padding:20px;border-left:5px solid #eab308">
+            <div style="font-size:14px;color:#64748b">Ditinjau</div>
+            <div style="font-size:28px; font-weight:800; color:#854d0e; margin-top:8px">
+                {{ $totalDitinjau }}
+            </div>
+        </div>
 
-    {{-- Ditinjau --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #eab308">
-        <div style="font-size:14px;color:#64748b">Ditinjau</div>
+        {{-- Perlu Perbaikan --}}
+        <div class="inv-card" style="padding:20px;border-left:5px solid #ef4444">
+            <div style="font-size:14px;color:#64748b">Perlu Perbaikan</div>
+            <div style="font-size:28px; font-weight:800; color:#b91c1c; margin-top:8px">
+                {{ $totalPerbaikan }}
+            </div>
+        </div>
 
-        <div style="font-size:28px;
-                    font-weight:800;
-                    color:#854d0e;
-                    margin-top:8px">
-            {{ $totalDitinjau }}
+        {{-- Diproses --}}
+        <div class="inv-card" style="padding:20px;border-left:5px solid #3b82f6">
+            <div style="font-size:14px;color:#64748b">Diproses</div>
+            <div style="font-size:28px; font-weight:800; color:#1d4ed8; margin-top:8px">
+                {{ $totalDiproses }}
+            </div>
+        </div>
+
+        {{-- Menunggu Aktivasi --}}
+        <div class="inv-card" style="padding:20px;border-left:5px solid #f97316">
+            <div style="font-size:14px;color:#64748b">Menunggu Aktivasi</div>
+            <div style="font-size:28px; font-weight:800; color:#c2410c; margin-top:8px">
+                {{ $totalAktivasi }}
+            </div>
         </div>
     </div>
-
-    {{-- Perlu Perbaikan --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #ef4444">
-        <div style="font-size:14px;color:#64748b">
-            Perlu Perbaikan
-        </div>
-
-        <div style="font-size:28px;
-                    font-weight:800;
-                    color:#b91c1c;
-                    margin-top:8px">
-            {{ $totalPerbaikan }}
-        </div>
-    </div>
-
-    {{-- Diproses --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #3b82f6">
-        <div style="font-size:14px;color:#64748b">
-            Diproses
-        </div>
-
-        <div style="font-size:28px;
-                    font-weight:800;
-                    color:#1d4ed8;
-                    margin-top:8px">
-            {{ $totalDiproses }}
-        </div>
-    </div>
-
-    {{-- Menunggu Aktivasi --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #f97316">
-        <div style="font-size:14px;color:#64748b">
-            Menunggu Aktivasi
-        </div>
-
-        <div style="font-size:28px;
-                    font-weight:800;
-                    color:#c2410c;
-                    margin-top:8px">
-            {{ $totalAktivasi }}
-        </div>
-    </div>
-
-</div>
 
     <div class="inv-card">
         @if(session('success'))
@@ -90,30 +63,36 @@
             </div>
         @endif
 
-        {{-- Search & Filter --}}
-        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
-            <div style="position:relative;flex:1">
-                <input type="text" id="invSearch" placeholder="Cari Nama Desa atau Domain..." 
+        {{-- FORM SEARCH & FILTER GLOBAL (TANPA TOMBOL RESET) --}}
+        <form action="{{ route('admin.pengajuan.index') }}" method="GET" style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="position:relative; flex:1; min-width: 250px;">
+                <input type="text" name="search" id="invSearch" placeholder="Cari Nama Desa atau Domain..." value="{{ request('search') }}"
                     style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
                 <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
             </div>
+            
+            <div>
+                <button type="submit" style="padding:10px 20px; border:none; background:#3b82f6; color:white; border-radius:8px; font-weight:500; cursor:pointer;">
+                    Cari
+                </button>
+            </div>
+
             <div style="width: 180px;">
-                <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
+                <select id="invFilter" name="status" onchange="this.form.submit()" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
                     <option value="">Semua Status</option>
-                    <option value="ditinjau">Ditinjau</option>
-                    <option value="perlu_perbaikan">Perlu Perbaikan</option>
-                    <option value="diproses">Diproses</option>
-                    <option value="menunggu_aktivasi">Menunggu Aktivasi</option>
+                    <option value="ditinjau" {{ request('status') == 'ditinjau' ? 'selected' : '' }}>Ditinjau</option>
+                    <option value="perlu_perbaikan" {{ request('status') == 'perlu_perbaikan' ? 'selected' : '' }}>Perlu Perbaikan</option>
+                    <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                    <option value="menunggu_aktivasi" {{ request('status') == 'menunggu_aktivasi' ? 'selected' : '' }}>Menunggu Aktivasi</option>
                 </select>
             </div>
-        </div>
+        </form>
 
         <div style="overflow-x:auto">
             <table class="inv-table" id="invTable">
                 <thead>
                     <tr>
                         <th>No</th>
-                        
                         <th data-type="string" class="sortable">Nama Desa <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Domain <i class="sort-icon"></i></th>
                         <th data-type="string" class="sortable">Tanggal Pengajuan <i class="sort-icon"></i></th>
@@ -123,16 +102,12 @@
                 </thead>
                 <tbody>
                     @forelse($data as $indexPengajuan => $row)
-                        {{-- Ubah data-role menjadi data-status --}}
                         <tr data-status="{{ $row->status_pengajuan }}" style="animation-delay:{{$indexPengajuan*0.05}}s">
-                            
                             <td>{{ $data->firstItem() + $indexPengajuan }}</td>
-                            
                             <td style="font-weight:500;color:#334155">{{ $row->nama_desa }}</td>
                             <td>{{ $row->nama_domain }}.desa.id</td>
                             <td><span class="inv-date" style="font-style:italic">{{ $row->tgl_pengajuan }}</span></td>
                             
-                            {{-- STATUS (MENGGUNAKAN GAYA INDEX FAKTUR) --}}
                             <td style="white-space:nowrap">
                                 @if($row->status_pengajuan == 'ditinjau')
                                     <span class="inv-badge" style="background:#fef9c3; color:#854d0e; border:1px solid #fde047">
@@ -159,85 +134,54 @@
 
                             <td style="text-align:center">
                                 <div style="display:flex;justify-content:center;gap:8px;">
-                                    <!-- DETAIL -->
                                     <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat"><i class="fas fa-eye"></i>Detail</a>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
+                        <tr class="inv-empty"><td colspan="6" style="text-align: center; padding: 20px;"><i class="fas fa-inbox"></i> Tidak ada data pengajuan</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
+        {{-- PAGINATION LINK --}}
         @include('components.inv-pagination', ['paginator' => $data])
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-    // --- LOGIC SEARCH & FILTER (Adapted for Pengajuan) ---
-    var s=document.getElementById('invSearch'),
-        f=document.getElementById('invFilter'),
-        rows=Array.from(document.querySelectorAll('#invTable tbody tr[data-status]')),
-        empty=document.querySelector('.inv-empty');
-
-    function filter(){
-        var q=s.value.trim().toLowerCase(), v=f.value, n=0;
-        rows.forEach(function(r){
-            var textMatch = (!q || r.textContent.toLowerCase().includes(q));
-            // Menggunakan data-status (bukan role)
-            var statusMatch = (!v || r.dataset.status === v);
-            var show = textMatch && statusMatch;
-            r.style.display=show?'':'none';
-            if(show)n++;
-        });
-        if(empty)empty.style.display=n?'none':'';
-    }
-    if(s) s.addEventListener('input',filter);
-    if(f) f.addEventListener('change',filter);
-
-    // --- LOGIC SORTING (New: Client Side Instant Sort) ---
+    // --- LOGIC SORTING (Client Side Instant Sort) ---
     const sortHeaders = document.querySelectorAll('th.sortable');
     
     sortHeaders.forEach(header => {
         header.style.cursor = 'pointer';
         
-        // Tambahkan hover effect sederhana
         header.addEventListener('mouseenter', () => header.style.backgroundColor = '#f8fafc');
         header.addEventListener('mouseleave', () => header.style.backgroundColor = '');
 
         header.addEventListener('click', () => {
             const table = header.closest('table');
             const tbody = table.querySelector('tbody');
-            const allRows = Array.from(tbody.querySelectorAll('tr'));
+            const allRows = Array.from(tbody.querySelectorAll('tr:not(.inv-empty)'));
             
-            // Ambil tipe data (number/string) dari atribut th
             const type = header.dataset.type;
             const icon = header.querySelector('.sort-icon');
-            // colIndex dikurangi 1 karena kolom pertama (No) tidak sortable
             const colIndex = Array.from(header.parentNode.children).indexOf(header);
 
-            // 1. Reset icon di header lain
             document.querySelectorAll('th.sortable .sort-icon').forEach(i => i.textContent = '');
             
-            // 2. Tentukan arah urutan (toggle asc/desc)
             let isAsc = !header.classList.contains('asc');
             
-            // 3. Reset kelas di semua header
             sortHeaders.forEach(h => h.classList.remove('asc', 'desc'));
-            
-            // 4. Set state ke header yang diklik
             header.classList.add(isAsc ? 'asc' : 'desc');
             icon.textContent = isAsc ? ' ▲' : ' ▼';
 
-            // 5. Proses Sorting
             allRows.sort((a, b) => {
                 let aVal = a.cells[colIndex].textContent.trim();
                 let bVal = b.cells[colIndex].textContent.trim();
 
-                // Sorting String biasa (abaikan huruf besar/kecil)
                 if (type === 'number') {
                      aVal = parseInt(aVal.replace(/\D/g, ''), 10);
                      bVal = parseInt(bVal.replace(/\D/g, ''), 10);
@@ -247,7 +191,6 @@ document.addEventListener('DOMContentLoaded',function(){
                 return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
             });
 
-            // 6. Re-append baris yang sudah terurut ke tabel
             allRows.forEach(row => tbody.appendChild(row));
         });
     });

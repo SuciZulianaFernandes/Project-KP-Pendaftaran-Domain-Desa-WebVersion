@@ -242,29 +242,36 @@ class PengajuanController extends Controller
     }
 
     // --- BAGIAN ADMIN: DAFTAR PENGAJUAN ---
-    public function adminIndex(Request $request) // Tambahkan Request $request
-    {
-        // MODIFIKASI PENCARIAN: Ambil parameter search
-        $search = $request->get('search');
+   public function adminIndex(Request $request) 
+{
+    $search = $request->get('search');
+    $status = $request->get('status'); // 1. TAMBAHKAN INI (Menangkap filter status)
 
-        $query = Pengajuan::where('status_pengajuan', '!=', 'aktif')
-            ->whereDoesntHave('faktur', function ($query) {
-                $query->where('tipe', 'perpanjangan');
-            });
+    $query = Pengajuan::where('status_pengajuan', '!=', 'aktif')
+        ->whereDoesntHave('faktur', function ($query) {
+            $query->where('tipe', 'perpanjangan');
+        });
 
-        // MODIFIKASI PENCARIAN: Jika ada input search, filter query
-        if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama_domain', 'like', "%$search%")
-                  ->orWhere('nama_desa', 'like', "%$search%"); // Cari di nama desa juga
-            });
-        }
+    if (!empty($search)) {
+        $query->where(function($q) use ($search) {
+            $q->where('nama_domain', 'like', "%$search%")
+              ->orWhere('nama_desa', 'like', "%$search%");
+        });
+    }
 
-        // Eksekusi pagination
-$data = $query->latest()->paginate(10);
+    // 2. TAMBAHKAN INI (Melakukan filter status secara global ke database)
+    if (!empty($status)) {
+        $query->where('status_pengajuan', $status);
+    }
 
-// Append search
-$data->appends(['search' => $search]);
+    $data = $query->latest()->paginate(10);
+
+    // 3. UBAH BAGIAN INI (Mengunci search DAN status saat pindah Page 2)
+    $data->appends([
+        'search' => $search,
+        'status' => $status
+    ]);
+
 
 // ======================
 // TOTAL WIDGET STATUS

@@ -257,16 +257,63 @@ class AktivasiController extends Controller
      * LIST ADMIN: Halaman index perpanjangan
      * LOGIKA DIUBAH: Agar bisa menampilkan status "Belum Dibuat"
      */
-    public function adminPerpanjangList()
+    /**
+     * LIST ADMIN: Halaman index perpanjangan dengan Global Search & Filter Status
+     */
+    public function adminPerpanjangList(Request $request)
     {
-        // Ambil semua data pengajuan beserta relasi fakturnya
-        $data = Pengajuan::with([
+        $search = $request->get('search');
+        $status = $request->get('status');
+
+        // Mengambil ID pengajuan yang meminta perpanjangan tetapi fakturnya belum dibuat
+        $perpanjanganBelumBuatBase = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
+            ->pluck('id_pengajuan')
+            ->filter(function ($id_pengajuan) {
+                return !Faktur::where('id_pengajuan', $id_pengajuan)
+                    ->where('tipe', 'perpanjangan')
+                    ->exists();
+            })
+            ->toArray();
+
+        // Bangun Query Utama Pengajuan
+        $query = Pengajuan::with([
             'faktur' => function ($query) {
                 $query->latest();
-            }
-        ])->latest()->paginate(10);
+            },
+            'aktivasi'
+        ]);
 
-        // Ambil ID pengajuan yang sudah minta perpanjangan (ada pesan) tapi fakturnya belum dibuat
+        // 1. FILTER SEARCH (Mencari berdasarkan nama_domain atau nama_desa)
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_domain', 'like', "%$search%")
+                  ->orWhere('nama_desa', 'like', "%$search%");
+            });
+        }
+
+        // 2. FILTER STATUS (Filter tingkat database)
+        if (!empty($status)) {
+            if ($status === 'belum_dibuat') {
+                // Hanya ambil data yang ID-nya masuk ke daftar belum membuat faktur perpanjangan
+                $query->whereIn('id_pengajuan', $perpanjanganBelumBuatBase);
+            } else {
+                // Filter status berdasarkan relasi tabel Faktur ('belum_bayar' atau 'sudah_bayar')
+                $query->whereHas('faktur', function($q) use ($status) {
+                    $q->where('tipe', 'perpanjangan')
+                      ->where('status', $status);
+                });
+            }
+        }
+
+        $data = $query->latest()->paginate(10);
+
+        // Kunci parameter pencarian agar tidak hilang saat navigasi page halaman
+        $data->appends([
+            'search' => $search,
+            'status' => $status
+        ]);
+
+        // Sesuaikan variabel penampung baris "Belum Dibuat" agar tetap sinkron setelah di-filter
         $perpanjanganBelumBuat = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
             ->pluck('id_pengajuan')
             ->filter(function ($id_pengajuan) {
