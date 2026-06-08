@@ -71,11 +71,10 @@
                 <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
             </div>
             
-            <div>
-                <button type="submit" style="padding:10px 20px; border:none; background:#3b82f6; color:white; border-radius:8px; font-weight:500; cursor:pointer;">
-                    Cari
-                </button>
-            </div>
+            <button type="submit"
+        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+        Cari
+    </button>
 
             <div style="width: 180px;">
                 <select id="invFilter" name="status" onchange="this.form.submit()" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">

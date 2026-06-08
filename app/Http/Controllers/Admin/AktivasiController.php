@@ -261,73 +261,138 @@ class AktivasiController extends Controller
      * LIST ADMIN: Halaman index perpanjangan dengan Global Search & Filter Status
      */
     public function adminPerpanjangList(Request $request)
-    {
-        $search = $request->get('search');
-        $status = $request->get('status');
+{
+    $search = $request->get('search');
+    $status = $request->get('status');
+    $perPage = 10;
 
-        // Mengambil ID pengajuan yang meminta perpanjangan tetapi fakturnya belum dibuat
-        $perpanjanganBelumBuatBase = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
-            ->pluck('id_pengajuan')
-            ->filter(function ($id_pengajuan) {
-                return !Faktur::where('id_pengajuan', $id_pengajuan)
-                    ->where('tipe', 'perpanjangan')
-                    ->exists();
-            })
-            ->toArray();
+    // Mengambil ID pengajuan yang meminta perpanjangan tetapi fakturnya belum dibuat
+    $perpanjanganBelumBuatBase = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
+        ->pluck('id_pengajuan')
+        ->filter(function ($id_pengajuan) {
+            return !Faktur::where('id_pengajuan', $id_pengajuan)
+                ->where('tipe', 'perpanjangan')
+                ->exists();
+        })
+        ->toArray();
 
-        // Bangun Query Utama Pengajuan
-        $query = Pengajuan::with([
-            'faktur' => function ($query) {
-                $query->latest();
-            },
-            'aktivasi'
-        ]);
+    // Bangun Query Utama Pengajuan
+    $query = Pengajuan::with([
+        'faktur' => function ($query) {
+            $query->latest();
+        },
+        'aktivasi'
+    ]);
 
-        // 1. FILTER SEARCH (Mencari berdasarkan nama_domain atau nama_desa)
-        if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama_domain', 'like', "%$search%")
-                  ->orWhere('nama_desa', 'like', "%$search%");
+    // 1. FILTER SEARCH (Mencari berdasarkan nama_domain atau nama_desa)
+    if (!empty($search)) {
+        $query->where(function($q) use ($search) {
+            $q->where('nama_domain', 'like', "%$search%")
+              ->orWhere('nama_desa', 'like', "%$search%");
+        });
+    }
+
+    // 2. FILTER STATUS (Filter tingkat database)
+    if (!empty($status)) {
+        if ($status === 'belum_dibuat') {
+            // Hanya ambil data yang ID-nya masuk ke daftar belum membuat faktur perpanjangan
+            $query->whereIn('id_pengajuan', $perpanjanganBelumBuatBase);
+        } else {
+            // Filter status berdasarkan relasi tabel Faktur ('belum_bayar' atau 'sudah_bayar')
+            $query->whereHas('faktur', function($q) use ($status) {
+                $q->where('tipe', 'perpanjangan')
+                  ->where('status', $status);
             });
         }
+    }
 
-        // 2. FILTER STATUS (Filter tingkat database)
-        if (!empty($status)) {
-            if ($status === 'belum_dibuat') {
-                // Hanya ambil data yang ID-nya masuk ke daftar belum membuat faktur perpanjangan
-                $query->whereIn('id_pengajuan', $perpanjanganBelumBuatBase);
-            } else {
-                // Filter status berdasarkan relasi tabel Faktur ('belum_bayar' atau 'sudah_bayar')
-                $query->whereHas('faktur', function($q) use ($status) {
-                    $q->where('tipe', 'perpanjangan')
-                      ->where('status', $status);
-                });
+    // Get semua pengajuan (tanpa pagination dulu)
+    $allPengajuan = $query->latest()->get();
+
+    // Hitung total baris yang akan ditampilkan
+    $totalRows = 0;
+    foreach ($allPengajuan as $row) {
+        // 1 baris untuk pengajuan "belum dibuat"
+        if (in_array($row->id_pengajuan, $perpanjanganBelumBuatBase)) {
+            $totalRows++;
+        }
+        // + baris untuk setiap faktur perpanjangan
+        $totalRows += $row->faktur->where('tipe', 'perpanjangan')->count();
+    }
+
+    // Tentukan offset berdasarkan halaman
+    $page = $request->get('page', 1);
+    $offset = ($page - 1) * $perPage;
+
+    // Manual pagination: ambil baris yang sesuai dengan offset & perPage
+    $displayRows = [];
+    $currentRow = 0;
+
+    foreach ($allPengajuan as $row) {
+        // Baris "Belum Dibuat"
+        if (in_array($row->id_pengajuan, $perpanjanganBelumBuatBase)) {
+            if ($currentRow >= $offset && count($displayRows) < $perPage) {
+                $displayRows[] = [
+                    'pengajuan' => $row,
+                    'faktur' => null,
+                    'type' => 'belum_dibuat'
+                ];
+            }
+            $currentRow++;
+        }
+
+        // Baris Faktur Perpanjangan
+        foreach ($row->faktur as $fakturItem) {
+            if ($fakturItem->tipe == 'perpanjangan') {
+                if ($currentRow >= $offset && count($displayRows) < $perPage) {
+                    $displayRows[] = [
+                        'pengajuan' => $row,
+                        'faktur' => $fakturItem,
+                        'type' => 'faktur'
+                    ];
+                }
+                $currentRow++;
             }
         }
 
-        $data = $query->latest()->paginate(10);
-
-        // Kunci parameter pencarian agar tidak hilang saat navigasi page halaman
-        $data->appends([
-            'search' => $search,
-            'status' => $status
-        ]);
-
-        // Sesuaikan variabel penampung baris "Belum Dibuat" agar tetap sinkron setelah di-filter
-        $perpanjanganBelumBuat = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
-            ->pluck('id_pengajuan')
-            ->filter(function ($id_pengajuan) {
-                return !Faktur::where('id_pengajuan', $id_pengajuan)
-                    ->where('tipe', 'perpanjangan')
-                    ->exists();
-            })
-            ->toArray();
-
-        return view('admin.perpanjang.index', compact(
-            'data',
-            'perpanjanganBelumBuat'
-        ));
+        if (count($displayRows) >= $perPage) {
+            break;
+        }
     }
+
+    // Buat LengthAwarePaginator (punya lastPage())
+    $data = new \Illuminate\Pagination\LengthAwarePaginator(
+        $displayRows,
+        $totalRows,
+        $perPage,
+        $page,
+        [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]
+    );
+
+    // Kunci parameter pencarian agar tidak hilang saat navigasi page halaman
+    $data->appends([
+        'search' => $search,
+        'status' => $status
+    ]);
+
+    // Sesuaikan variabel penampung baris "Belum Dibuat" agar tetap sinkron setelah di-filtered
+    $perpanjanganBelumBuat = Pesan::where('judul', 'Permintaan Perpanjangan Domain')
+        ->pluck('id_pengajuan')
+        ->filter(function ($id_pengajuan) {
+            return !Faktur::where('id_pengajuan', $id_pengajuan)
+                ->where('tipe', 'perpanjangan')
+                ->exists();
+        })
+        ->toArray();
+
+    return view('admin.perpanjang.index', compact(
+        'data',
+        'perpanjanganBelumBuat'
+    ));
+}
 
     /**
      * DETAIL ADMIN: Halaman show perpanjangan

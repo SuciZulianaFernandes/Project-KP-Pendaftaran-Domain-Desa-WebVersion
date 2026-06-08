@@ -36,11 +36,10 @@
                 <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
             </div>
             
-            <div>
-                <button type="submit" style="padding:10px 20px; border:none; background:#3b82f6; color:white; border-radius:8px; font-weight:500; cursor:pointer;">
-                    Cari
-                </button>
-            </div>
+            <button type="submit"
+        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+        Cari
+    </button>
 
             <div style="width: 180px;">
                 <select name="status" onchange="this.form.submit()" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
@@ -72,129 +71,121 @@
     @endphp
 
     @forelse($data as $indexPerpanjang => $row)
-        
-        {{-- LOGIKA: TAMPILKAN BARIS "BELUM DIBUAT" --}}
-        @if(in_array($row->id_pengajuan, $perpanjanganBelumBuat))
-            <tr data-status="belum_dibuat" style="animation-delay:{{$indexPerpanjang*0.05}}s">
-                {{-- Gunakan $nomorUrut lalu naikkan 1 angka --}}
-                <td>{{ $nomorUrut++ }}</td>
-                <td style="font-weight:500;color:#334155">{{ $row->nama_domain }}.desa.id</td>
-                
-                <td style="white-space:nowrap">
+    @if($row['type'] == 'belum_dibuat')
+        <tr data-status="belum_dibuat" style="animation-delay:{{$indexPerpanjang*0.05}}s">
+            <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
+            <td style="font-weight:500;color:#334155">{{ $row['pengajuan']->nama_domain }}.desa.id</td>
+            
+            <td style="white-space:nowrap">
+                <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
+                    <span class="d" style="background:#3b82f6"></span>Diproses
+                </span>
+            </td>
+
+            <td style="white-space:nowrap">
+                <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                    Perpanjangan
+                </span>
+            </td>
+
+            <td><span class="inv-date">-</span></td>
+
+            <td style="white-space:nowrap">
+                <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                    <span class="d" style="background:#94a3b8"></span>Belum Dibuat
+                </span>
+            </td>
+
+            <td style="text-align:center">
+                <div style="display:flex;justify-content:center;gap:8px;">
+                    <a href="{{ route('admin.perpanjang.show', $row['pengajuan']->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
+                        <i class="fas fa-eye"></i> Detail
+                    </a>
+                </div>
+            </td>
+        </tr>
+    @elseif($row['type'] == 'faktur')
+        @php
+            $fakturItem = $row['faktur'];
+            $pengajuanRow = $row['pengajuan'];
+            $statusAkhir = $pengajuanRow->status_pengajuan;
+            if ($fakturItem->status == 'belum_bayar') {
+                $statusAkhir = 'diproses';
+            } elseif ($statusAkhir == 'aktif' && $pengajuanRow->aktivasi) {
+                $statusAkhir = $pengajuanRow->aktivasi->status_akt;
+            }
+        @endphp
+
+        <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$indexPerpanjang*0.05}}s">
+            <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
+            <td style="font-weight:500;color:#334155">{{ $pengajuanRow->nama_domain }}.desa.id</td>
+            
+            <td style="white-space:nowrap">
+                @if($statusAkhir == 'menunggu_aktivasi')
+                    <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
+                        <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
+                    </span>
+                @elseif($statusAkhir == 'diproses')
                     <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
                         <span class="d" style="background:#3b82f6"></span>Diproses
                     </span>
-                </td>
-
-                <td style="white-space:nowrap">
-                    <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-                        Perpanjangan
+                @elseif($statusAkhir == 'aktif')
+                    <span class="inv-badge badge-green">
+                        <span class="d"></span>Aktif
                     </span>
-                </td>
-
-                <td><span class="inv-date">-</span></td>
-
-                <td style="white-space:nowrap">
+                @elseif($statusAkhir == 'kadaluarsa')
                     <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                        <span class="d" style="background:#94a3b8"></span>Belum Dibuat
+                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
                     </span>
-                </td>
+                @elseif($statusAkhir == 'nonaktif')
+                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                        <span class="d" style="background:#94a3b8"></span>Nonaktif
+                    </span>
+                @else
+                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                        <span class="d" style="background:#94a3b8"></span>{{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
+                    </span>
+                @endif
+            </td>
 
-                <td style="text-align:center">
-                    <div style="display:flex;justify-content:center;gap:8px;">
-                        <a href="{{ route('admin.perpanjang.show', $row->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
-                            <i class="fas fa-eye"></i> Detail
-                        </a>
-                    </div>
-                </td>
-            </tr>
-        @endif
+            <td style="white-space:nowrap">
+                <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                    Perpanjangan
+                </span>
+            </td>
 
-        {{-- LOGIKA: TAMPILKAN FAKTUR YANG SUDAH ADA --}}
-        @foreach($row->faktur as $fakturItem)
-            @if($fakturItem->tipe == 'perpanjangan')
-                @php
-                    $statusAkhir = $row->status_pengajuan;
-                    if ($fakturItem->status == 'belum_bayar') {
-                        $statusAkhir = 'diproses';
-                    } elseif ($statusAkhir == 'aktif' && $row->aktivasi) {
-                        $statusAkhir = $row->aktivasi->status_akt;
-                    }
-                @endphp
+            <td>
+                <span class="inv-date">{{ $fakturItem->created_at->format('d/m/Y') }}</span>
+            </td>
 
-                <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$indexPerpanjang*0.05}}s">
-                    {{-- Gunakan $nomorUrut yang sama, lalu naikkan 1 angka --}}
-                    <td>{{ $nomorUrut++ }}</td>
-                    <td style="font-weight:500;color:#334155">{{ $row->nama_domain }}.desa.id</td>
-                    
-                    <td style="white-space:nowrap">
-                        @if($statusAkhir == 'menunggu_aktivasi')
-                            <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
-                                <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
-                            </span>
-                        @elseif($statusAkhir == 'diproses')
-                            <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
-                                <span class="d" style="background:#3b82f6"></span>Diproses
-                            </span>
-                        @elseif($statusAkhir == 'aktif')
-                            <span class="inv-badge badge-green">
-                                <span class="d"></span>Aktif
-                            </span>
-                        @elseif($statusAkhir == 'kadaluarsa')
-                            <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                                <span class="d" style="background:#94a3b8"></span>Kadaluarsa
-                            </span>
-                        @elseif($statusAkhir == 'nonaktif')
-                            <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                                <span class="d" style="background:#94a3b8"></span>Nonaktif
-                            </span>
-                        @else
-                            <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                                <span class="d" style="background:#94a3b8"></span>{{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
-                            </span>
-                        @endif
-                    </td>
+            <td style="white-space:nowrap">
+                @if($fakturItem->status == 'belum_bayar')
+                    <span class="inv-badge badge-red">
+                        <span class="d"></span>Belum Bayar
+                    </span>
+                @elseif($fakturItem->status == 'sudah_bayar')
+                    <span class="inv-badge badge-green">
+                        <span class="d"></span>Sudah Bayar
+                    </span>
+                @else
+                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
+                    </span>
+                @endif
+            </td>
 
-                    <td style="white-space:nowrap">
-                        <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-                            Perpanjangan
-                        </span>
-                    </td>
-
-                    <td>
-                        <span class="inv-date">{{ $fakturItem->created_at->format('d/m/Y') }}</span>
-                    </td>
-
-                    <td style="white-space:nowrap">
-                        @if($fakturItem->status == 'belum_bayar')
-                            <span class="inv-badge badge-red">
-                                <span class="d"></span>Belum Bayar
-                            </span>
-                        @elseif($fakturItem->status == 'sudah_bayar')
-                            <span class="inv-badge badge-green">
-                                <span class="d"></span>Sudah Bayar
-                            </span>
-                        @else
-                            <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                                <span class="d" style="background:#94a3b8"></span>Kadaluarsa
-                            </span>
-                        @endif
-                    </td>
-
-                    <td style="text-align:center">
-                        <div style="display:flex;justify-content:center;gap:8px;">
-                            <a href="{{ route('admin.perpanjang.show', $fakturItem->id) }}" class="inv-btn-d" title="Lihat">
-                                <i class="fas fa-eye"></i> Detail
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            @endif
-        @endforeach
-
-    @empty
-        <tr class="inv-empty"><td colspan="7" style="text-align: center; padding: 20px;"><i class="fas fa-inbox"></i> Belum ada pengajuan perpanjangan.</td></tr>
-    @endforelse
+            <td style="text-align:center">
+                <div style="display:flex;justify-content:center;gap:8px;">
+                    <a href="{{ route('admin.perpanjang.show', $fakturItem->id) }}" class="inv-btn-d" title="Lihat">
+                        <i class="fas fa-eye"></i> Detail
+                    </a>
+                </div>
+            </td>
+        </tr>
+    @endif
+@empty
+    <tr class="inv-empty"><td colspan="7" style="text-align: center; padding: 20px;"><i class="fas fa-inbox"></i> Belum ada pengajuan perpanjangan.</td></tr>
+@endforelse
 </tbody>
             </table>
         </div>

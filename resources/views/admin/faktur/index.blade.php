@@ -105,6 +105,10 @@
                         style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
                     <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
                 </div>
+                <button type="submit"
+        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+        Cari
+    </button>
 
                 {{-- DROPDOWN FILTER DIPINDAHKAN KE DALAM FORM --}}
                 <div style="width: 180px;">
@@ -115,10 +119,6 @@
                         <option value="sudah_bayar" {{ request('status') == 'sudah_bayar' ? 'selected' : '' }}>Sudah Bayar</option>
                     </select>
                 </div>
-
-                <button type="submit" class="btn btn-primary" style="padding: 0 20px; border-radius: 8px;">
-                    Cari
-                </button>
             </form>
         </div>
 

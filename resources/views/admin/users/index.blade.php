@@ -103,7 +103,10 @@
         <i class="fas fa-search"
            style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
     </div>
-
+<button type="submit"
+        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+        Cari
+    </button>
     <div style="width:150px;">
         <select
             name="role"
@@ -122,11 +125,6 @@
             </option>
         </select>
     </div>
-
-    <button type="submit"
-        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-        Cari
-    </button>
 
 </form>
 
