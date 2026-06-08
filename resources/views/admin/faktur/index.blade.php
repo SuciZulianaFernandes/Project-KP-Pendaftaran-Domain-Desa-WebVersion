@@ -137,10 +137,15 @@
                     </tr>
                 </thead>
                 <tbody>
+    @php
+        $nomor = request()->filled('search')
+            ? 1
+            : $data->firstItem();
+    @endphp
                     @forelse($data as $i => $row)
                         @if($row->faktur->isEmpty() && !in_array($row->id_pengajuan, $perpanjanganBelumBuat))
                             <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
-                                <td>{{ $data->firstItem() + $i }}</td>
+                                <td>{{ $nomor++ }}</td>
                                 <td><span class="inv-id">-</span></td>
                                 <td>{{ $row->nama_desa }}</td>
                                 <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
@@ -176,10 +181,7 @@
                         @else
                             @foreach($row->faktur as $indexFaktur => $fakturItem)
                                 <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$i*0.05}}s">
-                                    <td>
-                                        {{ $data->firstItem() + $i }}
-                                        {{ $row->faktur->count() > 1 ? '.' . ($indexFaktur + 1) : '' }}
-                                    </td>
+                                    <td>{{ $nomor++ }}</td>
                                     <td><span class="inv-id">{{ $fakturItem->no_invoice }}</span></td>
                                     <td>{{ $row->nama_desa }}</td>
                                     <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
@@ -212,9 +214,7 @@
 
                             @if(in_array($row->id_pengajuan, $perpanjanganBelumBuat))
                                 <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
-                                    <td>
-                                        {{ $data->firstItem() + $i }}.{{ $row->faktur->count() + 1 }}
-                                    </td>
+                                    <td>{{ $nomor++ }}</td>
                                     <td><span class="inv-id">-</span></td>
                                     <td>{{ $row->nama_desa }}</td>
                                     <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>

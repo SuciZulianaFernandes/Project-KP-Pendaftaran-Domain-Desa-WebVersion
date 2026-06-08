@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Faktur;
 use App\Models\Pengajuan;
 use App\Models\Pesan;
+use Carbon\Carbon;
 
 class FakturController extends Controller
 {
@@ -107,11 +108,37 @@ class FakturController extends Controller
 
         // 3. LOGIKA PENCARIAN TEKS
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('nama_domain', 'like', "%$search%")
-                  ->orWhere('nama_desa', 'like', "%$search%");
-            });
-        }
+
+    $query->where(function ($q) use ($search) {
+
+        $q->where('nama_domain', 'like', "%{$search}%")
+          ->orWhere('nama_desa', 'like', "%{$search}%")
+
+          ->orWhereHas('faktur', function ($faktur) use ($search) {
+
+              $faktur->where('no_invoice', 'like', "%{$search}%")
+                     ->orWhere('tipe', 'like', "%{$search}%")
+                     ->orWhere('status', 'like', "%{$search}%");
+
+              // Format input: dd/mm/yyyy
+              if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $search)) {
+
+                  $tanggal = \Carbon\Carbon::createFromFormat(
+                      'd/m/Y',
+                      $search
+                  )->format('Y-m-d');
+
+                  $faktur->orWhereDate(
+                      'tanggal_konfirmasi',
+                      $tanggal
+                  );
+              }
+
+          });
+
+    });
+
+}
 
         // 4. LOGIKA FILTER STATUS (SERVER SIDE)
         if ($statusFilter == 'belum_bayar') {
