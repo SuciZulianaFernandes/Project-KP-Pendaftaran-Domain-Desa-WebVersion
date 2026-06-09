@@ -200,11 +200,18 @@
 
         @elseif($bisaPerpanjang)
 
-            <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
-               class="inv-btn-d"
-               onclick="event.preventDefault(); openPerpanjangModal('{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}')">
-               <i class="fas fa-redo"></i> Ajukan Perpanjang
-            </a>
+            {{-- Pengecekan: Jika sudah ada faktur perpanjangan yang "sudah_bayar", kunci tombolnya! --}}
+            @if($row->faktur->where('tipe', 'perpanjangan')->where('status', 'sudah_bayar')->first())
+                <button disabled class="inv-btn-d" style="background:#e2e8f0; border-color:#e2e8f0; color:#94a3b8; cursor:not-allowed" title="Sudah diperpanjang untuk periode ini">
+                    <i class="fas fa-check-circle"></i> Sudah Diperpanjang
+                </button>
+            @else
+                <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
+                   class="inv-btn-d"
+                   onclick="event.preventDefault(); openPerpanjangModal('{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}')">
+                   <i class="fas fa-redo"></i> Ajukan Perpanjang
+                </a>
+            @endif
 
         @else
 
@@ -213,7 +220,6 @@
             </button>
 
         @endif
-
     </div>
 </td>
 

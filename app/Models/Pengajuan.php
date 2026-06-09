@@ -88,6 +88,6 @@ class Pengajuan extends Model
             Aktivasi::class,
             'id_pengajuan',
             'id_pengajuan'
-        );
+        )->latestOfMany('id_aktivasi'); // <-- TAMBAHKAN INI
     }
 }
