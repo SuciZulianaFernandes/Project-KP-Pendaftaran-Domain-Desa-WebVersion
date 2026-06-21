@@ -172,10 +172,22 @@
 
             </div>
 
-                        <!-- DOKUMEN -->
+                                    <!-- DOKUMEN -->
             <h3 class="font-semibold mb-4">
                 Dokumen Persyaratan Domain
             </h3>
+
+            @php
+                // MAPPING LABEL: Mengubah key database menjadi teks yang rapi untuk dibaca admin
+                $labelDokumen = [
+                    'surat_permohonan' => 'Surat Permohonan Domain Desa',
+                    'surat_kuasa' => 'Surat Kuasa dari Desa',
+                    'perda_pembentukan_desa' => 'Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa',
+                    // Legacy (jika ada data lama)
+                    'surat_penunjukan_pejabat' => 'Surat Penunjukan Pejabat',
+                    'ktp_asn_pejabat' => 'Kartu Pegawai / KTP ASN'
+                ];
+            @endphp
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
 
@@ -186,10 +198,10 @@
                     <div class="flex justify-between items-start gap-3">
                         
                         <div class="flex flex-col">
-                            <span class="text-gray-700 font-medium">{{ $dok->jenis_dokumen }}</span>
+                            {{-- GANTI $dok->jenis_dokumen MENJADI $labelDokumen[...] --}}
+                            <span class="text-gray-700 font-medium">{{ $labelDokumen[$dok->jenis_dokumen] ?? $dok->jenis_dokumen }}</span>
                             
                             {{-- LOGIKA NOTIFIKASI DOKUMEN DIPERBARUI --}}
-                            {{-- Cek jika status perlu perbaikan DAN dokumen diupdate setelah pengajuan terakhir diupdate --}}
                             @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && $dok->updated_at > $pengajuan->updated_at)
                                 <span class="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                     <svg class="mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
@@ -207,7 +219,6 @@
                         </a>
                     </div>
 
-                    {{-- Opsional: Tampilkan tanggal update agar admin lebih yakin --}}
                     @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
                         <p class="text-xs text-gray-400">
                             Diupdate: {{ $dok->updated_at->format('d M Y, H:i') }}
@@ -318,52 +329,80 @@
 
             <hr class="my-4">
 
-            <!-- VERIFIKASI -->
+                        <!-- VERIFIKASI -->
             @if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
 
+            @php
+                // LOGIKA BARU: Cek apakah desa ini PERNAH punya pengajuan lain yang pernah diproses/aktif
+                $pernahDaftarSebelumnya = \App\Models\Pengajuan::where('id_user', $pengajuan->id_user)
+                    ->where('id_pengajuan', '!=', $pengajuan->id_pengajuan) // Kecuali pengajuan ini sendiri
+                    ->whereIn('status_pengajuan', ['aktif', 'diproses', 'menunggu_aktivasi', 'kadaluarsa'])
+                    ->exists();
+
+                // Jika belum pernah sama sekali, maka dia boleh dapat gratis
+                $adalahPendaftaranPertama = !$pernahDaftarSebelumnya;
+            @endphp
+
+            <h3 class="font-semibold mb-3">Hasil Verifikasi</h3>
+
+            {{-- TOMBOL AKTIVASI LANGSUNG (HANYA UNTUK PENDAFTARAN PERTAMA KALI SEUMUR HIDUP DESA) --}}
+            @if($adalahPendaftaranPertama)
+                <div class="mb-4 flex flex-col sm:flex-row sm:items-center gap-3 bg-green-50 text-green-700 text-sm px-4 py-3 rounded-lg border border-green-200">
+                    <i class="fas fa-gift text-lg"></i>
+                    <span class="flex-1">Ini adalah <strong>pendaftaran pertama kali</strong> oleh desa ini. Langsung aktifkan atau kembalikan jika perlu perbaikan.</span>
+                    <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" class="inline-block flex-shrink-0">
+                        @csrf
+                        <button type="submit" 
+                                class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-5 rounded shadow transition duration-200 inline-flex items-center text-sm"
+                                data-confirm-message="Pendaftaran pertama kali (GRATIS). Yakin ingin langsung mengaktifkan domain ini?">
+                            <i class="fas fa-check-circle mr-2"></i> Aktivasikan Domain
+                        </button>
+                    </form>
+                </div>
+            @endif
+
+            {{-- FORM VERIFIKASI (WAJIB DIPILIH JIKA BUKAN PENDAFTARAN PERTAMA) --}}
             <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST" id="formVerifikasi">
 
                 @csrf
                 @method('PUT')
 
-                <h3 class="font-semibold mb-3">
-                    Hasil Verifikasi
-                </h3>
                 <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6 mb-4">
 
-                    <label>
-                        <input type="radio" name="status" value="diproses" id="diproses">
-                        Diproses
-                    </label>
+                    @if(!$adalahPendaftaranPertama)
+                        <!-- HANYA MUNCUL JIKA BUKAN PENDAFTARAN PERTAMA (WAJIB DIPROSES UNTUK FAKTUR) -->
+                        <label>
+                            <input type="radio" name="status" value="diproses" id="diproses" required>
+                            Diproses
+                        </label>
+
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="kirim_email" id="kirim_email">
+                            Kirim konfirmasi pembayaran
+                        </label>
+                    @endif
 
                     <label>
-                        <input type="radio" name="status" value="perlu_perbaikan" id="perbaikan">
+                        <input type="radio" name="status" value="perlu_perbaikan" id="perbaikan" required>
                         Perlu Perbaikan
-                    </label>
-
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" name="kirim_email" id="kirim_email">
-                        Kirim konfirmasi pembayaran
                     </label>
 
                 </div>
 
                 <textarea
                     name="catatan"
-                    placeholder="Catatan..."
+                    placeholder="Catatan (diisi jika memilih perlu perbaikan)..."
                     class="w-full border p-2 rounded mb-4"
                 ></textarea>
 
-                <div class="text-right">
-
+                <div class="flex justify-end">
                     <button
                         type="submit"
-                        class="js-confirm-btn bg-red-700 text-white px-6 py-2 rounded"
+                        class="js-confirm-btn bg-red-700 text-white px-6 py-2 rounded text-sm"
                         data-confirm-message="Apakah anda yakin ingin mengirim verifikasi ini?"
                     >
                         Kirim
                     </button>
-
                 </div>
             </form>
 
@@ -385,120 +424,139 @@
                 });
             </script>
 
-            @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
-
-            <!-- FORM AKTIVASI -->
-            <div class="bg-blue-50 p-4 rounded border border-blue-200">
-
-                <h3 class="font-bold text-lg mb-2">
-                    Aktivasi Domain
-                </h3>
-                <p class="text-sm text-gray-600 mb-4">
-                    Status saat ini:
-                    <strong>Menunggu Aktivasi</strong>
-                </p>
-
-                <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi">
-
-                    @csrf
-
-                    <div class="flex justify-end">
-
-                        <button
-                            type="submit"
-                            class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow transition duration-200"
-                            data-confirm-message="Apakah Anda yakin ingin mengaktifkan domain ini?"
-                        >
-                            <i class="fas fa-check-circle mr-2"></i>
-                            Aktivasikan Domain
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
             @elseif($pengajuan->status_pengajuan == 'diproses')
             
             @php
-                // Logika Cek Respon Desa
                 $adaKonfirmasiDesa = $pengajuan->pesan->where('judul', 'Konfirmasi Pembayaran Disetujui')->isNotEmpty();
-                $fakturSudahAda = $pengajuan->faktur->where('tipe', '!=', 'perpanjangan')->isNotEmpty();
+                $fakturSudahAda = $pengajuan->faktur->where('tipe', 'perpanjangan')->isNotEmpty();
             @endphp
 
             <div class="bg-blue-50 p-4 rounded border border-blue-200">
 
-                @if($adaKonfirmasiDesa && !$fakturSudahAda)
+                                    @if($adaKonfirmasiDesa && !$fakturSudahAda)
                     
-                    <!-- Desa Sudah Setuju, Faktur Belum Ada -->
+                    @php
+                        // TAMBAHKAN whereNotNull AGAR TIDAK KETEMU PESAN LAMA YANG NULL
+                        $pesanDurasi = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+                            ->where('judul', 'Konfirmasi Pembayaran Disetujui')
+                            ->whereNotNull('durasi_tahun') // Hanya ambil yang benar-benar baru memilih tahun
+                            ->latest()
+                            ->first();
+                            
+                        $durasiDipilih = $pesanDurasi ? $pesanDurasi->durasi_tahun : 1;
+                        $hargaPerTahun = 50000;
+                        $totalHarga = $durasiDipilih * $hargaPerTahun;
+                        
+                        // HITUNG ESTIMASI TANGGAL BERLAKU UNTUK PREVIEW ADMIN
+                        $estimasiBerlaku = \Carbon\Carbon::now()->addYears($durasiDipilih)->format('d M Y');
+                    @endphp
+
                     <div class="flex items-center gap-3 mb-3">
                         <div class="bg-green-100 p-2 rounded-full text-green-600">
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div>
                             <h4 class="font-bold text-gray-800">Desa Menyetujui Pembayaran</h4>
-                            <p class="text-sm text-gray-600">Desa telah mengkonfirmasi kesiapan pembayaran. Silakan terbitkan faktur.</p>
+                            <p class="text-sm text-gray-600">
+                                Desa memilih masa berlaku <strong class="text-red-700">{{ $durasiDipilih }} Tahun</strong> 
+                                <span class="text-gray-500">(Estimasi aktif hingga <strong>{{ $estimasiBerlaku }}</strong>)</span> 
+                                dengan total tagihan <strong class="text-red-700">Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong>. 
+                                Silakan terbitkan faktur.
+                            </p>
                         </div>
                     </div>
 
                     <form action="{{ route('admin.faktur.store', $pengajuan->id_pengajuan) }}" method="POST" class="mt-2">
                         @csrf
+                        <!-- KIRIM DURASI TAHUN KE CONTROLLER FAKTUR -->
+                        <input type="hidden" name="durasi_tahun" value="{{ $durasiDipilih }}">
+                        <input type="hidden" name="total_bayar" value="{{ $totalHarga }}">
+                        
                         <button type="submit" 
                                 class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center"
-                                data-confirm-message="Apakah Anda yakin ingin menerbitkan dan mencetak faktur untuk domain ini?">
-                            <i class="fas fa-print mr-2"></i> Cetak Faktur
+                                data-confirm-message="Terbitkan faktur {{ $durasiDipilih }} tahun senilai Rp {{ number_format($totalHarga, 0, ',', '.') }}?">
+                            <i class="fas fa-print mr-2"></i> Terbitkan Faktur
                         </button>
                     </form>
 
                 @elseif($fakturSudahAda)
 
-                    <!-- Faktur Sudah Ada -->
-                <p class="text-blue-800 font-semibold mb-2">
-                    Faktur telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
-                </p>
+                    <p class="text-blue-800 font-semibold mb-2">
+                        Faktur perpanjangan telah diterbitkan. Menunggu pembayaran selesai sebelum dapat diaktivasi.
+                    </p>
 
-                <a href="{{ route('admin.faktur.index') }}"
-                class="text-sm underline hover:text-blue-700">
-
-                    Lihat di Manajemen Faktur
-                </a>
+                    <a href="{{ route('admin.faktur.index') }}" class="text-sm underline hover:text-blue-700">
+                        Lihat di Manajemen Faktur
+                    </a>
 
                 @else
 
-                    <!-- Belum Ada Respon -->
                     <p class="text-blue-700 font-semibold flex items-center gap-2">
                         <i class="fas fa-hourglass-half"></i>
-                        Menunggu persetujuan desa untuk penerbitan faktur.
+                        Menunggu persetujuan desa untuk penerbitan faktur perpanjangan.
                     </p>
 
                 @endif
 
             </div>
 
-            @elseif($finalStatus == 'aktif')
+                        @elseif($pengajuan->status_pengajuan == 'menunggu_aktivasi')
 
-            <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+            <div class="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-2xl border-2 border-green-200 shadow-sm mt-2">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+                    
+                    <!-- Kiri: Info & Input Tanggal -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="bg-green-100 p-2 rounded-lg text-green-600 flex-shrink-0">
+                                <i class="fas fa-shield-alt text-lg"></i> <!-- Ikon di judul bukan di tombol -->
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Domain Siap Diaktifkan</h3>
+                                <p class="text-sm text-gray-500">Tentukan masa berlaku domain pada inputan di bawah.</p>
+                            </div>
+                        </div>
+                        
+                        <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Aktif <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tgl_mulai" value="{{ date('Y-m-d') }}" required class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-sm p-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berlaku Sampai <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tgl_selesai" required class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-sm p-2.5">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
 
-                <p class="text-green-700 font-semibold">
-                    Domain Sudah Aktif
-                </p>
+                    <button type="submit" 
+                            form="formAktivasi"
+                            class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition duration-200 text-sm flex-shrink-0 h-fit"
+                            data-confirm-message="Apakah Anda yakin ingin mengaktifkan domain ini sesuai tanggal yang diinput?">
+                        Aktivasi Domain
+                    </button>
 
+                </div>
             </div>
+
+            @elseif($finalStatus == 'aktif')
+            <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
+                <p class="text-green-700 font-semibold">Domain Sudah Aktif</p>
+            </div>
+            
             @elseif($finalStatus == 'kadaluarsa')
-
             <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-
                 <p class="text-gray-700 font-semibold">
                     Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}.
                 </p>
-
             </div>
             @endif
+
         </div>
-
     </div>
-
 </div>
 
 <!-- MODAL -->
@@ -563,7 +621,8 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
 
-            formToSubmit = this.closest('form');
+           const formId = this.getAttribute('form');
+            formToSubmit = formId ? document.getElementById(formId) : this.closest('form');
 
             const message = this.getAttribute('data-confirm-message') || 'Apakah anda yakin?';
 

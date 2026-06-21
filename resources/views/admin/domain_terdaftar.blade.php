@@ -217,7 +217,7 @@
 
                                 <span class="inv-date {{ $row->aktivasi->status_akt == 'kadaluarsa' ? 'text-red-600 font-bold' : '' }}">
 
-                                    {{ $row->aktivasi->masa_berlaku->format('d/m/Y H:i') }}
+                                    {{ $row->aktivasi->masa_berlaku->format('d/m/Y') }}
 
                                 </span>
 

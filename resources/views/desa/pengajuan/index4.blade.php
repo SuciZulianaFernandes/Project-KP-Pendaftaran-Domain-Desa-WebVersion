@@ -1,4 +1,5 @@
 @extends('layouts.desa')
+
 @section('title', 'Pratinjau Pengajuan')
 
 @section('content')
@@ -24,140 +25,141 @@
         </div>
 
         <!-- INFORMASI INSTANSI -->
-<div class="grid grid-cols-1 gap-5 mb-5">
+        <div class="grid grid-cols-1 gap-5 mb-5">
 
-    <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
 
-        <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
-            Informasi Instansi
+                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
+                    Informasi Instansi
+                </div>
+
+                <div class="overflow-x-auto">
+
+                    <table class="w-full text-sm">
+
+                        <tr class="border-b border-gray-200">
+
+                            <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
+                                Nama Organisasi
+                            </td>
+
+                            <td class="px-4 py-4 w-1/4">
+                                {{ $data['data_desa']['nama_desa'] ?? '-' }}
+                            </td>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
+                                Provinsi
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ $data['data_desa']['provinsi'] ?? '-' }}
+                            </td>
+
+                        </tr>
+
+                        <tr class="border-b border-gray-200">
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Kabupaten
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ session('nama_kabupaten') ?? ($data['data_desa']['kota_kabupaten'] ?? '-') }}
+                            </td>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Kecamatan
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ session('nama_kecamatan') ?? ($data['data_desa']['kecamatan'] ?? '-') }}
+                            </td>
+
+                        </tr>
+
+                        <tr class="border-b border-gray-200">
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Desa
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ session('nama_desa') ?? ($data['data_desa']['desa_kelurahan'] ?? '-') }}
+                            </td>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Kode Pos
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ $data['data_desa']['kode_pos'] ?? '-' }}
+                            </td>
+
+                        </tr>
+
+                        <tr class="border-b border-gray-200">
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Telepon
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ $data['data_desa']['Telepon'] ?? '-' }}
+                            </td>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Faksimili
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ $data['data_desa']['Faksimili'] ?? '-' }}
+                            </td>
+
+                        </tr>
+
+                        <tr class="border-b border-gray-200">
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Email Registran
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ auth()->user()->email ?? '-' }}
+                            </td>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Alamat
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ $data['data_desa']['alamat'] ?? '-' }}
+                            </td>
+
+                        </tr>
+
+                        <tr>
+
+                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                                Tanggal Pembuatan
+                            </td>
+
+                            <td class="px-4 py-4">
+                                {{ date('d-m-Y') }}
+                            </td>
+
+                            <td></td>
+                            <td></td>
+
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="overflow-x-auto">
-
-            <table class="w-full text-sm">
-
-                <tr class="border-b border-gray-200">
-
-                    <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
-                        Nama Organisasi
-                    </td>
-
-                    <td class="px-4 py-4 w-1/4">
-                        {{ $data['data_desa']['nama_desa'] ?? '-' }}
-                    </td>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
-                        Provinsi
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ $data['data_desa']['provinsi'] ?? '-' }}
-                    </td>
-
-                </tr>
-
-                <tr class="border-b border-gray-200">
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Kabupaten
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ session('nama_kabupaten') ?? ($data['data_desa']['kota_kabupaten'] ?? '-') }}
-                    </td>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Kecamatan
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ session('nama_kecamatan') ?? ($data['data_desa']['kecamatan'] ?? '-') }}
-                    </td>
-
-                </tr>
-
-                <tr class="border-b border-gray-200">
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Desa
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ session('nama_desa') ?? ($data['data_desa']['desa_kelurahan'] ?? '-') }}
-                    </td>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Kode Pos
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ $data['data_desa']['kode_pos'] ?? '-' }}
-                    </td>
-
-                </tr>
-
-                <tr class="border-b border-gray-200">
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Telepon
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ $data['data_desa']['Telepon'] ?? '-' }}
-                    </td>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Faksimili
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ $data['data_desa']['Faksimili'] ?? '-' }}
-                    </td>
-
-                </tr>
-
-                <tr class="border-b border-gray-200">
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Email Registran
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ auth()->user()->email ?? '-' }}
-                    </td>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Alamat
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ $data['data_desa']['alamat'] ?? '-' }}
-                    </td>
-
-                </tr>
-
-                <tr>
-
-                    <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
-                        Tanggal Pembuatan
-                    </td>
-
-                    <td class="px-4 py-4">
-                        {{ date('d-m-Y') }}
-                    </td>
-
-                    <td></td>
-                    <td></td>
-
-                </tr>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
         <!-- INFORMASI DOMAIN -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
 
@@ -195,7 +197,9 @@
 
                 <table class="w-full text-sm">
 
-                    <tr><td class="px-4 py-4 text-blue-700 w-1/2">
+                    <tr>
+
+                        <td class="px-4 py-4 text-blue-700 w-1/2">
                             Masa Aktif
                         </td>
 
@@ -211,10 +215,9 @@
 
         </div>
 
-        <!-- DOKUMEN -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+        <!-- DOKUMEN PERSYARATAN (DIUBAH: 3 DOKUMEN, 1 KOLOM) -->
+        <div class="grid grid-cols-1 gap-5 mb-8">
 
-            <!-- KOLOM KIRI -->
             <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
 
                 <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
@@ -223,75 +226,56 @@
 
                 <table class="w-full text-sm">
 
-                    <tr class="border-b">
+                    <!-- Dokumen 1: Surat Permohonan Domain Desa -->
+                    <tr class="border-b border-gray-200">
 
-                        <td class="px-4 py-4 text-blue-700 w-1/2">
-                            Surat Permohonan
+                        <td class="px-4 py-4 text-blue-700 font-medium w-2/5 bg-gray-50">
+                            Surat Permohonan Domain Desa
                         </td>
 
                         <td class="px-4 py-4">
-                            {{ $data['data_dokumen']['surat_permohonan']['nama_file'] ?? '-' }}
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                                </svg>
+                                <span>{{ $data['data_dokumen']['surat_permohonan']['nama_file'] ?? '-' }}</span>
+                            </div>
                         </td>
 
                     </tr>
 
-                    <tr class="border-b">
+                    <!-- Dokumen 2: Surat Kuasa dari Desa -->
+                    <tr class="border-b border-gray-200">
 
-                        <td class="px-4 py-4 text-blue-700">
-                            Surat Kuasa
+                        <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            Surat Kuasa dari Desa
                         </td>
 
                         <td class="px-4 py-4">
-                            {{ $data['data_dokumen']['surat_kuasa']['nama_file'] ?? '-' }}
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                                </svg>
+                                <span>{{ $data['data_dokumen']['surat_kuasa']['nama_file'] ?? '-' }}</span>
+                            </div>
                         </td>
 
                     </tr>
 
+                    <!-- Dokumen 3: Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa -->
                     <tr>
 
-                        <td class="px-4 py-4 text-blue-700">
-                            Surat Penunjukan Pejabat
+                        <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa
                         </td>
 
                         <td class="px-4 py-4">
-                            {{ $data['data_dokumen']['surat_penunjukan_pejabat']['nama_file'] ?? '-' }}
-                        </td>
-
-                    </tr>
-
-                </table>
-
-            </div>
-
-            <!-- KOLOM KANAN -->
-            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
-
-                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
-                    &nbsp;
-                </div>
-
-                <table class="w-full text-sm">
-
-                    <tr class="border-b">
-
-                        <td class="px-4 py-4 text-blue-700 w-1/2">
-                            Kartu Pegawai
-                        </td>
-
-                        <td class="px-4 py-4">
-                            {{ $data['data_dokumen']['ktp_asn_pejabat']['nama_file'] ?? '-' }}
-                        </td>
-
-                    </tr>
-
-                    <tr>
-
-                        <td class="px-4 py-4 text-blue-700">
-                            Dasar Hukum Pembentukan Desa
-                        </td>
-
-                        <td class="px-4 py-4">
-                            {{ $data['data_dokumen']['perda_pembentukan_desa']['nama_file'] ?? '-' }}
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
+                                </svg>
+                                <span>{{ $data['data_dokumen']['perda_pembentukan_desa']['nama_file'] ?? '-' }}</span>
+                            </div>
                         </td>
 
                     </tr>
@@ -427,7 +411,9 @@ document.getElementById('formPengajuan').addEventListener('submit', function(e) 
     .then(response => {
 
         if (!response.ok) {
-            throw new Error('Terjadi kesalahan');
+            return response.json().then(err => {
+                throw new Error(err.message || 'Terjadi kesalahan');
+            });
         }
 
         return response.json();
@@ -446,7 +432,7 @@ document.getElementById('formPengajuan').addEventListener('submit', function(e) 
         btnText.textContent = 'Submit';
         btnSpinner.classList.add('hidden');
 
-        alert('Terjadi kesalahan saat mengirim pengajuan.');
+        alert(error.message || 'Terjadi kesalahan saat mengirim pengajuan.');
 
     });
 

@@ -42,6 +42,31 @@ class FakturDesaController extends Controller
         return view('desa.faktur.index', compact('fakturs'));
     }
 
+        public function ajukanFaktur(Request $request, $id)
+    {
+        $request->validate([
+            'durasi_tahun' => 'required|integer|min:1|max:5'
+        ]);
+
+        $pengajuan = Pengajuan::where('id_pengajuan', $id)
+            ->where('id_user', auth()->id())
+            ->firstOrFail();
+
+        $adminId = \App\Models\User::where('role', 'admin')->value('id_user');
+
+        \App\Models\Pesan::create([
+            'id_user'       => $adminId,
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Konfirmasi Pembayaran Disetujui', // Sesuaikan dengan yang dicari admin
+            'isi'           => 'Desa mengajukan permintaan faktur perpanjangan domain.',
+            'role_tujuan'   => 'admin',
+            'is_read'       => 0,
+            'durasi_tahun'  => $request->durasi_tahun // Simpan pilihan tahun
+        ]);
+
+        return back()->with('success', 'Permintaan faktur berhasil dikirim ke admin.');
+    }
+
     public function show($id)
     {
         $user = Auth::user();

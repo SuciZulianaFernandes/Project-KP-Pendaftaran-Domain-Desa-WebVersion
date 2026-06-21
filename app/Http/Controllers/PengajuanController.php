@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request; // Pastikan ini ada
+use Illuminate\Http\Request;
 use App\Models\Pengajuan;
 use App\Models\Desa;
 use App\Models\DokumenPersyaratan;
@@ -16,37 +16,20 @@ class PengajuanController extends Controller
         return view('desa.pengajuan.index');
     }
 
-    public function cekDomain(Request $request)
-    {
-        // Method ini bisa dihapus jika tidak digunakan lagi, karena API sudah menanganinya.
-        $request->validate(['nama_domain' => 'required|string|max:100']);
-        $domain = strtolower($request->nama_domain);
-        $cek = Pengajuan::where('nama_domain', $domain)->first();
-        if ($cek) {
-            return back()->with(['status' => 'tidak_tersedia', 'domain' => $domain]);
-        }
-        return back()->with(['status' => 'tersedia', 'domain' => $domain]);
-    }
-
-    public function checkAvailabilityApi(Request $request)
-    {
-        $domain = strtolower($request->nama_domain);
-        $isExists = Pengajuan::where('nama_domain', $domain)->exists();
-        return response()->json(['available' => !$isExists]);
-    }
-
     // --- METHOD BARU UNTUK MULTI-STEP ---
 
     public function showInformasiForm(Request $request)
     {
-        if ($request->has('domain')) {
-            session(['pengajuan.nama_domain' => $request->query('domain')]);
+        if ($request->has('nama_domain')) {
+            // Bersihkan dan simpan ke session
+            $domain = strtolower(preg_replace('/\s+/', '', $request->nama_domain));
+            session(['pengajuan.nama_domain' => $domain]);
         }
+        
         if (!session('pengajuan.nama_domain')) {
             return redirect()->route('pengajuan.index');
         }
         
-        // Kirim data desa dari session ke view untuk mengisi form kembali
         $data_desa = session('pengajuan.data_desa', []);
         return view('desa.pengajuan.index2', compact('data_desa'));
     }
@@ -78,58 +61,52 @@ class PengajuanController extends Controller
     }
 
     public function storeDokumenForm(Request $request)
-    {
-        // Validasi 5 File
-        $request->validate([
-            'surat_permohonan'         => 'required|file|mimes:pdf|max:2048',
-            'perda_pembentukan_desa'   => 'required|file|mimes:pdf|max:2048',
-            'surat_kuasa'              => 'required|file|mimes:pdf|max:2048',
-            'surat_penunjukan_pejabat' => 'required|file|mimes:pdf|max:2048',
-            'ktp_asn_pejabat'          => 'required|file|mimes:pdf|max:2048',
-        ]);
+{
+    // Validasi HANYA 3 File
+    $request->validate([
+        'surat_permohonan'         => 'required|file|mimes:pdf|max:2048',
+        'surat_kuasa'              => 'required|file|mimes:pdf|max:2048',
+        'perda_pembentukan_desa'  => 'required|file|mimes:pdf|max:2048',
+    ]);
 
-        // CEK FILE TIDAK BOLEH SAMA (Menggunakan Hash)
-        $files = [
-            $request->file('surat_permohonan'),
-            $request->file('perda_pembentukan_desa'),
-            $request->file('surat_kuasa'),
-            $request->file('surat_penunjukan_pejabat'),
-            $request->file('ktp_asn_pejabat'),
-        ];
+    // CEK FILE TIDAK BOLEH SAMA (Menggunakan Hash)
+    $files = [
+        $request->file('surat_permohonan'),
+        $request->file('surat_kuasa'),
+        $request->file('perda_pembentukan_desa'),
+    ];
 
-        $hashes = [];
-        foreach ($files as $file) {
-            $hash = md5_file($file->getRealPath());
-            if (in_array($hash, $hashes)) {
-                return back()->withErrors([
-                    'file' => 'Semua file harus berbeda, tidak boleh upload file yang sama.'
-                ])->withInput();
-            }
-            $hashes[] = $hash;
+    $hashes = [];
+    foreach ($files as $file) {
+        $hash = md5_file($file->getRealPath());
+        if (in_array($hash, $hashes)) {
+            return back()->withErrors([
+                'file' => 'Semua file harus berbeda, tidak boleh upload file yang sama.'
+            ])->withInput();
         }
-
-        $dokumen = [];
-        $inputs = $request->only([
-            'surat_permohonan', 
-            'perda_pembentukan_desa', 
-            'surat_kuasa', 
-            'surat_penunjukan_pejabat', 
-            'ktp_asn_pejabat'
-        ]);
-
-        foreach ($inputs as $jenis => $file) {
-            if ($request->hasFile($jenis)) {
-                $path = $request->file($jenis)->store('/pengajuan/dokumen');
-                $dokumen[$jenis] = [
-                    'nama_file' => $file->getClientOriginalName(),
-                    'path_file' => $path,
-                ];
-            }
-        }
-
-        session(['pengajuan.data_dokumen' => $dokumen]);
-        return redirect()->route('desa.pengajuan.tinjau');
+        $hashes[] = $hash;
     }
+
+    $dokumen = [];
+    $inputs = $request->only([
+        'surat_permohonan', 
+        'surat_kuasa', 
+        'perda_pembentukan_desa'
+    ]);
+
+    foreach ($inputs as $jenis => $file) {
+        if ($request->hasFile($jenis)) {
+            $path = $request->file($jenis)->store('/pengajuan/dokumen');
+            $dokumen[$jenis] = [
+                'nama_file' => $file->getClientOriginalName(),
+                'path_file' => $path,
+            ];
+        }
+    }
+
+    session(['pengajuan.data_dokumen' => $dokumen]);
+    return redirect()->route('desa.pengajuan.tinjau');
+}
 
     public function showTinjauForm()
     {
@@ -144,6 +121,15 @@ class PengajuanController extends Controller
     public function submitPengajuan(Request $request)
     {
         $allData = session('pengajuan');
+
+        // Cek duplikat domain di database saat submit
+        $cekDomain = Pengajuan::where('nama_domain', $allData['nama_domain'])->first();
+        if ($cekDomain) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Domain ' . $allData['nama_domain'] . '.desa.id sudah terdaftar dalam sistem.'
+            ], 422);
+        }
 
         DB::beginTransaction();
         try {
@@ -189,23 +175,18 @@ class PengajuanController extends Controller
     }
 
     // --- BAGIAN DESA: DAFTAR PENGAJUAN ---
-    public function daftar(Request $request) // Tambahkan Request $request
+    public function daftar(Request $request)
     {
-        // MODIFIKASI PENCARIAN: Ambil parameter search
         $search = $request->get('search');
 
         $query = Pengajuan::where('id_user', auth()->id())
             ->where('status_pengajuan', '!=', 'aktif');
 
-        // MODIFIKASI PENCARIAN: Jika ada input search, filter query
         if (!empty($search)) {
             $query->where('nama_domain', 'like', "%$search%");
         }
 
-        // Eksekusi pagination
         $data = $query->latest()->paginate(10);
-
-        // MODIFIKASI PENCARIAN: Append parameter agar tidak hilang saat pindah halaman
         $data->appends(['search' => $search]);
 
         return view('desa.verifikasi.daftar', compact('data', 'search'));
@@ -242,58 +223,38 @@ class PengajuanController extends Controller
     }
 
     // --- BAGIAN ADMIN: DAFTAR PENGAJUAN ---
-   public function adminIndex(Request $request) 
-{
-    $search = $request->get('search');
-    $status = $request->get('status'); // 1. TAMBAHKAN INI (Menangkap filter status)
+    public function adminIndex(Request $request) 
+    {
+        $search = $request->get('search');
+        $status = $request->get('status');
 
-    $query = Pengajuan::where('status_pengajuan', '!=', 'aktif')
-        ->whereDoesntHave('faktur', function ($query) {
-            $query->where('tipe', 'perpanjangan');
-        });
+        $query = Pengajuan::where('status_pengajuan', '!=', 'aktif')
+            ->whereDoesntHave('faktur', function ($query) {
+                $query->where('tipe', 'perpanjangan');
+            });
 
-    if (!empty($search)) {
-        $query->where(function($q) use ($search) {
-            $q->where('nama_domain', 'like', "%$search%")
-              ->orWhere('nama_desa', 'like', "%$search%");
-        });
-    }
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_domain', 'like', "%$search%")
+                  ->orWhere('nama_desa', 'like', "%$search%");
+            });
+        }
 
-    // 2. TAMBAHKAN INI (Melakukan filter status secara global ke database)
-    if (!empty($status)) {
-        $query->where('status_pengajuan', $status);
-    }
+        if (!empty($status)) {
+            $query->where('status_pengajuan', $status);
+        }
 
-    $data = $query->latest()->paginate(10);
+        $data = $query->latest()->paginate(10);
+        $data->appends(['search' => $search, 'status' => $status]);
 
-    // 3. UBAH BAGIAN INI (Mengunci search DAN status saat pindah Page 2)
-    $data->appends([
-        'search' => $search,
-        'status' => $status
-    ]);
+        $totalDitinjau = Pengajuan::where('status_pengajuan', 'ditinjau')->count();
+        $totalPerbaikan = Pengajuan::where('status_pengajuan', 'perlu_perbaikan')->count();
+        $totalDiproses = Pengajuan::where('status_pengajuan', 'diproses')->count();
+        $totalAktivasi = Pengajuan::where('status_pengajuan', 'menunggu_aktivasi')->count();
 
-
-// ======================
-// TOTAL WIDGET STATUS
-// ======================
-
-$totalDitinjau = Pengajuan::where('status_pengajuan', 'ditinjau')->count();
-
-$totalPerbaikan = Pengajuan::where('status_pengajuan', 'perlu_perbaikan')->count();
-
-$totalDiproses = Pengajuan::where('status_pengajuan', 'diproses')->count();
-
-$totalAktivasi = Pengajuan::where('status_pengajuan', 'menunggu_aktivasi')->count();
-
-// Kirim ke view
-return view('admin.pengajuan.index', compact(
-    'data',
-    'search',
-    'totalDitinjau',
-    'totalPerbaikan',
-    'totalDiproses',
-    'totalAktivasi'
-));
+        return view('admin.pengajuan.index', compact(
+            'data', 'search', 'totalDitinjau', 'totalPerbaikan', 'totalDiproses', 'totalAktivasi'
+        ));
     }
 
     public function adminDetail($id)
@@ -302,8 +263,12 @@ return view('admin.pengajuan.index', compact(
         return view('admin.pengajuan.detail', compact('pengajuan'));
     }
 
-    public function verifikasi(Request $request, $id)
+        public function verifikasi(Request $request, $id)
     {
+        $request->validate([
+            'status' => 'required|in:diproses,perlu_perbaikan'
+        ]);
+
         $pengajuan = Pengajuan::findOrFail($id);
         
         $status = $request->status;
@@ -314,13 +279,29 @@ return view('admin.pengajuan.index', compact(
         $pengajuan->save();
 
         if (in_array($status, ['disetujui', 'diproses', 'proses'])) {
-            \App\Models\Pesan::create([
-                'id_user'       => $pengajuan->id_user,
-                'id_pengajuan'  => $pengajuan->id_pengajuan,
-                'judul'         => 'Konfirmasi Pembayaran',
-                'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan faktur.',
-                'role_tujuan'   => 'desa'
-            ]);
+            
+            // CEK APAKAH INI PERPANJANGAN ATAU PENDAFTARAN PERTAMA
+            $adalahPerpanjangan = $pengajuan->pesan->where('judul', 'Permintaan Perpanjangan Domain')->isNotEmpty();
+
+            if ($adalahPerpanjangan) {
+                // KIRIM NOTIFIKASI FAKTUR HANYA UNTUK PERPANJANGAN
+                \App\Models\Pesan::create([
+                    'id_user'       => $pengajuan->id_user,
+                    'id_pengajuan'  => $pengajuan->id_pengajuan,
+                    'judul'         => 'Konfirmasi Pembayaran',
+                    'isi'           => 'Pengajuan perpanjangan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan bukti pembayaran.',
+                    'role_tujuan'   => 'desa'
+                ]);
+            } else {
+                // KIRIM NOTIFIKASI LANGSUNG AKTIF UNTUK PENDAFTARAN PERTAMA
+                \App\Models\Pesan::create([
+                    'id_user'       => $pengajuan->id_user,
+                    'id_pengajuan'  => $pengajuan->id_pengajuan,
+                    'judul'         => 'Pengajuan Domain Disetujui',
+                    'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui (Pendaftaran Pertama - Gratis). Silakan tunggu admin mengaktifkan domain Anda.',
+                    'role_tujuan'   => 'desa'
+                ]);
+            }
         } else {
             \App\Models\Pesan::create([
                 'id_user'       => $pengajuan->id_user,
@@ -336,22 +317,17 @@ return view('admin.pengajuan.index', compact(
     }
 
     public function lihatDokumen($id)
-{
-    $dokumen = DokumenPersyaratan::findOrFail($id);
+    {
+        $dokumen = DokumenPersyaratan::findOrFail($id);
+        $pengajuan = $dokumen->pengajuan;
 
-    $pengajuan = $dokumen->pengajuan;
+        if (auth()->user()->role !== 'admin' && $pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
 
-    if (
-        auth()->user()->role !== 'admin' &&
-        $pengajuan->id_user !== auth()->id()
-    ) {
-        abort(403);
+        $file = storage_path('app/private/' . $dokumen->path_file);
+        abort_unless(file_exists($file), 404);
+
+        return response()->file($file);
     }
-
-    $file = storage_path('app/private/' . $dokumen->path_file);
-
-    abort_unless(file_exists($file), 404);
-
-    return response()->file($file);
-}
 }

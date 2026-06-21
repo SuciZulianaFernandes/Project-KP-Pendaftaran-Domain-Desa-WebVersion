@@ -152,11 +152,14 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
     Route::get('/faktur', [FakturDesaController::class, 'index'])->name('faktur.index');
     Route::get('/faktur/{id}', [FakturDesaController::class, 'show'])->name('faktur.show');
     Route::post('/faktur/{id}/konfirmasi', [FakturDesaController::class, 'konfirmasiPembayaran'])->name('faktur.konfirmasi');
-      // --- ROUTE PERPANJANG DOMAIN (BARU) ---
+      
+Route::post('/pengajuan/{id}/ajukan-faktur', [FakturDesaController::class, 'ajukanFaktur'])->name('ajukan.faktur');
+
+    // --- ROUTE PERPANJANG DOMAIN (BARU) ---
         Route::get('/perpanjang', [AktivasiController::class, 'desaPerpanjang'])
             ->name('perpanjang');
         Route::get('/perpanjang/proses/{id}', [AktivasiController::class, 'prosesPerpanjang'])->name('perpanjang.proses');
-        Route::get('/perpanjang/ajukan/{id}', [AktivasiController::class, 'ajukanPerpanjang']);
+        Route::post('/perpanjang/ajukan', [AktivasiController::class, 'ajukanPerpanjang'])->name('perpanjang.ajukan');
         
      Route::get('/profile', [ProfileDesaController::class, 'index'])
         ->name('profile');

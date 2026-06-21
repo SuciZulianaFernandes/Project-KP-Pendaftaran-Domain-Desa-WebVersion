@@ -128,7 +128,7 @@
                         
                         <td>
                             @if($aktivasi && $aktivasi->tgl_aktivasi)
-                                <span class="inv-date">{{ $aktivasi->tgl_aktivasi->format('d/m/Y H:i') }}</span>
+                                <span class="inv-date">{{ $aktivasi->tgl_aktivasi->format('d/m/Y') }}</span>
                             @else
                                 <span class="inv-date">-</span>
                             @endif
@@ -137,7 +137,7 @@
                         <td>
                             @if($aktivasi && $aktivasi->masa_berlaku)
                                 <span class="inv-date {{ $kadaluarsa ? 'text-red-600 font-bold' : 'text-gray-700' }}">
-                                    {{ $aktivasi->masa_berlaku->format('d/m/Y H:i') }}
+                                    {{ $aktivasi->masa_berlaku->format('d/m/Y') }}
                                 </span>
                             @else
                                 <span class="inv-date text-gray-400">-</span>
@@ -199,21 +199,13 @@
             </span>
 
         @elseif($bisaPerpanjang)
+    <a href="#" 
+       class="inv-btn-d"
+       onclick="event.preventDefault(); openPerpanjangModal('{{ $row->id_pengajuan }}', '{{ $aktivasi ? $aktivasi->tgl_aktivasi->format('d M Y') : '-' }}', '{{ $aktivasi ? $aktivasi->masa_berlaku->format('d M Y') : '-' }}')">
+       <i class="fas fa-redo"></i> Ajukan Perpanjang
+    </a>
 
-            {{-- Pengecekan: Jika sudah ada faktur perpanjangan yang "sudah_bayar", kunci tombolnya! --}}
-            @if($row->faktur->where('tipe', 'perpanjangan')->where('status', 'sudah_bayar')->first())
-                <button disabled class="inv-btn-d" style="background:#e2e8f0; border-color:#e2e8f0; color:#94a3b8; cursor:not-allowed" title="Sudah diperpanjang untuk periode ini">
-                    <i class="fas fa-check-circle"></i> Sudah Diperpanjang
-                </button>
-            @else
-                <a href="{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}" 
-                   class="inv-btn-d"
-                   onclick="event.preventDefault(); openPerpanjangModal('{{ url('/desa/perpanjang/ajukan/' . $row->id_pengajuan) }}')">
-                   <i class="fas fa-redo"></i> Ajukan Perpanjang
-                </a>
-            @endif
-
-        @else
+@else
 
             <button disabled class="inv-btn-d" style="background:#e2e8f0; border-color:#e2e8f0; color:#94a3b8; cursor:not-allowed">
                 <i class="fas fa-redo"></i> Ajukan Perpanjang
@@ -240,22 +232,59 @@
 
 <!-- MODAL PERPANJANG -->
 <div id="modalPerpanjang" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 mx-4 w-full max-w-sm text-center transform transition-all duration-300 scale-95 opacity-0" id="modalPerpanjangContent">
-        <div class="mx-auto mb-5 w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center">
-    <svg class="w-12 h-12 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-    </svg>
-</div>
-        <h2 class="text-2xl font-bold text-gray-800 mb-3">Ajukan Perpanjang?</h2>
-        <p class="text-gray-600 text-sm leading-relaxed mb-8">Apakah anda yakin ingin mengajukan perpanjangan domain ini? Admin akan membuatkan faktur untuk pembayaran.</p>
-        <div class="flex gap-3">
-            <button onclick="closePerpanjangModal()" class="w-1/2 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition duration-200 text-base">
-                Batal
-            </button>
-            <button id="btnConfirmPerpanjang" class="w-1/2 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition duration-200 text-base">
-                Ya, Ajukan
-            </button>
+    <div class="bg-white rounded-2xl shadow-2xl p-8 mx-4 w-full max-w-md text-left transform transition-all duration-300 scale-95 opacity-0" id="modalPerpanjangContent">
+        
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Ajukan Perpanjangan</h2>
+                <p class="text-sm text-gray-500">Isi detail perpanjangan domain Anda</p>
+            </div>
         </div>
+
+        <!-- Info Masa Aktif Saat Ini -->
+        <div class="mb-5 p-4 bg-gray-50 rounded-lg border">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Masa Aktif Saat Ini</p>
+            <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Mulai Aktif:</span>
+                <span class="font-semibold text-gray-800" id="infoMulai">-</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-1">
+                <span class="text-gray-600">Berlaku Sampai:</span>
+                <span class="font-semibold text-gray-800" id="infoSelesai">-</span>
+            </div>
+        </div>
+
+        <!-- Form Pilih Tahun -->
+        <form id="formPerpanjang" action="{{ route('desa.perpanjang.ajukan') }}" method="POST">
+            @csrf
+            <input type="hidden" name="id_pengajuan" id="inputIdPengajuan" value="">
+            
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Durasi Perpanjangan <span class="text-red-500">*</span></label>
+                <select name="durasi_tahun" id="selectDurasi" required class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-orange-500 focus:border-orange-500 text-sm p-2.5">
+                    <option value="" disabled selected>-- Pilih Tahun --</option>
+                    <option value="1">1 Tahun</option>
+                    <option value="2">2 Tahun</option>
+                    <option value="3">3 Tahun</option>
+                    <option value="4">4 Tahun</option>
+                    <option value="5">5 Tahun</option>
+                </select>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="closePerpanjangModal()" class="w-1/2 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition duration-200 text-sm">
+                    Batal
+                </button>
+                <button type="submit" class="w-1/2 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition duration-200 text-sm">
+                    Ya, Ajukan
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -307,11 +336,21 @@ document.addEventListener('DOMContentLoaded',function(){
     });
 });
 
-function openPerpanjangModal(url) {
+// FUNGSI MODAL BARU (MENERIMA DATA TANGGAL)
+function openPerpanjangModal(id, tglMulai, tglSelesai) {
     const modal = document.getElementById('modalPerpanjang');
     const content = document.getElementById('modalPerpanjangContent');
-    const btnConfirm = document.getElementById('btnConfirmPerpanjang');
-    btnConfirm.onclick = function() { window.location.href = url; };
+    
+    // Tampilkan info masa aktif ke modal
+    document.getElementById('infoMulai').textContent = tglMulai;
+    document.getElementById('infoSelesai').textContent = tglSelesai;
+    
+    // Set ID pengajuan ke hidden input
+    document.getElementById('inputIdPengajuan').value = id;
+    
+    // Reset dropdown tahun
+    document.getElementById('selectDurasi').value = '';
+    
     modal.classList.remove('hidden');
     setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
 }

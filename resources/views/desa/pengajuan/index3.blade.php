@@ -1,5 +1,7 @@
 @extends('layouts.desa')
+
 @section('title', 'Persyaratan Domain')
+
 @section('content')
 <div class="bg-white rounded-xl shadow p-6 md:p-10">
     @include('desa.pengajuan._steps', ['currentStep' => 3])
@@ -22,41 +24,30 @@
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
-                    <!-- KOLOM KIRI (3 Item) -->
+                    <!-- KOLOM KIRI (2 Item) -->
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Surat Permohonan <span class="text-red-600">*</span></label>
-                            <!-- STYLE DIUBAH SESUAI GAMBAR -->
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Surat Permohonan Domain Desa <span class="text-red-600">*</span></label>
                             <input type="file" name="surat_permohonan" accept="application/pdf" required
                                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800">
+                            <p class="text-xs text-gray-500 mt-1">Surat resmi permohonan domain desa</p>
                         </div>
+                        
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Surat Kuasa <span class="text-red-600">*</span></label>
-                            <!-- STYLE DIUBAH SESUAI GAMBAR -->
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Surat Kuasa dari Desa <span class="text-red-600">*</span></label>
                             <input type="file" name="surat_kuasa" accept="application/pdf" required
                                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Surat Penunjukan Pejabat <span class="text-red-600">*</span></label>
-                            <!-- STYLE DIUBAH SESUAI GAMBAR -->
-                            <input type="file" name="surat_penunjukan_pejabat" accept="application/pdf" required
-                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800">
+                            <p class="text-xs text-gray-500 mt-1">Surat kuasa yang dikeluarkan oleh desa</p>
                         </div>
                     </div>
 
-                    <!-- KOLOM KANAN (2 Item) -->
+                    <!-- KOLOM KANAN (1 Item) -->
                     <div class="space-y-5 pt-1">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Kartu Pegawai <span class="text-red-600">*</span></label>
-                            <!-- STYLE DIUBAH SESUAI GAMBAR -->
-                            <input type="file" name="ktp_asn_pejabat" accept="application/pdf" required
-                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Dasar Hukum Pembentukan Desa <span class="text-red-600">*</span></label>
-                            <!-- STYLE DIUBAH SESUAI GAMBAR -->
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa <span class="text-red-600">*</span></label>
                             <input type="file" name="perda_pembentukan_desa" accept="application/pdf" required
                                 class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800">
+                            <p class="text-xs text-gray-500 mt-1">Perda pembentukan desa atau surat pelantikan kepala desa</p>
                         </div>
                     </div>
                 </div>

@@ -89,9 +89,9 @@
                     <span class="k">No. Invoice</span>
                     <span class="v">{{ $faktur->no_invoice }}</span>
                 </div>
-                <div class="show-row">
+                 <div class="show-row">
                     <span class="k">Masa Aktif</span>
-                    <span class="v">1 Tahun</span>
+                    <span class="v">{{ $faktur->durasi_tahun ?? 1 }} Tahun</span>
                 </div>
                 <div class="show-row">
                     <span class="k">Tipe Pembayaran</span>

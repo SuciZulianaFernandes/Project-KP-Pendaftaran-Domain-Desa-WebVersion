@@ -106,7 +106,7 @@
             </div>
 
             {{-- NOTIFIKASI: FAKTUR BELUM DIBUAT --}}
-            @if(!$faktur)
+             @if(!$faktur || $menungguFakturBaru)
                 <div class="mb-6 bg-blue-50 p-5 rounded-xl border border-blue-200">
                     <h3 class="font-bold text-lg mb-2 text-blue-800">
                         Desa Menyetujui Pembayaran
@@ -115,14 +115,12 @@
                         Desa telah mengkonfirmasi kesiapan pembayaran. Silakan terbitkan faktur perpanjangan.
                     </p>
                     
-                    <form action="{{ route('admin.faktur.store', $pengajuan->id_pengajuan) }}" method="POST" style="display:inline">
-                        @csrf
-                        {{-- Kirim input hidden tipe jika route store kamu membedakan tipe pembuatan faktur --}}
-                        <input type="hidden" name="tipe" value="perpanjangan">
-                        <button type="submit" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm js-confirm-print">
-                            <i class="fas fa-print"></i> Cetak Faktur Perpanjangan
-                        </button>
-                    </form>
+                    <form action="{{ route('admin.faktur.storePerpanjangan', $pengajuan->id_pengajuan) }}" method="POST" style="display:inline">
+    @csrf
+    <button type="submit" class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm js-confirm-print">
+        <i class="fas fa-print"></i> Cetak Faktur Perpanjangan
+    </button>
+</form>
                 </div>
             @endif
 
@@ -383,32 +381,77 @@
             <hr class="my-5">
 
             {{-- BAGIAN AKSI INTERAKTIF ADMIN --}}
-            @if($faktur && $finalStatus == 'menunggu_aktivasi')
-            <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
-                <h3 class="font-bold text-lg mb-2 text-gray-800">
-                    Aktivasi Perpanjangan
-                </h3>
-                <p class="text-sm text-gray-600 mb-4">
-                    Status saat ini: <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-semibold">Menunggu Aktivasi</span>.<br>
-                    Desa telah membayar faktur perpanjangan ini. Klik tombol di bawah untuk menambah masa berlaku domain sebanyak 1 tahun.
-                </p>
+                        @if($faktur && $finalStatus == 'menunggu_aktivasi')
+            
+            @php
+                // Ambil durasi tahun yang dipilih desa dari data faktur
+                $durasiPerpanjangan = $faktur->durasi_tahun ?? 1;
+                
+                // Hitung tanggal mulai default (1 hari setelah masa berlaku sebelumnya habis agar tidak ada jeda)
+ $defaultTglMulai = $aktivasiTerakhir ? $aktivasiTerakhir->tgl_aktivasi->format('Y-m-d') : date('Y-m-d');            @endphp
 
-                <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi">
-                    @csrf
-                    <div class="flex justify-end">
-                        <button
-                            type="submit"
-                            class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg shadow transition duration-200"
-                            data-confirm-message="Apakah Anda yakin ingin mengaktifkan perpanjangan domain ini?"
-                        >
-                            <i class="fas fa-check-circle mr-2"></i>
-                            Aktivasikan Sekarang
-                        </button>
+            <div class="bg-gradient-to-br from-emerald-50 to-white p-6 rounded-2xl border-2 border-green-200 shadow-sm mt-2">
+                <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+                    
+                    <!-- Kiri: Info & Input Tanggal -->
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="bg-green-100 p-2 rounded-lg text-green-600 flex-shrink-0">
+                                <i class="fas fa-shield-alt text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800">Aktivasi Perpanjangan Domain</h3>
+                                <p class="text-sm text-gray-500">Tentukan masa berlaku perpanjangan pada inputan di bawah.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Pilihan Desa & Masa Aktif Lama -->
+                        <div class="bg-white rounded-xl p-4 border border-green-100 shadow-sm mb-4 space-y-3">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Permintaan Desa</p>
+                                <p class="text-sm text-gray-700 mt-1">Desa memilih perpanjangan: <strong class="text-red-700">{{ $durasiPerpanjangan }} Tahun</strong></p>
+                            </div>
+                            
+                            @if($aktivasiTerakhir)
+                            <div class="border-t border-gray-100 pt-3">
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Masa Aktif Sebelumnya</p>
+                                <div class="flex items-center gap-3 mt-1 text-sm">
+                                    <span class="text-gray-600">{{ $aktivasiTerakhir->tgl_aktivasi->format('d M Y') }}</span>
+                                    <span class="text-gray-400">—</span>
+                                    <span class="font-semibold text-gray-800">{{ $aktivasiTerakhir->masa_berlaku->format('d M Y') }}</span>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+
+                        <!-- Form Input Tanggal -->
+                        <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-4 border border-green-100 shadow-sm">
+                            @csrf
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai Aktif <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tgl_mulai" value="{{ $defaultTglMulai }}" required class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-sm p-2.5">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berlaku Sampai <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tgl_selesai" required class="w-full border border-gray-300 rounded-lg shadow-sm focus:ring-green-500 focus:border-green-500 text-sm p-2.5">
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </form>
+
+                    <!-- Kanan: Tombol Polos -->
+                    <button type="submit" 
+                            form="formAktivasi"
+                            class="js-confirm-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition duration-200 text-sm flex-shrink-0 h-fit"
+                            data-confirm-message="Apakah Anda yakin ingin mengaktifkan perpanjangan domain ini sesuai tanggal yang diinput?">
+                        Aktivasi Domain
+                    </button>
+
+                </div>
             </div>
 
-            @elseif($faktur && $faktur->status == 'sudah_bayar' && $finalStatus == 'aktif')
+            @elseif($faktur && $faktur->status == 'sudah_bayar' && $finalStatus == 'aktif' && !$menungguFakturBaru)
             <div class="bg-green-50 p-4 rounded-xl border border-green-200">
                 <p class="text-green-700 font-semibold">
                     <i class="fas fa-check-double mr-1"></i> Selesai! Masa berlaku domain berhasil diakumulasikan dan saat ini berstatus Aktif.

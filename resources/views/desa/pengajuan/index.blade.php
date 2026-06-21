@@ -6,7 +6,7 @@
 
 <div class="bg-white rounded-xl shadow p-10">
     <div class="flex justify-center mb-12">
-</div>
+    </div>
 
     <h2 class="text-xl font-semibold mb-10 text-gray-700">
         Pendaftaran Domain
@@ -17,7 +17,7 @@
         <div class="flex items-center w-full max-w-4xl">
             <div class="flex flex-col items-center">
                 <div class="w-10 h-10 bg-red-700 text-white rounded-full flex items-center justify-center font-semibold">1</div>
-                <span class="text-sm mt-2">Cari Nama Domain</span>
+                <span class="text-sm mt-2">Input Nama Domain</span>
             </div>
             <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
             <div class="flex flex-col items-center">
@@ -41,47 +41,64 @@
     <div class="flex justify-center">
         <div class="w-full max-w-md">
             <h3 class="font-semibold text-gray-700 mb-5 text-center">
-                Cari Nama Domain Baru Anda di Bawah Ini
+                Inputkan Nama Domain Baru Anda
             </h3>
 
-            <div class="text-center mb-6">
-                <a href="https://domain.go.id/" target="_blank" class="text-red-700 hover:underline font-medium text-sm">https://domain.go.id/</a>
-            </div>
-
-            <p class="text-center text-gray-600 text-sm mb-5">Kemudian Inputkan Nama Domain Baru Anda di Sini</p>
-
-            <div class="space-y-3">
-                <!-- Input dan Suffix -->
-                <div class="flex border rounded-lg overflow-hidden">
-                    <input
-                        type="text"
-                        id="domain-input"
-                        placeholder="Gunakan minimal 3 huruf atau angka"
-                            value="{{ old('nama_domain', session('pengajuan.nama_domain')) }}" 
-                        class="flex-1 px-4 py-3 focus:outline-none"
-                        autocomplete="off"
-                    />
-                    <span class="px-4 flex items-center bg-gray-100 text-gray-600">
-                        .desa.id
-                    </span>
-                </div>
-
-                <!-- Tombol Cari -->
-                <button id="btn-cari" type="button" class="w-36 bg-red-800 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 mx-auto block">
-    Cari
-</button>
-            </div>
-
-            <!-- Area untuk pesan status dan tombol Daftar -->
-            <div id="domain-result" class="mt-6 hidden">
-                <!-- Kartu Abu-Abu -->
-                <div class="bg-gray-100 p-4 rounded-lg border border-gray-200 flex justify-between items-center">
-                    <!-- Teks Status -->
-                    <p id="domain-status" class="text-sm font-medium"></p>
-                    <!-- Tombol Daftar -->
-                    <a id="btn-daftar" href="{{ url('/desa/pengajuan') }}" class="inline-block px-8 py-2 rounded-lg text-white font-medium transition-colors duration-200">
-                        Daftar
+            <!-- Informasi Cek Domain -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-blue-800 mb-2">
+                    <span class="font-semibold">ℹ️ Informasi:</span> Sebelum mendaftar, pastikan untuk mengecek nama domain yang akan anda daftarkan di:
+                </p>
+                <div class="flex flex-col gap-1 ml-5">
+                    <a href="https://domain.go.id/" target="_blank" class="text-red-700 hover:underline font-medium text-sm inline-flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        https://domain.go.id/
                     </a>
+                    <a href="https://pandi.id/" target="_blank" class="text-red-700 hover:underline font-medium text-sm inline-flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        https://pandi.id/
+                    </a>
+                </div>
+            </div>
+
+            <p class="text-center text-gray-600 text-sm mb-5">Masukkan nama domain yang ingin didaftarkan (Minimal 3 huruf)</p>
+
+            <form id="form-domain" action="{{ route('desa.pengajuan.informasi') }}" method="GET">
+                <div class="space-y-3">
+                    <!-- Input dan Suffix -->
+                    <div class="flex border rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-red-700 focus-within:border-transparent">
+                        <input
+                            type="text"
+                            id="domain-input"
+                            name="nama_domain"
+                            placeholder="Gunakan minimal 3 huruf atau angka"
+                            value="{{ old('nama_domain', session('pengajuan.nama_domain')) }}" 
+                            class="flex-1 px-4 py-3 focus:outline-none"
+                            autocomplete="off"
+                            required
+                            minlength="3"
+                        />
+                        <span class="px-4 flex items-center bg-gray-100 text-gray-600 font-medium">
+                            .desa.id
+                        </span>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="error-message" class="hidden text-red-600 text-sm text-center bg-red-50 p-2 rounded-lg"></div>
+
+                    <!-- Tombol Daftar -->
+                    <button type="submit" id="btn-daftar" class="w-full bg-red-800 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Daftar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Preview Domain -->
+            <div id="domain-preview" class="mt-6 hidden">
+                <div class="bg-gray-100 p-4 rounded-lg border border-gray-200 text-center">
+                    <p class="text-sm text-gray-500">Domain yang akan didaftarkan:</p>
+                    <p id="preview-text" class="text-lg font-semibold text-red-700 mt-1"></p>
                 </div>
             </div>
         </div>
@@ -92,20 +109,19 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const domainInput = document.getElementById('domain-input');
-    const btnCari = document.getElementById('btn-cari');
-    const domainResult = document.getElementById('domain-result');
-    const domainStatus = document.getElementById('domain-status');
-    const btnDaftar = document.getElementById('btn-daftar');
+    const formDomain = document.getElementById('form-domain');
+    const errorMessage = document.getElementById('error-message');
+    const domainPreview = document.getElementById('domain-preview');
+    const previewText = document.getElementById('preview-text');
 
+    // Hanya izinkan huruf dan angka
     domainInput.addEventListener('keydown', function(event) {
         const key = event.key;
         const regex = /^[a-zA-Z0-9]$/;
         const allowedSpecialKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 
         if (key === 'Enter') {
-            event.preventDefault();
-            checkDomain();
-            return;
+            return; // Biar form submit
         }
 
         if (regex.test(key) || allowedSpecialKeys.includes(key)) {
@@ -115,59 +131,43 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
     });
 
+    // Real-time preview
+    domainInput.addEventListener('input', function() {
+        const domain = this.value.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+        
+        if (domain.length >= 3) {
+            domainPreview.classList.remove('hidden');
+            previewText.textContent = domain + '.desa.id';
+            errorMessage.classList.add('hidden');
+        } else {
+            domainPreview.classList.add('hidden');
+        }
+    });
 
-    const checkDomain = function() {
-        const domain = domainInput.value.toLowerCase().replace(/\s+/g, '');
+    // Validasi sebelum submit
+    formDomain.addEventListener('submit', function(event) {
+        const domain = domainInput.value.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+        
+        // Update input value dengan cleaned value
+        domainInput.value = domain;
 
         if (domain.length < 3) {
-            domainResult.classList.add('hidden');
+            event.preventDefault();
+            errorMessage.textContent = 'Nama domain minimal 3 karakter (huruf/angka)';
+            errorMessage.classList.remove('hidden');
             return;
         }
 
-        btnCari.disabled = true;
-        btnCari.textContent = 'Memeriksa...';
+        // Tampilkan konfirmasi
+        const konfirmasi = confirm(`Anda akan mendaftarkan domain:\n\n${domain}.desa.id\n\nPastikan domain sudah Anda cek ketersediaannya di domain.go.id atau pandi.id\n\nLanjutkan?`);
+        
+        if (!konfirmasi) {
+            event.preventDefault();
+        }
+    });
 
-        fetch('{{ route("desa.api.check.domain") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ nama_domain: domain })
-        })
-        .then(response => response.json())
-        .then(data => {
-            btnCari.disabled = false;
-            btnCari.textContent = 'Cari';
-
-            domainResult.classList.remove('hidden');
-            if (data.available) {
-                domainStatus.textContent = `${domain}.desa.id Tersedia`;
-                domainStatus.className = 'text-sm font-medium text-blue-600';
-                
-                btnDaftar.textContent = 'Daftar';
-                btnDaftar.href = `/desa/pengajuan/informasi?domain=${domain}`;
-                btnDaftar.className = 'inline-block px-8 py-2 rounded-lg text-white font-medium bg-red-700 hover:bg-red-600 transition-colors duration-200';
-                btnDaftar.removeAttribute('disabled');
-
-            } else {
-                domainStatus.textContent = `${domain}.desa.id Tidak Tersedia`;
-                domainStatus.className = 'text-sm font-medium text-red-600';
-
-                btnDaftar.textContent = 'Tidak Tersedia';
-                btnDaftar.href = '#';
-                btnDaftar.className = 'inline-block px-8 py-2 rounded-lg text-white font-medium bg-gray-400 cursor-not-allowed';
-                btnDaftar.setAttribute('disabled', 'disabled');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            btnCari.disabled = false;
-            btnCari.textContent = 'Cari';
-        });
-    };
-
-    btnCari.addEventListener('click', checkDomain);
+    // Fokus ke input saat halaman load
+    domainInput.focus();
 });
 </script>
 @endpush

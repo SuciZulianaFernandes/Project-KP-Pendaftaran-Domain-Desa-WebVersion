@@ -25,6 +25,7 @@ class Faktur extends Model
         'expired_at',
         'catatan',
         'bukti_pembayaran_path',
+        'durasi_tahun'
     ];
 
     protected $casts = [

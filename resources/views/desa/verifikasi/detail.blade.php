@@ -30,48 +30,30 @@
     // PRIORITAS STATUS
     // =========================
 
-    // 1. Jika status pengajuan menunggu aktivasi
     if ($pengajuan->status_pengajuan == 'menunggu_aktivasi') {
-
         $finalStatus = 'menunggu_aktivasi';
-
     }
-    // 2. Jika status aktif → cek aktivasi terbaru
     elseif ($pengajuan->status_pengajuan == 'aktif') {
-
         if ($latestAktivasi) {
             $finalStatus = $latestAktivasi->status_akt;
         } else {
             $finalStatus = 'aktif';
         }
-
     }
-    // 3. Jika ada faktur belum bayar
     elseif ($hasUnpaidInvoice) {
-
-        // Tetap diproses
         $finalStatus = 'diproses';
-
     }
-    // 4. Jika ada permintaan perpanjangan & admin belum kirim faktur
     elseif ($perpanjanganMsg) {
-
         $fakturPerpanjangan = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'perpanjangan')
             ->where('created_at', '>', $perpanjanganMsg->created_at)
             ->exists();
 
         if (!$fakturPerpanjangan) {
-
-            // Tetap diproses
             $finalStatus = 'diproses';
-
         } else {
-
-            // Faktur sudah ada → tetap diproses
             $finalStatus = 'diproses';
         }
-
     }
 
     // Konfirmasi pembayaran
@@ -82,6 +64,16 @@
         ->first();
 
     $hasConfirmedPayment = $konfirmasiMsg && $konfirmasiMsg->is_read == 1;
+
+    // Mapping Label Dokumen
+    $labelDokumen = [
+        'surat_permohonan' => 'Surat Permohonan Domain Desa',
+        'surat_kuasa' => 'Surat Kuasa dari Desa',
+        'perda_pembentukan_desa' => 'Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa',
+        // Legacy (jika ada data lama)
+        'surat_penunjukan_pejabat' => 'Surat Penunjukan Pejabat',
+        'ktp_asn_pejabat' => 'Kartu Pegawai / KTP ASN'
+    ];
 
 @endphp
 
@@ -94,9 +86,7 @@
         <div class="bg-white rounded-xl shadow border overflow-hidden">
 
             <div class="px-5 py-4 border-b bg-gray-50">
-                <h3 class="font-semibold text-gray-800">
-                    Status Domain
-                </h3>
+                <h3 class="font-semibold text-gray-800">Status Domain</h3>
             </div>
 
             <div class="p-5 text-sm">
@@ -107,7 +97,6 @@
                 </p>
 
                 <p class="flex items-center gap-2">
-
                     <span class="w-2 h-2 rounded-full
                         @if($finalStatus == 'ditinjau') bg-yellow-500
                         @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
@@ -132,9 +121,7 @@
                         @elseif($finalStatus == 'nonaktif') text-gray-500
                         @else text-gray-500
                         @endif">
-
                         {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
-
                     </span>
                 </p>
 
@@ -162,9 +149,7 @@
             </div>
 
             <!-- INFORMASI INSTANSI -->
-            <h3 class="font-semibold mb-4">
-                Informasi Instansi
-            </h3>
+            <h3 class="font-semibold mb-4">Informasi Instansi</h3>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-3 text-sm mb-6">
 
@@ -236,35 +221,65 @@
 
             </div>
 
-            <!-- DOKUMEN -->
-            <h3 class="font-semibold mb-4">
-                Dokumen Persyaratan Domain
-            </h3>
+            {{-- ========================================== --}}
+            {{-- CATATAN ADMIN (MUNCUL JIKA PERLU PERBAIKAN) --}}
+            {{-- ========================================== --}}
+            @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && !empty($pengajuan->catatan_umum))
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="bg-red-100 p-1.5 rounded-full text-red-600 mt-0.5">
+                        <i class="fas fa-exclamation-triangle text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-red-800 text-sm mb-1">Catatan dari Admin:</p>
+                        <p class="text-red-700 text-sm whitespace-pre-line leading-relaxed">{{ $pengajuan->catatan_umum }}</p>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- DOKUMEN PERSYARATAN -->
+            <h3 class="font-semibold mb-4">Dokumen Persyaratan Domain</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
                 
                 @foreach($pengajuan->dokumenPersyaratan as $dok)
                     
-                    <div>
-                        <div class="flex justify-between border-b pb-2 gap-3">
-                            <span class="text-gray-700">{{ $dok->jenis_dokumen }}</span>
+                    <div class="border rounded-lg p-4 bg-white hover:shadow-sm transition flex flex-col gap-3">
+                        
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="flex flex-col gap-1">
+                                {{-- LABEL DOKUMEN --}}
+                                <span class="text-gray-700 font-medium">{{ $labelDokumen[$dok->jenis_dokumen] ?? $dok->jenis_dokumen }}</span>
+                                
+                                {{-- BADGE BARU DIPERBARUI --}}
+                                @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && $dok->updated_at > $pengajuan->updated_at)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 w-fit">
+                                        <svg class="mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
+                                            <circle cx="4" cy="4" r="3" />
+                                        </svg>
+                                        Baru Diperbarui
+                                    </span>
+                                @endif
+                            </div>
 
                             <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
                             target="_blank"
-                            class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline">
-                                Lihat Dokumen
+                            class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline flex items-center gap-1">
+                                <i class="fas fa-eye"></i> Lihat
                             </a>
                         </div>
 
+                        {{-- FORM UPLOAD ULANG DENGAN ALERT KONFIRMASI --}}
                         @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
-
+                        
                         <form
-    action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
-    method="POST"
-    enctype="multipart/form-data"
-    class="mt-2 space-y-2"
->
-
+                            action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
+                            method="POST"
+                            enctype="multipart/form-data"
+                            class="mt-auto pt-3 border-t border-gray-100 space-y-2"
+                            onsubmit="return confirm('Yakin ingin mengganti dokumen ini dengan file baru?')"
+                        >
                             @csrf
                             @method('PUT')
 
@@ -272,18 +287,17 @@
                                 type="file"
                                 name="file"
                                 required
-                                class="w-full text-xs border rounded p-1 bg-gray-50"
+                                accept="application/pdf"
+                                class="w-full text-xs border border-dashed border-gray-300 rounded p-1.5 bg-gray-50 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800 cursor-pointer"
                             >
 
                             <div class="flex justify-end">
-
                                 <button
                                     type="submit"
-                                    class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded"
+                                    class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1"
                                 >
-                                    Upload
+                                    <i class="fas fa-upload text-[10px]"></i> Upload Ulang
                                 </button>
-
                             </div>
 
                         </form>
@@ -325,32 +339,21 @@
                             <div class="space-y-2 text-sm">
 
                                 <div>
-                                    <p class="text-gray-500 text-xs">
-                                        Nomor Invoice
-                                    </p>
-
-                                    <p class="font-semibold text-gray-800">
-                                        {{ $fakturItem->no_invoice }}
-                                    </p>
+                                    <p class="text-gray-500 text-xs">Nomor Invoice</p>
+                                    <p class="font-semibold text-gray-800">{{ $fakturItem->no_invoice }}</p>
                                 </div>
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
 
                                     <div>
-                                        <p class="text-gray-500 text-xs">
-                                            Total Tagihan
-                                        </p>
-
+                                        <p class="text-gray-500 text-xs">Total Tagihan</p>
                                         <p class="font-medium text-gray-800">
                                             Rp {{ number_format($fakturItem->total,0,',','.') }}
                                         </p>
                                     </div>
 
                                     <div>
-                                        <p class="text-gray-500 text-xs">
-                                            Status Pembayaran
-                                        </p>
-
+                                        <p class="text-gray-500 text-xs">Status Pembayaran</p>
                                         <p class="font-semibold
                                             @if($fakturItem->status == 'belum_bayar') text-yellow-600
                                             @elseif($fakturItem->status == 'sudah_bayar') text-green-600
@@ -371,7 +374,6 @@
                                 class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
 
                                     <i class="fas fa-eye"></i>
-
                                     Detail Faktur
                                 </a>
 
@@ -395,19 +397,16 @@
             @if($finalStatus == 'diproses')
 
                 @php
-                    // Cek apakah desa sudah pernah mengkonfirmasi pembayaran (mengirim pesan ke admin)
                     $sudahKonfirmasiBayar = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
                         ->where('role_tujuan', 'admin')
                         ->where('judul', 'Konfirmasi Pembayaran Disetujui')
                         ->exists();
                     
-                    // Ambil faktur belum bayar terbaru (jika ada)
                     $fakturDesa = $pengajuan->faktur
                         ->where('status', 'belum_bayar')
                         ->sortByDesc('created_at')
                         ->first();
 
-                    // Cek apakah ada faktur perpanjangan yang belum bayar
                     $fakturPerpanjanganAda = false;
 
                     if ($perpanjanganMsg) {
@@ -418,23 +417,44 @@
                     }
                 @endphp
 
-                {{-- SCENARIO 1: BELUM DIKLIK (Belum ada konfirmasi dari desa) --}}
-                @if(!$sudahKonfirmasiBayar && !$fakturPerpanjanganAda)
+                                @if(!$sudahKonfirmasiBayar && !$fakturPerpanjanganAda)
 
-                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-                        <p class="text-blue-800 font-semibold mb-3">
-                            Pengajuan sedang diproses. Apakah Anda siap melakukan pembayaran?
+                    <div class="bg-blue-50 p-5 rounded border border-blue-200 mt-4">
+                        <p class="text-blue-800 font-semibold mb-4">
+                            Pengajuan sedang diproses. Pilih masa berlaku perpanjangan untuk meminta faktur.
                         </p>
-                        <form action="{{ route('desa.konfirmasi.pembayaran', $pengajuan->id_pengajuan) }}" method="POST">
+                        
+                        <!-- GANTI ROUTE MENJADI desa.ajukan.faktur -->
+                        <form action="{{ route('desa.ajukan.faktur', $pengajuan->id_pengajuan) }}" method="POST" id="formKonfirmasi">
                             @csrf
-                            <button class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center"
-                                    data-confirm-message="Apakah Anda yakin ingin mengonfirmasi dan meminta faktur?">
-                                <i class="fas fa-paper-plane mr-2"></i> Ya, Kirimkan Faktur
-                            </button>
+                            
+                            <div class="bg-white p-4 rounded-lg border border-blue-100 mb-4">
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Masa Berlaku Domain <span class="text-red-500">*</span></label>
+                                <select name="durasi_tahun" id="durasi_tahun" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm">
+                                    <option value="" disabled selected>-- Pilih Tahun --</option>
+                                    <option value="1">1 Tahun (Rp 50.000)</option>
+                                    <option value="2">2 Tahun (Rp 100.000)</option>
+                                    <option value="3">3 Tahun (Rp 150.000)</option>
+                                    <option value="4">4 Tahun (Rp 200.000)</option>
+                                    <option value="5">5 Tahun (Rp 250.000)</option>
+                                </select>
+
+                                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                                    <strong><i class="fas fa-info-circle mr-1"></i>Disclaimer:</strong> 
+                                    Masa berlaku akan dihitung oleh admin mulai dari tanggal domain diaktifkan. Pastikan pilihan tahun sudah sesuai dengan kebutuhan desa.
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end">
+                                <button type="submit" 
+                                        class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center text-sm"
+                                        data-confirm-message="Yakin ingin mengajukan permintaan faktur perpanjangan?">
+                                    <i class="fas fa-paper-plane mr-2"></i> Ya, Kirimkan Faktur
+                                </button>
+                            </div>
                         </form>
                     </div>
 
-                {{-- SCENARIO 2: SUDAH DIKLIK / ADA FAKTUR --}}
                 @else
 
                     <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
@@ -504,8 +524,9 @@
             @elseif($finalStatus == 'perlu_perbaikan')
 
                 <div class="bg-red-50 p-4 rounded border border-red-200 mt-4">
-                    <p class="text-red-700 font-semibold">
-                        Dokumen perlu diperbaiki sesuai catatan admin.
+                    <p class="text-red-700 font-semibold flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Dokumen perlu diperbaiki sesuai catatan admin di atas.
                     </p>
                 </div>
 

@@ -218,9 +218,9 @@
                     <span class="v">{{ $faktur->no_invoice }}</span>
                 </div>
 
-                <div class="show-row">
+                 <div class="show-row">
                     <span class="k">Masa Aktif</span>
-                    <span class="v">1 Tahun</span>
+                    <span class="v">{{ $faktur->durasi_tahun ?? 1 }} Tahun</span>
                 </div>
 
                 <div class="show-row">
@@ -279,13 +279,21 @@
             </div>
             @endif
 
-            <!-- BUKTI PEMBAYARAN -->
+                        <!-- BUKTI PEMBAYARAN -->
             @if($faktur->status == 'sudah_bayar' && $faktur->bukti_pembayaran_path)
             <div class="show-bukti">
                 <div class="lbl">Bukti Pembayaran</div>
 
                 <img src="{{ asset('storage/' . $faktur->bukti_pembayaran_path) }}"
-                     alt="Bukti Pembayaran">
+                     alt="Bukti Pembayaran" 
+                     style="max-width: 100%; max-height: 400px; border-radius: 12px; border: 1px solid #e2e8f0; object-fit: contain; margin-bottom: 15px;">
+
+                <!-- TOMBOL DOWNLOAD FOTO -->
+                <a href="{{ asset('storage/' . $faktur->bukti_pembayaran_path) }}" 
+                   download 
+                   class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition shadow-sm">
+                    <i class="fas fa-download"></i> Download Bukti Pembayaran 
+                </a>
             </div>
             @endif
 

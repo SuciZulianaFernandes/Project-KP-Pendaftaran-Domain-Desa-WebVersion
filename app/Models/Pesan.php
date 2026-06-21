@@ -15,7 +15,8 @@ class Pesan extends Model
         'role_tujuan',
         'judul',
         'isi',
-        'is_read'
+        'is_read',
+        'durasi_tahun'
     ];
 
     public function pengajuan()
