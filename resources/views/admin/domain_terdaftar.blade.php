@@ -1,4 +1,5 @@
 @extends('layouts.admin')
+
 @section('title', 'Daftar Domain Terdaftar')
 
 @section('content')
@@ -166,7 +167,6 @@
 
                         <td>
                             <span class="inv-date">
-                                {{-- PERUBAHAN: Mengambil dari kolom 'desa_kelurahan' bukan 'nama_desa' --}}
                                 {{ $row->desa_kelurahan }}
                             </span>
                         </td>
@@ -215,7 +215,7 @@
                         <td>
                             @if($row->aktivasi)
 
-                                <span class="inv-date {{ $row->aktivasi->status_akt == 'kadaluarsa' ? 'text-red-600 font-bold' : '' }}">
+                                <span class="inv-date {{ $row->aktivasi->status_akt == 'kadaluarsa' || $row->aktivasi->status_akt == 'nonaktif' ? 'text-red-600 font-bold' : '' }}">
 
                                     {{ $row->aktivasi->masa_berlaku->format('d/m/Y') }}
 
@@ -243,16 +243,17 @@
                                     <span class="d"></span>Kadaluarsa
                                 </span>
 
+                            @elseif($row->aktivasi->status_akt == 'nonaktif')
+
+                                <span class="inv-badge" style="background:#f3f4f6; color:#374151; border:1px solid #9ca3af">
+                                    <span class="d" style="background:#6b7280"></span>Nonaktif
+                                </span>
+
                             @else
 
-                                <span class="inv-badge"
-                                    style="background:#f1f5f9;color:#475569">
-
-                                    <span class="d"
-                                        style="background:#94a3b8"></span>
-
+                                <span class="inv-badge" style="background:#f1f5f9;color:#475569">
+                                    <span class="d" style="background:#94a3b8"></span>
                                     {{ ucfirst($row->aktivasi->status_akt) }}
-
                                 </span>
 
                             @endif

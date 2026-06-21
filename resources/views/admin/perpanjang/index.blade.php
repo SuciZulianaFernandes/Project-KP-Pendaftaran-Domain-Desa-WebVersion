@@ -28,18 +28,17 @@
             </div>
         @endif
 
-        {{-- Form Search & Filter Global (Tanpa Tombol Reset) --}}
-{{-- Cari bagian ini di Blade dan ubah route-nya --}}
-<form action="{{ route('admin.perpanjang.list') }}" method="GET" style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">            <div style="position:relative; flex:1; min-width: 250px;">
+        {{-- Form Search & Filter Global --}}
+        <form action="{{ route('admin.perpanjang.list') }}" method="GET" style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="position:relative; flex:1; min-width: 250px;">
                 <input type="text" name="search" placeholder="Cari Nama Domain..." value="{{ request('search') }}"
                     style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
                 <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
             </div>
             
-            <button type="submit"
-        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-        Cari
-    </button>
+            <button type="submit" style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+                Cari
+            </button>
 
             <div style="width: 180px;">
                 <select name="status" onchange="this.form.submit()" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
@@ -65,128 +64,128 @@
                     </tr>
                 </thead>
                 <tbody>
-    {{-- Inisialisasi nomor awal berdasarkan halaman pagination Laravel --}}
-    @php
-        $nomorUrut = $data->firstItem();
-    @endphp
+                    @php
+                        $nomorUrut = $data->firstItem();
+                    @endphp
 
-    @forelse($data as $indexPerpanjang => $row)
-    @if($row['type'] == 'belum_dibuat')
-        <tr data-status="belum_dibuat" style="animation-delay:{{$indexPerpanjang*0.05}}s">
-            <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
-            <td style="font-weight:500;color:#334155">{{ $row['pengajuan']->nama_domain }}.desa.id</td>
-            
-            <td style="white-space:nowrap">
-                <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
-                    <span class="d" style="background:#3b82f6"></span>Diproses
-                </span>
-            </td>
+                    @forelse($data as $indexPerpanjang => $row)
+                        @if($row['type'] == 'belum_dibuat')
+                            <tr data-status="belum_dibuat" style="animation-delay:{{$indexPerpanjang*0.05}}s">
+                                <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
+                                <td style="font-weight:500;color:#334155">{{ $row['pengajuan']->nama_domain }}.desa.id</td>
+                                
+                                <td style="white-space:nowrap">
+                                    <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
+                                        <span class="d" style="background:#3b82f6"></span>Diproses
+                                    </span>
+                                </td>
 
-            <td style="white-space:nowrap">
-                <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-                    Perpanjangan
-                </span>
-            </td>
+                                <td style="white-space:nowrap">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                                        Perpanjangan
+                                    </span>
+                                </td>
 
-            <td><span class="inv-date">-</span></td>
+                                <td><span class="inv-date">-</span></td>
 
-            <td style="white-space:nowrap">
-                <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                    <span class="d" style="background:#94a3b8"></span>Belum Dibuat
-                </span>
-            </td>
+                                <td style="white-space:nowrap">
+                                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                        <span class="d" style="background:#94a3b8"></span>Belum Dibuat
+                                    </span>
+                                </td>
 
-            <td style="text-align:center">
-                <div style="display:flex;justify-content:center;gap:8px;">
-                    <a href="{{ route('admin.perpanjang.show', $row['pengajuan']->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
-                        <i class="fas fa-eye"></i> Detail
-                    </a>
-                </div>
-            </td>
-        </tr>
-    @elseif($row['type'] == 'faktur')
-        @php
-            $fakturItem = $row['faktur'];
-            $pengajuanRow = $row['pengajuan'];
-            $statusAkhir = $pengajuanRow->status_pengajuan;
-            if ($fakturItem->status == 'belum_bayar') {
-                $statusAkhir = 'diproses';
-            } elseif ($statusAkhir == 'aktif' && $pengajuanRow->aktivasi) {
-                $statusAkhir = $pengajuanRow->aktivasi->status_akt;
-            }
-        @endphp
+                                <td style="text-align:center">
+                                    <div style="display:flex;justify-content:center;gap:8px;">
+                                        <a href="{{ route('admin.perpanjang.show', $row['pengajuan']->id_pengajuan) }}" class="inv-btn-d" title="Lihat">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        
+                        @elseif($row['type'] == 'faktur')
+                            @php
+                                $fakturItem = $row['faktur'];
+                                $pengajuanRow = $row['pengajuan'];
+                                $statusAkhir = $pengajuanRow->status_pengajuan;
+                                if ($fakturItem->status == 'belum_bayar') {
+                                    $statusAkhir = 'diproses';
+                                } elseif ($statusAkhir == 'aktif' && $pengajuanRow->aktivasi) {
+                                    $statusAkhir = $pengajuanRow->aktivasi->status_akt;
+                                }
+                            @endphp
 
-        <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$indexPerpanjang*0.05}}s">
-            <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
-            <td style="font-weight:500;color:#334155">{{ $pengajuanRow->nama_domain }}.desa.id</td>
-            
-            <td style="white-space:nowrap">
-                @if($statusAkhir == 'menunggu_aktivasi')
-                    <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
-                        <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
-                    </span>
-                @elseif($statusAkhir == 'diproses')
-                    <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
-                        <span class="d" style="background:#3b82f6"></span>Diproses
-                    </span>
-                @elseif($statusAkhir == 'aktif')
-                    <span class="inv-badge badge-green">
-                        <span class="d"></span>Aktif
-                    </span>
-                @elseif($statusAkhir == 'kadaluarsa')
-                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
-                    </span>
-                @elseif($statusAkhir == 'nonaktif')
-                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                        <span class="d" style="background:#94a3b8"></span>Nonaktif
-                    </span>
-                @else
-                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                        <span class="d" style="background:#94a3b8"></span>{{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
-                    </span>
-                @endif
-            </td>
+                            <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$indexPerpanjang*0.05}}s">
+                                <td>{{ ($data->currentPage() - 1) * $data->perPage() + $loop->iteration }}</td>
+                                <td style="font-weight:500;color:#334155">{{ $pengajuanRow->nama_domain }}.desa.id</td>
+                                
+                                <td style="white-space:nowrap">
+                                    @if($statusAkhir == 'menunggu_aktivasi')
+                                        <span class="inv-badge" style="background:#ffedd5; color:#9a3412; border:1px solid #fed7aa">
+                                            <span class="d" style="background:#f97316"></span>Menunggu Aktivasi
+                                        </span>
+                                    @elseif($statusAkhir == 'diproses')
+                                        <span class="inv-badge" style="background:#dbeafe; color:#1e40af; border:1px solid #93c5fd">
+                                            <span class="d" style="background:#3b82f6"></span>Diproses
+                                        </span>
+                                    @elseif($statusAkhir == 'aktif')
+                                        <span class="inv-badge badge-green">
+                                            <span class="d"></span>Aktif
+                                        </span>
+                                    @elseif($statusAkhir == 'kadaluarsa')
+                                        <span class="inv-badge badge-red">
+                                            <span class="d"></span>Kadaluarsa
+                                        </span>
+                                    @elseif($statusAkhir == 'nonaktif')
+                                        <span class="inv-badge" style="background:#f3f4f6; color:#374151; border:1px solid #9ca3af">
+                                            <span class="d" style="background:#6b7280"></span>Nonaktif
+                                        </span>
+                                    @else
+                                        <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                            <span class="d" style="background:#94a3b8"></span>{{ ucfirst(str_replace('_', ' ', $statusAkhir)) }}
+                                        </span>
+                                    @endif
+                                </td>
 
-            <td style="white-space:nowrap">
-                <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-                    Perpanjangan
-                </span>
-            </td>
+                                <td style="white-space:nowrap">
+                                    <span class="px-2 py-1 rounded text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+                                        Perpanjangan
+                                    </span>
+                                </td>
 
-            <td>
-                <span class="inv-date">{{ $fakturItem->created_at->format('d/m/Y') }}</span>
-            </td>
+                                <td>
+                                    <span class="inv-date">{{ $fakturItem->created_at->format('d/m/Y') }}</span>
+                                </td>
 
-            <td style="white-space:nowrap">
-                @if($fakturItem->status == 'belum_bayar')
-                    <span class="inv-badge badge-red">
-                        <span class="d"></span>Belum Bayar
-                    </span>
-                @elseif($fakturItem->status == 'sudah_bayar')
-                    <span class="inv-badge badge-green">
-                        <span class="d"></span>Sudah Bayar
-                    </span>
-                @else
-                    <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
-                        <span class="d" style="background:#94a3b8"></span>Kadaluarsa
-                    </span>
-                @endif
-            </td>
+                                <td style="white-space:nowrap">
+                                    @if($fakturItem->status == 'belum_bayar')
+                                        <span class="inv-badge badge-red">
+                                            <span class="d"></span>Belum Bayar
+                                        </span>
+                                    @elseif($fakturItem->status == 'sudah_bayar')
+                                        <span class="inv-badge badge-green">
+                                            <span class="d"></span>Sudah Bayar
+                                        </span>
+                                    @else
+                                        <span class="inv-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1">
+                                            <span class="d" style="background:#94a3b8"></span>Kadaluarsa
+                                        </span>
+                                    @endif
+                                </td>
 
-            <td style="text-align:center">
-                <div style="display:flex;justify-content:center;gap:8px;">
-                    <a href="{{ route('admin.perpanjang.show', $fakturItem->id) }}" class="inv-btn-d" title="Lihat">
-                        <i class="fas fa-eye"></i> Detail
-                    </a>
-                </div>
-            </td>
-        </tr>
-    @endif
-@empty
-    <tr class="inv-empty"><td colspan="7" style="text-align: center; padding: 20px;"><i class="fas fa-inbox"></i> Belum ada pengajuan perpanjangan.</td></tr>
-@endforelse
-</tbody>
+                                <td style="text-align:center">
+                                    <div style="display:flex;justify-content:center;gap:8px;">
+                                        <a href="{{ route('admin.perpanjang.show', $fakturItem->id) }}" class="inv-btn-d" title="Lihat">
+                                            <i class="fas fa-eye"></i> Detail
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
+                    @empty
+                        <tr class="inv-empty"><td colspan="7" style="text-align: center; padding: 20px;"><i class="fas fa-inbox"></i> Belum ada pengajuan perpanjangan.</td></tr>
+                    @endforelse
+                </tbody>
             </table>
         </div>
 
@@ -214,7 +213,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded',function(){
-    // Logic Sorting (Client Side) tetap dipertahankan
+    // Logic Sorting (Client Side)
     const sortHeaders = document.querySelectorAll('th.sortable');
     sortHeaders.forEach(header => {
         header.style.cursor = 'pointer';

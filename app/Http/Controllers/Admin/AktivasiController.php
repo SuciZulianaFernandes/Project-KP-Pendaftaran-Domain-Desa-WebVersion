@@ -85,10 +85,13 @@ class AktivasiController extends Controller
 
     public function adminDaftarAktif(Request $request)
     {
-        // Update kadaluarsa otomatis
-        Aktivasi::where('masa_berlaku', '<', now())
-            ->where('status_akt', 'aktif')
-            ->update(['status_akt' => 'kadaluarsa']);
+        // Update nonaktif otomatis 
+    // ⚠️ TESTING: subMinutes(2) = 2 menit. UNTUK PRODUCTION: GANTI JADI subYears(2)
+    $batasWaktuNonaktif = now()->subMinutes(2); 
+
+    Aktivasi::where('masa_berlaku', '<', $batasWaktuNonaktif)
+    ->where('status_akt', 'kadaluarsa')
+    ->update(['status_akt' => 'nonaktif']);
 
         $statusFilter = $request->get('status', 'all');
         $kecamatanFilter = $request->get('kecamatan');

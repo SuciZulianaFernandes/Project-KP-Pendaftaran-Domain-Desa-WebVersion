@@ -41,9 +41,7 @@
                 <select id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
                     <option value="">Semua Status</option>
                     <option value="kadaluarsa">Kadaluarsa</option>
-                    <!-- <option value="faktur_tersedia">Faktur Tersedia</option>
-                    <option value="menunggu_faktur">Menunggu Faktur</option>
-                    <option value="siap_diperpanjang">Siap Diperpanjang</option> -->
+                    <option value="nonaktif">Nonaktif</option>
                     <option value="aktif">Aktif</option>
                 </select>
             </div>
@@ -62,164 +60,149 @@
                     </tr>
                 </thead>
                 <tbody>
-                                            @php
-                            // Inisialisasi variabel counter di luar loop
-                            $numDaftarDomain = 0;
+                    @php
+                        // Inisialisasi variabel counter di luar loop
+                        $numDaftarDomain = 0;
+                    @endphp
+
+                    @forelse($data as $row)
+                        @php
+                            // --- FILTER STATUS: HANYA TAMPILKAN AKTIF, KADALUARSA, NONAKTIF ---
+                            $allowedStatuses = ['aktif', 'kadaluarsa', 'nonaktif']; 
+                            if (!in_array($row->status_pengajuan, $allowedStatuses)) {
+                                continue; 
+                            }
+                            // --------------------------------------
+
+                            $numDaftarDomain++;
+                            $nomorTampil = method_exists($data, 'firstItem') 
+                                            ? $data->firstItem() + ($numDaftarDomain - 1) 
+                                            : $numDaftarDomain;
+
+                            $aktivasi = $row->aktivasi_terakhir;
+                            
+                            // Cek status kadaluarsa
+                            $kadaluarsa = ($aktivasi && $aktivasi->masa_berlaku) ? $aktivasi->is_kadaluarsa : false;
+                            
+                            // Cek status nonaktif
+                            $isNonaktif = ($aktivasi && $aktivasi->status_akt === 'nonaktif') ? true : false;
+                            
+                            $bisaPerpanjang = false;
+
+                            // --- LOGIKA PERPANJANGAN ---
+                            if ($isNonaktif || $kadaluarsa) {
+                                $bisaPerpanjang = false;
+                            } 
+                            elseif ($aktivasi && $aktivasi->tgl_aktivasi) {
+                                $batasAwal = $aktivasi->tgl_aktivasi->copy()->addMinutes(3);
+                                $bisaPerpanjang = \Carbon\Carbon::now() >= $batasAwal;
+                            }
+                            // -----------------------------------
+
+                            // Ambil ID Faktur Belum Bayar
+                            $fakturBelumBayar = $row->faktur->where('status', 'belum_bayar')->first();
+                            $idFakturBelumBayar = $fakturBelumBayar ? $fakturBelumBayar->id : null;
+
+                            // Tentukan Data Status untuk Filter JS
+                            $dataStatus = 'aktif';
+                            if($isNonaktif) $dataStatus = 'nonaktif';
+                            elseif($kadaluarsa) $dataStatus = 'kadaluarsa';
+                            elseif($row->ada_faktur_belum_bayar) $dataStatus = 'faktur_tersedia';
+                            elseif($row->menunggu_faktur) $dataStatus = 'menunggu_faktur';
+                            elseif($bisaPerpanjang) $dataStatus = 'siap_diperpanjang';
+                            else $dataStatus = 'aktif';
                         @endphp
 
-                        @forelse($data as $row)
-                            @php
-                                // --- FILTER STATUS: HANYA TAMPILKAN AKTIF & KADALUARSA ---
-                                $allowedStatuses = ['aktif', 'kadaluarsa']; 
-                                if (!in_array($row->status_pengajuan, $allowedStatuses)) {
-                                    continue; 
-                                }
-                                // --------------------------------------
-
-                                $numDaftarDomain++;
-                                $nomorTampil = method_exists($data, 'firstItem') 
-                                                ? $data->firstItem() + ($numDaftarDomain - 1) 
-                                                : $numDaftarDomain;
-
-                                $aktivasi = $row->aktivasi_terakhir;
-                                // Cek status kadaluarsa
-                                $kadaluarsa = ($aktivasi && $aktivasi->masa_berlaku) ? $aktivasi->is_kadaluarsa : false;
-                                
-                                $bisaPerpanjang = false;
-
-                                // --- LOGIKA PERPANJANGAN BARU ---
-                                // 1. Jika sudah kadaluarsa, matikan tombol perpanjang (wajib false)
-                                if ($kadaluarsa) {
-                                    $bisaPerpanjang = false;
-                                } 
-                                // 2. Jika belum kadaluarsa, cek waktunya
-                                elseif ($aktivasi && $aktivasi->tgl_aktivasi) {
-                                    // Target: Muncul "Siap Diperpanjang" 27 menit sebelum masa berlaku habis.
-                                    // Masa berlaku total = 30 menit.
-                                    // 27 menit sebelum habis = 3 menit SETELAH tgl aktivasi.
-                                    
-                                    // Batas waktu tombol bisa diklik (3 menit setelah aktivasi)
-                                    $batasAwal = $aktivasi->tgl_aktivasi->copy()->addMinutes(3);
-                                    
-                                    // Cek apakah waktu sekarang sudah melewati batas awal tersebut
-                                    $bisaPerpanjang = \Carbon\Carbon::now() >= $batasAwal;
-                                }
-                                // -----------------------------------
-
-                                // Ambil ID Faktur Belum Bayar
-                                $fakturBelumBayar = $row->faktur->where('status', 'belum_bayar')->first();
-                                $idFakturBelumBayar = $fakturBelumBayar ? $fakturBelumBayar->id : null;
-
-                                // Tentukan Data Status untuk Filter JS
-                                $dataStatus = 'aktif';
-                                if($kadaluarsa) $dataStatus = 'kadaluarsa';
-                                elseif($row->ada_faktur_belum_bayar) $dataStatus = 'faktur_tersedia';
-                                elseif($row->menunggu_faktur) $dataStatus = 'menunggu_faktur';
-                                elseif($bisaPerpanjang) $dataStatus = 'siap_diperpanjang';
-                                else $dataStatus = 'aktif';
-                            @endphp
-
-                    <tr data-status="{{ $dataStatus }}" style="animation-delay:{{$numDaftarDomain*0.05}}s">
-                        
-                        <!-- Nomor Urut -->
-                        <td>{{ $nomorTampil }}</td>
-                        
-                        <td style="font-weight:500;color:#334155">{{ $row->nama_domain }}.desa.id</td>
-                        
-                        <td>
-                            @if($aktivasi && $aktivasi->tgl_aktivasi)
-                                <span class="inv-date">{{ $aktivasi->tgl_aktivasi->format('d/m/Y') }}</span>
-                            @else
-                                <span class="inv-date">-</span>
-                            @endif
-                        </td>
-                        
-                        <td>
-                            @if($aktivasi && $aktivasi->masa_berlaku)
-                                <span class="inv-date {{ $kadaluarsa ? 'text-red-600 font-bold' : 'text-gray-700' }}">
-                                    {{ $aktivasi->masa_berlaku->format('d/m/Y') }}
-                                </span>
-                            @else
-                                <span class="inv-date text-gray-400">-</span>
-                            @endif
-                        </td>
-
-                        {{-- KOLOM STATUS --}}
-                        <td>
-                            @if($kadaluarsa)
-                                <span class="inv-badge badge-red"><span class="d"></span>Kadaluarsa</span>
+                        <tr data-status="{{ $dataStatus }}" style="animation-delay:{{$numDaftarDomain*0.05}}s">
                             
-                            @elseif($row->ada_faktur_belum_bayar)
-                                <span class="inv-badge" style="background:#dbeafe;color:#1e40af"><span class="d" style="background:#3b82f6"></span>Faktur Tersedia</span>
+                            <!-- Nomor Urut -->
+                            <td>{{ $nomorTampil }}</td>
                             
-                            @elseif($row->menunggu_faktur)
-                                <span class="inv-badge" style="background:#ffedd5;color:#9a3412"><span class="d" style="background:#f97316"></span>Menunggu Faktur</span>
+                            <td style="font-weight:500;color:#334155">{{ $row->nama_domain }}.desa.id</td>
                             
-                            @elseif($bisaPerpanjang)
-                                <span class="inv-badge badge-green"><span class="d"></span>Aktif</span>
+                            <td>
+                                @if($aktivasi && $aktivasi->tgl_aktivasi)
+                                    <span class="inv-date">{{ $aktivasi->tgl_aktivasi->format('d/m/Y') }}</span>
+                                @else
+                                    <span class="inv-date">-</span>
+                                @endif
+                            </td>
                             
-                            @else
-                                <span class="inv-badge badge-green"><span class="d"></span>Aktif</span>
-                            @endif
-                        </td>
+                            <td>
+                                @if($aktivasi && $aktivasi->masa_berlaku)
+                                    <span class="inv-date {{ $kadaluarsa || $isNonaktif ? 'text-red-600 font-bold' : 'text-gray-700' }}">
+                                        {{ $aktivasi->masa_berlaku->format('d/m/Y') }}
+                                    </span>
+                                @else
+                                    <span class="inv-date text-gray-400">-</span>
+                                @endif
+                            </td>
 
-                       {{-- KOLOM AKSI --}}
-<td style="text-align:center">
-    <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+                            {{-- KOLOM STATUS --}}
+                            <td>
+                                @if($isNonaktif)
+                                    <span class="inv-badge" style="background:#f3f4f6; color:#374151; border:1px solid #9ca3af">
+                                        <span class="d" style="background:#6b7280"></span>Nonaktif
+                                    </span>
+                                @elseif($kadaluarsa)
+                                    <span class="inv-badge badge-red"><span class="d"></span>Kadaluarsa</span>
+                                @elseif($row->ada_faktur_belum_bayar)
+                                    <span class="inv-badge" style="background:#dbeafe;color:#1e40af"><span class="d" style="background:#3b82f6"></span>Faktur Tersedia</span>
+                                @elseif($row->menunggu_faktur)
+                                    <span class="inv-badge" style="background:#ffedd5;color:#9a3412"><span class="d" style="background:#f97316"></span>Menunggu Faktur</span>
+                                @else
+                                    <span class="inv-badge badge-green"><span class="d"></span>Aktif</span>
+                                @endif
+                            </td>
 
-        <!-- DETAIL -->
-        <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" 
-           class="inv-btn-d" 
-           title="Lihat">
-            <i class="fas fa-eye"></i> Lihat
-        </a>
+                            {{-- KOLOM AKSI --}}
+                            <td style="text-align:center">
+                                <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
 
-        {{-- JIKA STATUS KADALUARSA → HANYA TAMPILKAN DETAIL --}}
-        @if($kadaluarsa)
+                                    <!-- DETAIL -->
+                                    <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" 
+                                       class="inv-btn-d" title="Lihat">
+                                        <i class="fas fa-eye"></i> Lihat
+                                    </a>
 
-        {{-- TIDAK ADA TOMBOL LAIN --}}
+                                    @if($isNonaktif)
+                                        <span class="text-gray-400 text-xs italic">Tidak dapat diperpanjang</span>
 
-        @elseif($row->ada_faktur_belum_bayar)
+                                    @elseif($kadaluarsa)
+                                        {{-- TIDAK ADA TOMBOL LAIN --}}
 
-            {{-- LINK MENUJU DETAIL FAKTUR --}}
-            @if($idFakturBelumBayar)
-                <a href="{{ route('desa.faktur.show', $idFakturBelumBayar) }}" class="inv-btn-d">
-                   <i class="fas fa-file-invoice-dollar"></i> Faktur
-                </a>
-            @else
-                <span class="text-xs text-gray-400">
-                    Data Faktur Error
-                </span>
-            @endif
+                                    @elseif($row->ada_faktur_belum_bayar)
+                                        @if($idFakturBelumBayar)
+                                            <a href="{{ route('desa.faktur.show', $idFakturBelumBayar) }}" class="inv-btn-d">
+                                               <i class="fas fa-file-invoice-dollar"></i> Faktur
+                                            </a>
+                                        @else
+                                            <span class="text-xs text-gray-400">Data Faktur Error</span>
+                                        @endif
 
-        @elseif($row->menunggu_faktur)
+                                    @elseif($row->menunggu_faktur)
+                                        <span class="text-gray-400 text-xs">
+                                            <i class="fas fa-hourglass-half"></i> Menunggu Faktur
+                                        </span>
 
-            <span class="text-gray-400 text-xs">
-                <i class="fas fa-hourglass-half"></i> Menunggu Faktur
-            </span>
+                                    @elseif($bisaPerpanjang)
+                                        <a href="#" 
+                                           class="inv-btn-d"
+                                           onclick="event.preventDefault(); openPerpanjangModal('{{ $row->id_pengajuan }}', '{{ $aktivasi ? $aktivasi->tgl_aktivasi->format('d M Y') : '-' }}', '{{ $aktivasi ? $aktivasi->masa_berlaku->format('d M Y') : '-' }}')">
+                                           <i class="fas fa-redo"></i> Ajukan Perpanjang
+                                        </a>
 
-        @elseif($bisaPerpanjang)
-    <a href="#" 
-       class="inv-btn-d"
-       onclick="event.preventDefault(); openPerpanjangModal('{{ $row->id_pengajuan }}', '{{ $aktivasi ? $aktivasi->tgl_aktivasi->format('d M Y') : '-' }}', '{{ $aktivasi ? $aktivasi->masa_berlaku->format('d M Y') : '-' }}')">
-       <i class="fas fa-redo"></i> Ajukan Perpanjang
-    </a>
+                                    @else
+                                        <button disabled class="inv-btn-d" style="background:#e2e8f0; border-color:#e2e8f0; color:#94a3b8; cursor:not-allowed">
+                                            <i class="fas fa-redo"></i> Ajukan Perpanjang
+                                        </button>
+                                    @endif
 
-@else
-
-            <button disabled class="inv-btn-d" style="background:#e2e8f0; border-color:#e2e8f0; color:#94a3b8; cursor:not-allowed">
-                <i class="fas fa-redo"></i> Ajukan Perpanjang
-            </button>
-
-        @endif
-    </div>
-</td>
-
-    </div>
-</td>
-                    </tr>
+                                </div>
+                            </td>
+                        </tr>
                     @empty
-                    <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i>Tidak ada domain aktif.</td></tr>
+                        <tr class="inv-empty"><td colspan="6"><i class="fas fa-inbox"></i>Tidak ada domain aktif.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -336,19 +319,14 @@ document.addEventListener('DOMContentLoaded',function(){
     });
 });
 
-// FUNGSI MODAL BARU (MENERIMA DATA TANGGAL)
+// FUNGSI MODAL BARU
 function openPerpanjangModal(id, tglMulai, tglSelesai) {
     const modal = document.getElementById('modalPerpanjang');
     const content = document.getElementById('modalPerpanjangContent');
     
-    // Tampilkan info masa aktif ke modal
     document.getElementById('infoMulai').textContent = tglMulai;
     document.getElementById('infoSelesai').textContent = tglSelesai;
-    
-    // Set ID pengajuan ke hidden input
     document.getElementById('inputIdPengajuan').value = id;
-    
-    // Reset dropdown tahun
     document.getElementById('selectDurasi').value = '';
     
     modal.classList.remove('hidden');
