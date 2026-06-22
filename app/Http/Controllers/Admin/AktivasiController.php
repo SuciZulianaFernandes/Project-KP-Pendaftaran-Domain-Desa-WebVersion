@@ -22,72 +22,73 @@ class AktivasiController extends Controller
      * PROSES ADMIN: Mengaktifkan domain (BISA GRATIS UNTUK PENDAFTARAN PERTAMA)
      */
         public function aktivasi(Request $request, $id)
-    {
-        $pengajuan = Pengajuan::findOrFail($id);
-        
-        // Validasi tanggal wajib diisi dan selesai harus setelah mulai
+{
+    $pengajuan = Pengajuan::findOrFail($id);
+    
+    // CEK APAKAH INI PERPANJANGAN ATAU BUKAN
+    $adalahPerpanjangan = $pengajuan->pesan->where('judul', 'Permintaan Perpanjangan Domain')->isNotEmpty();
+
+    if ($adalahPerpanjangan) {
+        // Jika perpanjangan, wajib isi tanggal manual
         $request->validate([
             'tgl_mulai'    => 'required|date',
             'tgl_selesai'  => 'required|date|after:tgl_mulai'
         ]);
 
-        // CEK APAKAH INI PERPANJANGAN ATAU BUKAN
-        $adalahPerpanjangan = $pengajuan->pesan->where('judul', 'Permintaan Perpanjangan Domain')->isNotEmpty();
-
-        // JIKA INI PERPANJANGAN, WAJIB CEK FAKTUR PEMBAYARAN
-        if ($adalahPerpanjangan) {
-            $faktur = Faktur::where('id_pengajuan', $id)->where('status', 'sudah_bayar')->latest()->first();
-
-            if (!$faktur) {
-                $faktur = Faktur::where('id_pengajuan', $id)->latest()->first();
-            }
-
-            if (!$faktur) {
-                return back()->with('error', 'Data Faktur tidak ditemukan.');
-            }
-
-            if ($faktur->status !== 'sudah_bayar') {
-                return back()->with('error', 'Gagal! Desa belum mengirim bukti pembayaran.');
-            }
+        $faktur = Faktur::where('id_pengajuan', $id)->where('status', 'sudah_bayar')->latest()->first();
+        if (!$faktur) {
+            $faktur = Faktur::where('id_pengajuan', $id)->latest()->first();
+        }
+        if (!$faktur) {
+            return back()->with('error', 'Data Faktur tidak ditemukan.');
+        }
+        if ($faktur->status !== 'sudah_bayar') {
+            return back()->with('error', 'Gagal! Desa belum mengirim bukti pembayaran.');
         }
 
-        // PROSES AKTIVASI
-        DB::beginTransaction();
-        try {
-            $pengajuan->status_pengajuan = 'aktif';
-            $pengajuan->save();
+        $tglMulai = Carbon::parse($request->tgl_mulai);
+        $tglSelesai = Carbon::parse($request->tgl_selesai);
 
-            // AMBIL TANGGAL DARI INPUTAN ADMIN
-            $tglMulai = Carbon::parse($request->tgl_mulai);
-            $tglSelesai = Carbon::parse($request->tgl_selesai);
-
-            Aktivasi::create([
-                'id_pengajuan' => $pengajuan->id_pengajuan,
-                'status_akt'   => 'aktif',
-                'tgl_aktivasi' => $tglMulai,
-                'masa_berlaku' => $tglSelesai,
-            ]);
-
-            // Kirim Notifikasi
-            if (class_exists(PesanController::class)) {
-                app(PesanController::class)->sendNotifikasiAktifasi($pengajuan->id_pengajuan);
-            }
-
-            DB::commit();
-            
-            return back()->with('success', 'Domain berhasil diaktifkan. Masa berlaku dari ' . $tglMulai->format('d-m-Y') . ' sampai ' . $tglSelesai->format('d-m-Y') . '.');
-            
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
-        }
+    } else {
+        // JIKA INI PENDAFTARAN PERTAMA (GRATIS/OTOMATIS)
+        // Set otomatis: Mulai hari ini, Selesai 1 tahun ke depan
+        $tglMulai = Carbon::now();
+        $tglSelesai = Carbon::now()->addYear(); // Otomatis 1 tahun
     }
+
+    // PROSES AKTIVASI
+    DB::beginTransaction();
+    try {
+        $pengajuan->status_pengajuan = 'aktif';
+        $pengajuan->save();
+
+        Aktivasi::create([
+            'id_pengajuan' => $pengajuan->id_pengajuan,
+            'status_akt'   => 'aktif',
+            'tgl_aktivasi' => $tglMulai,
+            'masa_berlaku' => $tglSelesai,
+        ]);
+
+        // Kirim Notifikasi
+        if (class_exists(PesanController::class)) {
+            app(PesanController::class)->sendNotifikasiAktifasi($pengajuan->id_pengajuan);
+        }
+
+        DB::commit();
+        
+        return back()->with('success', 'Domain berhasil diaktifkan. Masa berlaku dari ' . $tglMulai->format('d-m-Y') . ' sampai ' . $tglSelesai->format('d-m-Y') . '.');
+        
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+    }
+}
 
     public function adminDaftarAktif(Request $request)
     {
         // Update nonaktif otomatis 
     // ⚠️ TESTING: subMinutes(2) = 2 menit. UNTUK PRODUCTION: GANTI JADI subYears(2)
-    $batasWaktuNonaktif = now()->subMinutes(2); 
+    $batasWaktuNonaktif = now()->subYears(2); 
 
     Aktivasi::where('masa_berlaku', '<', $batasWaktuNonaktif)
     ->where('status_akt', 'kadaluarsa')
