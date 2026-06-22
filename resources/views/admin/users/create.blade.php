@@ -4,28 +4,33 @@
 
 @section('content')
 
-<div x-data="{ role: '{{ old('role', 'desa') }}' }" class="container mx-auto px-4 py-6">
+<div x-data="{ role: '{{ old('role', 'desa') }}' }" class="space-y-6">
 
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-semibold text-gray-800">Tambah User Baru</h1>
-
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Tambah User Baru</h1>
+            <p class="text-sm text-slate-400 mt-1">Buat akun baru untuk admin atau desa</p>
+        </div>
         <a href="{{ route('admin.users.index') }}"
-           class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-            <i class="fas fa-arrow-left mr-2"></i> Kembali
+           class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-5 rounded-xl transition text-sm">
+            <i class="fas fa-arrow-left text-xs"></i> Kembali
         </a>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg p-6">
+    <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm">
 
         <form action="{{ route('admin.users.store') }}" method="POST">
             @csrf
 
             {{-- ERROR ALERT --}}
             @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    <strong class="font-bold">Terjadi Kesalahan!</strong>
-
-                    <ul class="mt-2 list-disc list-inside text-sm">
+                <div class="bg-rose-50 border border-rose-200 text-rose-700 px-5 py-4 rounded-xl mb-6">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="fas fa-exclamation-circle text-rose-500"></i>
+                        <strong class="font-bold text-sm">Terjadi Kesalahan!</strong>
+                    </div>
+                    <ul class="list-disc list-inside text-sm space-y-0.5 ml-5">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -33,64 +38,56 @@
                 </div>
             @endif
 
-            {{-- USERNAME & ROLE --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {{-- AKUN LOGIN --}}
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                    Akun Login
+                </h3>
 
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                        Username
-                    </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                    <div class="flex flex-col">
+                        <label for="username" class="text-slate-400 text-xs font-semibold mb-1.5">Username <span class="text-rose-500">*</span></label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{ old('username') }}"
+                            placeholder="Masukkan username unik"
+                            minlength="4"
+                            maxlength="30"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                            required
+                        >
+                    </div>
 
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        value="{{ old('username') }}"
-                        placeholder="Masukkan username unik"
-                        minlength="4"
-                        maxlength="30"
-                        title="Username minimal 4 karakter tanpa spasi"
-                        oninvalid="this.setCustomValidity('Username minimal 4 karakter dan wajib diisi')"
-                        oninput="this.setCustomValidity('')"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    >
+                    <div class="flex flex-col">
+                        <label for="role" class="text-slate-400 text-xs font-semibold mb-1.5">Role <span class="text-rose-500">*</span></label>
+                        <select
+                            id="role"
+                            name="role"
+                            x-model="role"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                            required
+                        >
+                            <option value="">Pilih Role</option>
+                            <option value="desa">Desa</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
                 </div>
-
-                <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
-                        Role
-                    </label>
-
-                    <select
-                        id="role"
-                        name="role"
-                        x-model="role"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    >
-                        <option value="">Pilih Role</option>
-                        <option value="desa">Desa</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-
             </div>
 
             {{-- DETAIL ADMIN --}}
-            <div x-show="role === 'admin'" x-transition class="mt-6">
-
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    Detail Admin
+            <div x-show="role === 'admin'" x-transition.duration.200ms class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                    Informasi Admin
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nama Lengkap
-                        </label>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                    <div class="flex flex-col">
+                        <label for="name" class="text-slate-400 text-xs font-semibold mb-1.5">Nama Lengkap <span class="text-rose-500">*</span></label>
                         <input
                             type="text"
                             id="name"
@@ -99,38 +96,26 @@
                             placeholder="Masukkan nama lengkap"
                             minlength="3"
                             maxlength="100"
-                            title="Nama minimal 3 karakter"
-                            oninvalid="this.setCustomValidity('Nama lengkap wajib diisi minimal 3 karakter')"
-                            oninput="this.setCustomValidity('')"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
                             :required="role === 'admin'"
                         >
                     </div>
 
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                            Email
-                        </label>
-
+                    <div class="flex flex-col">
+                        <label for="email" class="text-slate-400 text-xs font-semibold mb-1.5">Email <span class="text-rose-500">*</span></label>
                         <input
                             type="email"
                             id="email"
                             name="email"
                             value="{{ old('email') }}"
                             placeholder="contoh@email.com"
-                            title="Masukkan email yang valid"
-                            oninvalid="this.setCustomValidity('Masukkan alamat email yang valid')"
-                            oninput="this.setCustomValidity('')"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
                             :required="role === 'admin'"
                         >
                     </div>
 
-                    <div class="md:col-span-2">
-                        <label for="no_hp" class="block text-sm font-medium text-gray-700 mb-2">
-                            No. HP
-                        </label>
-
+                    <div class="flex flex-col md:col-span-2">
+                        <label for="no_hp" class="text-slate-400 text-xs font-semibold mb-1.5">No. HP</label>
                         <input
                             type="text"
                             id="no_hp"
@@ -139,30 +124,22 @@
                             placeholder="08xxxxxxxxxx"
                             pattern="[0-9]+"
                             maxlength="15"
-                            title="Nomor HP hanya boleh angka"
-                            oninvalid="this.setCustomValidity('Nomor HP hanya boleh berisi angka')"
-                            oninput="this.setCustomValidity('')"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
                         >
                     </div>
-
                 </div>
             </div>
 
             {{-- DETAIL DESA --}}
-            <div x-show="role === 'desa'" x-transition class="mt-6">
-
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
-                    Detail Desa
+            <div x-show="role === 'desa'" x-transition.duration.200ms class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                    Informasi Desa
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <div>
-                        <label for="nama_desa" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nama Desa
-                        </label>
-
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                    <div class="flex flex-col">
+                        <label for="nama_desa" class="text-slate-400 text-xs font-semibold mb-1.5">Nama Desa <span class="text-rose-500">*</span></label>
                         <input
                             type="text"
                             id="nama_desa"
@@ -171,74 +148,65 @@
                             placeholder="Masukkan nama desa"
                             minlength="3"
                             maxlength="100"
-                            title="Nama desa minimal 3 karakter"
-                            oninvalid="this.setCustomValidity('Nama desa wajib diisi')"
-                            oninput="this.setCustomValidity('')"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
                             :required="role === 'desa'"
                         >
                     </div>
-
                 </div>
             </div>
 
             {{-- PASSWORD --}}
-            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="mb-8">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                    Keamanan Akun
+                </h3>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Password
-                    </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5 bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                    <div class="flex flex-col">
+                        <label for="password" class="text-slate-400 text-xs font-semibold mb-1.5">Password <span class="text-rose-500">*</span></label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Minimal 8 karakter"
+                            minlength="8"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                            required
+                        >
+                    </div>
 
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        placeholder="Minimal 8 karakter"
-                        minlength="8"
-                        title="Password minimal 8 karakter"
-                        oninvalid="this.setCustomValidity('Password minimal 8 karakter')"
-                        oninput="this.setCustomValidity('')"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    >
+                    <div class="flex flex-col">
+                        <label for="password_confirmation" class="text-slate-400 text-xs font-semibold mb-1.5">Konfirmasi Password <span class="text-rose-500">*</span></label>
+                        <input
+                            type="password"
+                            id="password_confirmation"
+                            name="password_confirmation"
+                            placeholder="Ulangi password"
+                            minlength="8"
+                            class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                            required
+                        >
+                    </div>
                 </div>
-
-                <div>
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                        Konfirmasi Password
-                    </label>
-
-                    <input
-                        type="password"
-                        id="password_confirmation"
-                        name="password_confirmation"
-                        placeholder="Ulangi password"
-                        minlength="8"
-                        oninvalid="this.setCustomValidity('Konfirmasi password wajib diisi')"
-                        oninput="this.setCustomValidity('')"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                        required
-                    >
-                </div>
-
             </div>
 
-            {{-- BUTTON --}}
-            <div class="mt-8 flex justify-end">
+            <hr class="border-slate-100">
 
+            {{-- BUTTON --}}
+            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
                 <a href="{{ route('admin.users.index') }}"
-                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2">
+                   class="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-6 rounded-xl transition text-sm">
                     Batal
                 </a>
 
                 <button
                     type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                    class="js-confirm-btn inline-flex items-center justify-center gap-2 bg-[#109696] hover:bg-[#0d7a7a] text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition text-sm"
+                    data-confirm-message="Yakin ingin menyimpan user baru ini?"
                 >
-                    Simpan
+                    <i class="fas fa-save text-xs"></i> Simpan User
                 </button>
-
             </div>
 
         </form>
@@ -246,14 +214,31 @@
     </div>
 </div>
 
+<!-- MODAL KONFIRMASI -->
+<div id="confirmationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4">
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-[#109696]/10 mb-4">
+                <i class="fas fa-question text-[#109696] text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Konfirmasi Aksi</h3>
+            <p id="modalConfirmMessage" class="text-sm text-slate-500 leading-relaxed">Apakah anda yakin?</p>
+        </div>
+        <div class="px-6 pb-6 flex items-center justify-center gap-3">
+            <button id="modalNoBtn" class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-200 transition">Batal</button>
+            <button id="modalYesBtn" class="flex-1 py-2.5 bg-[#109696] text-white text-sm font-semibold rounded-xl hover:bg-[#0d7a7a] transition shadow-sm">Ya, Lanjutkan</button>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Validasi password
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('password_confirmation');
 
     function validatePassword() {
-
         if (password.value !== confirmPassword.value) {
             confirmPassword.setCustomValidity('Konfirmasi password tidak sama');
         } else {
@@ -264,6 +249,37 @@ document.addEventListener('DOMContentLoaded', function () {
     password.addEventListener('input', validatePassword);
     confirmPassword.addEventListener('input', validatePassword);
 
+    // Modal konfirmasi
+    const modal = document.getElementById('confirmationModal');
+    const yesBtn = document.getElementById('modalYesBtn');
+    const noBtn = document.getElementById('modalNoBtn');
+    const modalMessage = document.getElementById('modalConfirmMessage');
+    const confirmBtns = document.querySelectorAll('.js-confirm-btn');
+    let formToSubmit = null;
+
+    confirmBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            formToSubmit = this.closest('form');
+            modalMessage.textContent = this.getAttribute('data-confirm-message') || 'Apakah anda yakin?';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    });
+
+    yesBtn.addEventListener('click', function() {
+        if (formToSubmit) formToSubmit.submit();
+        closeModal();
+    });
+
+    noBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        formToSubmit = null;
+    }
 });
 </script>
 

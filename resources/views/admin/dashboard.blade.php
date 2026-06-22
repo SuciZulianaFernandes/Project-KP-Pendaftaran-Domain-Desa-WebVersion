@@ -37,7 +37,7 @@
                     <div class="absolute inset-0 bg-white/10 rounded-3xl blur-2xl scale-110"></div>
                     <!-- Background semi-transparan -->
                     <div class="relative bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="w-36 h-36 object-contain drop-shadow-lg">
+                        <img src="{{ asset('storage/images/logo.png') }}" alt="Logo" class="w-36 h-36 object-contain drop-shadow-lg">
                     </div>
                 </div>
             </div>

@@ -1,279 +1,278 @@
 @extends('layouts.admin')
+
 @section('title', 'Manajemen Faktur')
 
 @section('content')
-@include('components.inv-styles')
+<div class="space-y-6">
 
-<div class="container-fluid" style="padding:0 24px;max-width:1400px">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
-        <div>
-            <h1 style="font-size:22px;font-weight:800;margin:0;letter-spacing:-.5px">Manajemen Faktur</h1>
-            <p style="font-size:14px;color:#64748b;margin:4px 0 0">Kelola semua faktur domain desa</p>
-        </div>
+    <!-- HEADER -->
+    <div>
+        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Manajemen Faktur</h1>
+        <p class="text-sm text-slate-400 mt-1">Kelola semua faktur domain desa</p>
     </div>
 
-    {{-- WIDGET FAKTUR --}}
-<div style="
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:16px;
-    margin-bottom:22px;
-">
+    <!-- WIDGET FAKTUR -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-    {{-- Total Faktur --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #0f172a">
-        <div style="font-size:14px;color:#64748b">
-            Total Faktur
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Faktur</p>
+                    <p class="text-2xl font-extrabold text-slate-800 mt-2">{{ $totalFaktur }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                    <i class="fas fa-file-invoice text-slate-500"></i>
+                </div>
+            </div>
         </div>
 
-        <div style="
-            font-size:28px;
-            font-weight:800;
-            color:#0f172a;
-            margin-top:8px">
-            {{ $totalFaktur }}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Belum Dibayar</p>
+                    <p class="text-2xl font-extrabold text-rose-600 mt-2">{{ $totalBelumBayar }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+                    <i class="fas fa-clock text-rose-500"></i>
+                </div>
+            </div>
         </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Sudah Dibayar</p>
+                    <p class="text-2xl font-extrabold text-emerald-600 mt-2">{{ $totalSudahBayar }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Belum Dibuat</p>
+                    <p class="text-2xl font-extrabold text-slate-500 mt-2">{{ $totalBelumDibuat }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                    <i class="fas fa-minus-circle text-slate-400"></i>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    {{-- Belum Dibayar --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #ef4444">
-        <div style="font-size:14px;color:#64748b">
-            Belum Dibayar
-        </div>
+    <!-- TABLE CARD -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
 
-        <div style="
-            font-size:28px;
-            font-weight:800;
-            color:#dc2626;
-            margin-top:8px">
-            {{ $totalBelumBayar }}
-        </div>
-    </div>
-
-    {{-- Sudah Dibayar --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #22c55e">
-        <div style="font-size:14px;color:#64748b">
-            Sudah Dibayar
-        </div>
-
-        <div style="
-            font-size:28px;
-            font-weight:800;
-            color:#16a34a;
-            margin-top:8px">
-            {{ $totalSudahBayar }}
-        </div>
-    </div>
-
-    {{-- Belum Dibuat --}}
-    <div class="inv-card" style="padding:20px;border-left:5px solid #94a3b8">
-        <div style="font-size:14px;color:#64748b">
-            Belum Dibuat
-        </div>
-
-        <div style="
-            font-size:28px;
-            font-weight:800;
-            color:#475569;
-            margin-top:8px">
-            {{ $totalBelumDibuat }}
-        </div>
-    </div>
-
-</div>
-
-    <div class="inv-card">
+        {{-- FLASH MESSAGE --}}
         @if(session('success'))
-            <div class="alert inv-alert inv-alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="mx-6 mt-6 px-4 py-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-check-circle text-emerald-500"></i>
+                    {{ session('success') }}
+                </div>
+                <button type="button" onclick="this.closest('div').remove()" class="text-emerald-400 hover:text-emerald-600 transition">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         @endif
         @if(session('error'))
-            <div class="alert inv-alert inv-alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="mx-6 mt-6 px-4 py-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle text-rose-500"></i>
+                    {{ session('error') }}
+                </div>
+                <button type="button" onclick="this.closest('div').remove()" class="text-rose-400 hover:text-rose-600 transition">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         @endif
 
-                {{-- PENCARIAN & FILTER SERVER SIDE --}}
-        <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; align-items: center;">
-            <form action="{{ route('admin.faktur.index') }}" method="GET" style="display:flex; flex:1; gap:10px; flex-wrap:wrap;">
-                
-                <div style="position:relative;flex:1; min-width: 200px;">
-                    <input type="text" name="search" id="invSearch" placeholder="Cari No Invoice, Domain, atau Desa..." value="{{ request('search') }}"
-                        style="width:100%;padding:10px 16px;padding-left:40px;border:1px solid #cbd5e1;border-radius:8px;outline:none;font-size:14px;transition:all .2s">
-                    <i class="fas fa-search" style="position:absolute;left:14px;top:13px;color:#94a3b8"></i>
+        {{-- PENCARIAN & FILTER --}}
+        <div class="px-6 py-4 border-b border-slate-100 flex gap-3 items-center flex-wrap">
+            <form action="{{ route('admin.faktur.index') }}" method="GET" class="flex flex-1 gap-3 items-center flex-wrap">
+                <div class="relative flex-1 min-w-[200px]">
+                    <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" name="search" placeholder="Cari No Invoice, Domain, atau Desa..." value="{{ request('search') }}"
+                        class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
                 </div>
-                <button type="submit"
-        style="padding:10px 16px;background:#dc2626;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-        Cari
-    </button>
-
-                {{-- DROPDOWN FILTER DIPINDAHKAN KE DALAM FORM --}}
-                <div style="width: 180px;">
-                    <select name="status" id="invFilter" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white;cursor:pointer;">
-                        <option value="">Semua Status</option>
-                        <option value="belum_dibuat" {{ request('status') == 'belum_dibuat' ? 'selected' : '' }}>Belum Dibuat</option>
-                        <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="sudah_bayar" {{ request('status') == 'sudah_bayar' ? 'selected' : '' }}>Sudah Bayar</option>
-                    </select>
-                </div>
+                <button type="submit" class="bg-[#109696] hover:bg-[#0d7a7a] text-white font-semibold py-2.5 px-5 rounded-lg text-sm transition shadow-sm">
+                    Cari
+                </button>
+                <select name="status" class="py-2.5 px-3 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition cursor-pointer">
+                    <option value="">Semua Status</option>
+                    <option value="belum_dibuat" {{ request('status') == 'belum_dibuat' ? 'selected' : '' }}>Belum Dibuat</option>
+                    <option value="belum_bayar" {{ request('status') == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
+                    <option value="sudah_bayar" {{ request('status') == 'sudah_bayar' ? 'selected' : '' }}>Sudah Bayar</option>
+                </select>
             </form>
         </div>
 
-        <div style="overflow-x:auto">
-            <table class="inv-table" id="invTable">
+        {{-- TABLE --}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>No Invoice</th>
-                        <th>Nama Desa</th>
-                        <th>Domain</th>
-                        <th style="text-align:center">Tipe</th>
-                        <th>Tanggal Konfirmasi</th>
-                        <th style="text-align:center">Status</th>
-                        <th style="text-align:center">Aksi</th>
+                    <tr class="bg-slate-50/80">
+                        <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">No</th>
+                        <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">No Invoice</th>
+                        <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Desa</th>
+                        <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Domain</th>
+                        <th class="text-center px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Tipe</th>
+                        <th class="text-left px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Tgl Konfirmasi</th>
+                        <th class="text-center px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                        <th class="text-center px-6 py-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-    @php
-        $nomor = request()->filled('search')
-            ? 1
-            : $data->firstItem();
-    @endphp
+                <tbody class="divide-y divide-slate-100">
+                    @php
+                        $nomor = request()->filled('search')
+                            ? 1
+                            : $data->firstItem();
+                    @endphp
+
                     @forelse($data as $i => $row)
                         @if($row->faktur->isEmpty() && !in_array($row->id_pengajuan, $perpanjanganBelumBuat))
-                            <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
-                                <td>{{ $nomor++ }}</td>
-                                <td><span class="inv-id">-</span></td>
-                                <td>{{ $row->nama_desa }}</td>
-                                <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                                
-                                <td style="text-align:center">
-                                    <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 font-medium">Baru</span>
+                            <tr class="hover:bg-slate-50/50 transition" style="animation-delay:{{$i*0.05}}s">
+                                <td class="px-6 py-4 text-slate-500 font-medium">{{ $nomor++ }}</td>
+                                <td class="px-6 py-4"><span class="font-mono text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded">-</span></td>
+                                <td class="px-6 py-4 text-slate-700 font-medium">{{ $row->nama_desa }}</td>
+                                <td class="px-6 py-4 text-[#1A85A5] font-semibold">{{ $row->nama_domain }}<span class="text-slate-300 font-medium">.desa.id</span></td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700">Baru</span>
                                 </td>
-
-                                <td><span class="inv-date">-</span></td>
-
-                                <td style="text-align:center">
-                                    <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Belum Dibuat</span>
+                                <td class="px-6 py-4 text-slate-400">-</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Belum Dibuat
+                                    </span>
                                 </td>
-
-                                <td style="text-align:center">
+                                <td class="px-6 py-4 text-center">
                                     @php
                                         $isRequested = \App\Models\Pesan::where('id_pengajuan', $row->id_pengajuan)
                                             ->where('judul', 'Konfirmasi Pembayaran Disetujui')
                                             ->where('role_tujuan', 'admin')
                                             ->exists();
                                     @endphp
-
                                     @if($isRequested)
-                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
+                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Cetak Faktur</button>
+                                            <button type="submit" class="js-confirm-print inline-flex items-center gap-1.5 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                                                <i class="fas fa-plus text-[10px]"></i> Cetak Faktur
+                                            </button>
                                         </form>
                                     @else
-                                        <span class="text-xs text-gray-400 italic">Menunggu Konfirmasi</span>
+                                        <span class="text-xs text-slate-400 italic">Menunggu Konfirmasi</span>
                                     @endif
                                 </td>
                             </tr>
                         @else
                             @foreach($row->faktur as $indexFaktur => $fakturItem)
-                                <tr data-status="{{ $fakturItem->status }}" style="animation-delay:{{$i*0.05}}s">
-                                    <td>{{ $nomor++ }}</td>
-                                    <td><span class="inv-id">{{ $fakturItem->no_invoice }}</span></td>
-                                    <td>{{ $row->nama_desa }}</td>
-                                    <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                                    
-                                    <td style="text-align:center">
+                                <tr class="hover:bg-slate-50/50 transition" style="animation-delay:{{$i*0.05}}s">
+                                    <td class="px-6 py-4 text-slate-500 font-medium">{{ $nomor++ }}</td>
+                                    <td class="px-6 py-4"><span class="font-mono text-xs font-semibold text-slate-700 bg-slate-50 px-2 py-1 rounded">{{ $fakturItem->no_invoice }}</span></td>
+                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $row->nama_desa }}</td>
+                                    <td class="px-6 py-4 text-[#1A85A5] font-semibold">{{ $row->nama_domain }}<span class="text-slate-300 font-medium">.desa.id</span></td>
+                                    <td class="px-6 py-4 text-center">
                                         @if($fakturItem->tipe == 'perpanjangan')
-                                            <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700">Perpanjangan</span>
                                         @else
-                                            <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 font-medium">Baru</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700">Baru</span>
                                         @endif
                                     </td>
-
-                                    <td><span class="inv-date">{{ $fakturItem->tanggal_konfirmasi ? $fakturItem->tanggal_konfirmasi->format('d/m/Y') : '-' }}</span></td>
-
-                                    <td style="text-align:center">
+                                    <td class="px-6 py-4 text-slate-500">{{ $fakturItem->tanggal_konfirmasi ? $fakturItem->tanggal_konfirmasi->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-6 py-4 text-center">
                                         @if($fakturItem->status == 'sudah_bayar')
-                                            <span class="inv-badge badge-green"><span class="d"></span>Sudah Dibayar</span>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Sudah Dibayar
+                                            </span>
                                         @elseif($fakturItem->status == 'belum_bayar')
-                                            <span class="inv-badge badge-red"><span class="d"></span>Belum Dibayar</span>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Belum Dibayar
+                                            </span>
                                         @elseif($fakturItem->status == 'kedaluarsa')
-                                            <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Kedaluarsa</span>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Kedaluarsa
+                                            </span>
                                         @endif
                                     </td>
-
-                                    <td style="text-align:center">
-                                        <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inv-btn-d"><i class="fas fa-eye"></i> Detail</a>
+                                    <td class="px-6 py-4 text-center">
+                                        <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inline-flex items-center gap-1.5 bg-[#1760C5]/10 hover:bg-[#1760C5] text-[#1760C5] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                                            <i class="fas fa-eye text-[10px]"></i> Detail
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
 
                             @if(in_array($row->id_pengajuan, $perpanjanganBelumBuat))
-                                <tr data-status="belum_dibuat" style="animation-delay:{{$i*0.05}}s">
-                                    <td>{{ $nomor++ }}</td>
-                                    <td><span class="inv-id">-</span></td>
-                                    <td>{{ $row->nama_desa }}</td>
-                                    <td><span class="inv-date">{{ $row->nama_domain }}.desa.id</span></td>
-                                    
-                                    <td style="text-align:center">
-                                        <span class="px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 font-medium">Perpanjangan</span>
+                                <tr class="hover:bg-slate-50/50 transition" style="animation-delay:{{$i*0.05}}s">
+                                    <td class="px-6 py-4 text-slate-500 font-medium">{{ $nomor++ }}</td>
+                                    <td class="px-6 py-4"><span class="font-mono text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded">-</span></td>
+                                    <td class="px-6 py-4 text-slate-700 font-medium">{{ $row->nama_desa }}</td>
+                                    <td class="px-6 py-4 text-[#1A85A5] font-semibold">{{ $row->nama_domain }}<span class="text-slate-300 font-medium">.desa.id</span></td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700">Perpanjangan</span>
                                     </td>
-
-                                    <td><span class="inv-date">-</span></td>
-
-                                    <td style="text-align:center">
-                                        <span class="inv-badge" style="background:#f1f5f9;color:#475569"><span class="d" style="background:#94a3b8"></span>Belum dibuat</span>
+                                    <td class="px-6 py-4 text-slate-400">-</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Belum Dibuat
+                                        </span>
                                     </td>
-
-                                    <td style="text-align:center">
-                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" style="display:inline">
+                                    <td class="px-6 py-4 text-center">
+                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="inv-btn-d js-confirm-print"><i class="fas fa-plus"></i> Buat Faktur</button>
+                                            <button type="submit" class="js-confirm-print inline-flex items-center gap-1.5 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                                                <i class="fas fa-plus text-[10px]"></i> Buat Faktur
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
                             @endif
                         @endif
                     @empty
-                        <tr class="inv-empty"><td colspan="8"><i class="fas fa-inbox"></i>Belum ada faktur</td></tr>
+                        <tr>
+                            <td colspan="8" class="px-6 py-16 text-center">
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center">
+                                        <i class="fas fa-inbox text-slate-300 text-xl"></i>
+                                    </div>
+                                    <p class="text-slate-400 text-sm font-medium">Belum ada faktur</p>
+                                </div>
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
+        {{-- PAGINATION --}}
         @include('components.inv-pagination', ['paginator' => $data])
+
     </div>
 </div>
 
-<!-- MODAL POPUP CONFIRMATION CETAK FAKTUR -->
-<div id="printConfirmationModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-    <div class="relative mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                <i class="fas fa-print text-blue-600 text-xl"></i>
+{{-- MODAL KONFIRMASI CETAK FAKTUR --}}
+<div id="printConfirmationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4">
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-[#109696]/10 mb-4">
+                <i class="fas fa-print text-[#109696] text-xl"></i>
             </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Konfirmasi</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">Apakah Anda yakin ingin mencetak faktur?</p>
-            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">Konfirmasi</h3>
+            <p class="text-sm text-slate-500 leading-relaxed">Apakah Anda yakin ingin mencetak faktur?</p>
         </div>
-        <div class="items-center px-4 py-3 flex justify-center gap-3">
-            <button id="printModalNoBtn" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300">Batal</button>
-            <button id="printModalYesBtn" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">Ya, Lanjutkan</button>
+        <div class="px-6 pb-6 flex items-center justify-center gap-3">
+            <button id="printModalNoBtn" class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-200 transition">Batal</button>
+            <button id="printModalYesBtn" class="flex-1 py-2.5 bg-[#109696] text-white text-sm font-semibold rounded-xl hover:bg-[#0d7a7a] transition shadow-sm">Ya, Lanjutkan</button>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-    // Hapus event listener untuk 'invFilter' (dropdown) karena sekarang pakai Form GET Server-side
-    // Kita hanya butuh logika Modal Konfirmasi Cetak Faktur
-
-    // Modal Logic
+document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('printConfirmationModal');
     const yesBtn = document.getElementById('printModalYesBtn');
     const noBtn = document.getElementById('printModalNoBtn');
@@ -295,9 +294,7 @@ document.addEventListener('DOMContentLoaded',function(){
     });
 
     noBtn.addEventListener('click', closeModal);
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) closeModal();
-    });
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
 
     function closeModal() {
         modal.classList.add('hidden');

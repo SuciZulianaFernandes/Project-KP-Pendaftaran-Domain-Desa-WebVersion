@@ -96,13 +96,16 @@ class AktivasiController extends Controller
 
         $statusFilter = $request->get('status', 'all');
         $kecamatanFilter = $request->get('kecamatan');
+        $search = $request->get('search', '');
 
         $query = Pengajuan::with('faktur', 'aktivasi')->where('status_pengajuan', 'aktif');
 
-        if ($statusFilter == 'aktif') {
+                if ($statusFilter == 'aktif') {
             $query->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'aktif'));
         } elseif ($statusFilter == 'kadaluarsa') {
             $query->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'kadaluarsa'));
+        } elseif ($statusFilter == 'nonaktif') { // TAMBAHKAN INI
+            $query->whereHas('aktivasi', fn($q) => $q->where('status_akt', 'nonaktif'));
         }
 
         if (!empty($kecamatanFilter)) {
@@ -114,6 +117,21 @@ class AktivasiController extends Controller
             'kecamatan' => $kecamatanFilter
         ]);
 
+        // TAMBAHKAN LOGIKA SEARCH INI
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama_domain', 'like', "%$search%")
+                  ->orWhere('desa_kelurahan', 'like', "%$search%");
+            });
+        }
+
+        // TAMBAHKAN 'search' DI APPENDS
+        $data = $query->latest()->paginate(10)->appends([
+            'status' => $statusFilter,
+            'kecamatan' => $kecamatanFilter,
+            'search' => $search
+        ]);
+
         $kecamatanList = Pengajuan::select('kecamatan')->distinct()->orderBy('kecamatan')->pluck('kecamatan');
         $baseQuery = Pengajuan::where('status_pengajuan', 'aktif');
 
@@ -123,7 +141,7 @@ class AktivasiController extends Controller
         $totalNonaktif = $totalDomain - ($totalAktif + $totalKadaluarsa);
 
         return view('admin.domain_terdaftar', compact(
-            'data', 'statusFilter', 'kecamatanFilter', 'kecamatanList',
+            'data', 'statusFilter', 'kecamatanFilter', 'kecamatanList', 'search',
             'totalDomain', 'totalAktif', 'totalNonaktif', 'totalKadaluarsa'
         ));
     }
