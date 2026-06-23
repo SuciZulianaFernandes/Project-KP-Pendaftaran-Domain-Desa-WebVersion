@@ -13,7 +13,7 @@
     </div>
 @endif
 
-<div class="bg-white rounded-xl shadow p-10">
+<div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-10">
 
     @include('desa.pengajuan._steps', ['currentStep' => 2])
 
@@ -43,7 +43,7 @@
                            id="nama_desa"
                            name="nama_desa"
                            value="{{ old('nama_desa', $data_desa['nama_desa'] ?? '') }}"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150"
                            placeholder="Contoh: Pemerintah Desa XXX"
                            required>
                 </div>
@@ -62,7 +62,7 @@
                 <textarea id="alamat"
                           name="alamat"
                           rows="3"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150"
                           placeholder="Jl. Contoh No. 123"
                           required>{{ old('alamat', $data_desa['alamat'] ?? '') }}</textarea>
 
@@ -100,7 +100,7 @@
 
                     <select id="kota_kabupaten"
                             name="kota_kabupaten"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150 bg-white"
                             required>
 
                         <option value="">
@@ -128,7 +128,7 @@
 
                     <select id="kecamatan"
                             name="kecamatan"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150 bg-white"
                             required
                             disabled>
 
@@ -161,7 +161,7 @@
 
                     <select id="desa_kelurahan"
                             name="desa_kelurahan"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150 bg-white"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150 bg-white"
                             required
                             disabled>
 
@@ -191,7 +191,7 @@
                            id="kode_pos"
                            name="kode_pos"
                            value="{{ old('kode_pos', $data_desa['kode_pos'] ?? '') }}"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150"
                            placeholder="Contoh: 28111"
                            required>
 
@@ -214,7 +214,7 @@
                            id="Telepon"
                            name="Telepon"
                            value="{{ old('Telepon', $data_desa['Telepon'] ?? '') }}"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150"
                            placeholder="Contoh: 0761123456"
                            required>
 
@@ -231,7 +231,7 @@
                            id="Faksimili"
                            name="Faksimili"
                            value="{{ old('Faksimili', $data_desa['Faksimili'] ?? '') }}"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 transition duration-150"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150"
                            placeholder="Contoh: 0761123457">
 
                 </div>
@@ -247,7 +247,7 @@
                 </a>
 
                 <button type="submit"
-                        class="px-7 py-3 bg-red-700 text-white font-semibold rounded-lg hover:bg-red-800 transition duration-150">
+                        class="px-7 py-3 bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] hover:opacity-90 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg">
 
                     Lanjutkan
 

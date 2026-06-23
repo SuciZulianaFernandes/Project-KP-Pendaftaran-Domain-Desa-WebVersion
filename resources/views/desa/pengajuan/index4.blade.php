@@ -4,14 +4,7 @@
 
 @section('content')
 
-<div class="bg-white rounded-md shadow p-6 md:p-8">
-
-    <!-- JUDUL -->
-    <div class="mb-8">
-        <h1 class="text-sm font-semibold text-gray-700">
-            Pendaftaran Domain
-        </h1>
-    </div>
+<div class="bg-white rounded-3xl shadow-xl border border-slate-100 p-10">
 
     @include('desa.pengajuan._steps', ['currentStep' => 4])
 
@@ -19,17 +12,17 @@
 
         <!-- SUB JUDUL -->
         <div class="text-center mb-8">
-            <h2 class="font-semibold text-gray-800 text-sm">
-                Pratinjau
-            </h2>
+            <h3 class="font-semibold text-gray-700 text-center">
+                Pratinjau Pengajuan
+            </h3>
         </div>
 
         <!-- INFORMASI INSTANSI -->
         <div class="grid grid-cols-1 gap-5 mb-5">
 
-            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
 
-                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
+                <div class="bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] text-white px-4 py-3 font-semibold text-sm">
                     Informasi Instansi
                 </div>
 
@@ -39,7 +32,7 @@
 
                         <tr class="border-b border-gray-200">
 
-                            <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium w-1/4 bg-gray-50">
                                 Nama Organisasi
                             </td>
 
@@ -47,7 +40,7 @@
                                 {{ $data['data_desa']['nama_desa'] ?? '-' }}
                             </td>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium w-1/4 bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium w-1/4 bg-gray-50">
                                 Provinsi
                             </td>
 
@@ -59,7 +52,7 @@
 
                         <tr class="border-b border-gray-200">
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Kabupaten
                             </td>
 
@@ -67,7 +60,7 @@
                                 {{ session('nama_kabupaten') ?? ($data['data_desa']['kota_kabupaten'] ?? '-') }}
                             </td>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Kecamatan
                             </td>
 
@@ -79,7 +72,7 @@
 
                         <tr class="border-b border-gray-200">
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Desa
                             </td>
 
@@ -87,7 +80,7 @@
                                 {{ session('nama_desa') ?? ($data['data_desa']['desa_kelurahan'] ?? '-') }}
                             </td>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Kode Pos
                             </td>
 
@@ -99,7 +92,7 @@
 
                         <tr class="border-b border-gray-200">
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Telepon
                             </td>
 
@@ -107,7 +100,7 @@
                                 {{ $data['data_desa']['Telepon'] ?? '-' }}
                             </td>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Faksimili
                             </td>
 
@@ -119,7 +112,7 @@
 
                         <tr class="border-b border-gray-200">
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Email Registran
                             </td>
 
@@ -127,7 +120,7 @@
                                 {{ auth()->user()->email ?? '-' }}
                             </td>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Alamat
                             </td>
 
@@ -139,7 +132,7 @@
 
                         <tr>
 
-                            <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                            <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                                 Tanggal Pembuatan
                             </td>
 
@@ -164,9 +157,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
 
             <!-- DOMAIN -->
-            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
 
-                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
+                <div class="bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] text-white px-4 py-3 font-semibold text-sm">
                     Informasi Domain
                 </div>
 
@@ -174,7 +167,7 @@
 
                     <tr>
 
-                        <td class="px-4 py-4 text-blue-700 w-1/2">
+                        <td class="px-4 py-4 text-[#1760C5] w-1/2">
                             Nama Domain
                         </td>
 
@@ -189,9 +182,9 @@
             </div>
 
             <!-- MASA AKTIF -->
-            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
 
-                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
+                <div class="bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] text-white px-4 py-3 font-semibold text-sm">
                     Masa Aktif
                 </div>
 
@@ -199,7 +192,7 @@
 
                     <tr>
 
-                        <td class="px-4 py-4 text-blue-700 w-1/2">
+                        <td class="px-4 py-4 text-[#1760C5] w-1/2">
                             Masa Aktif
                         </td>
 
@@ -218,9 +211,9 @@
         <!-- DOKUMEN PERSYARATAN (DIUBAH: 3 DOKUMEN, 1 KOLOM) -->
         <div class="grid grid-cols-1 gap-5 mb-8">
 
-            <div class="border border-gray-200 rounded-md overflow-hidden bg-white">
+            <div class="border border-gray-200 rounded-lg overflow-hidden bg-white">
 
-                <div class="bg-red-800 text-white px-4 py-3 font-semibold text-sm rounded-t-md">
+                <div class="bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] text-white px-4 py-3 font-semibold text-sm">
                     Dokumen Persyaratan
                 </div>
 
@@ -229,13 +222,13 @@
                     <!-- Dokumen 1: Surat Permohonan Domain Desa -->
                     <tr class="border-b border-gray-200">
 
-                        <td class="px-4 py-4 text-blue-700 font-medium w-2/5 bg-gray-50">
+                        <td class="px-4 py-4 text-[#1760C5] font-medium w-2/5 bg-gray-50">
                             Surat Permohonan Domain Desa
                         </td>
 
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-[#1760C5] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
                                 </svg>
                                 <span>{{ $data['data_dokumen']['surat_permohonan']['nama_file'] ?? '-' }}</span>
@@ -247,13 +240,13 @@
                     <!-- Dokumen 2: Surat Kuasa dari Desa -->
                     <tr class="border-b border-gray-200">
 
-                        <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                        <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                             Surat Kuasa dari Desa
                         </td>
 
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-[#1760C5] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
                                 </svg>
                                 <span>{{ $data['data_dokumen']['surat_kuasa']['nama_file'] ?? '-' }}</span>
@@ -265,13 +258,13 @@
                     <!-- Dokumen 3: Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa -->
                     <tr>
 
-                        <td class="px-4 py-4 text-blue-700 font-medium bg-gray-50">
+                        <td class="px-4 py-4 text-[#1760C5] font-medium bg-gray-50">
                             Dasar Hukum Pembentukan Desa / Surat Pelantikan Kepala Desa
                         </td>
 
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-2">
-                                <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-[#1760C5] flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h5v7h7v9H6z"/>
                                 </svg>
                                 <span>{{ $data['data_dokumen']['perda_pembentukan_desa']['nama_file'] ?? '-' }}</span>
@@ -296,14 +289,14 @@
             <div class="flex justify-end gap-3">
 
                 <a href="{{ route('desa.pengajuan.dokumen') }}"
-                class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded text-sm">
+                class="px-7 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 transition duration-150">
                     &lt; Kembali
                 </a>
 
                 <button
                     type="submit"
                     id="btnAjukan"
-                    class="px-8 py-2 bg-red-800 hover:bg-red-900 text-white rounded text-sm flex items-center gap-2"
+                    class="px-7 py-3 bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] hover:opacity-90 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg flex items-center gap-2"
                 >
 
                     <span id="btnText">
@@ -336,7 +329,6 @@
         </form>
 
     </div>
-
 </div>
 
 <!-- MODAL SUKSES -->
@@ -347,9 +339,9 @@ class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-
     id="modalContent"
     class="bg-white rounded-2xl shadow-2xl p-8 mx-4 w-full max-w-sm text-center transform transition-all duration-300 scale-95 opacity-0">
 
-        <div class="mx-auto mb-5 w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+        <div class="mx-auto mb-5 w-20 h-20 bg-gradient-to-r from-[#109696]/10 via-[#1A85A5]/10 to-[#1760C5]/10 rounded-full flex items-center justify-center">
 
-            <svg class="w-12 h-12 text-green-500"
+            <svg class="w-12 h-12 text-[#1760C5]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">
@@ -373,7 +365,7 @@ class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-
 
         <button
         onclick="redirectToVerifikasi()"
-        class="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition duration-200 text-base">
+        class="w-full py-3 bg-gradient-to-r from-[#109696] via-[#1A85A5] to-[#1760C5] hover:opacity-90 text-white font-semibold rounded-lg transition duration-200 text-base shadow-lg">
             OK
         </button>
 

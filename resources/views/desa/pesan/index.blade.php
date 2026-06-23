@@ -28,7 +28,7 @@
         id="selectAllButton"
         onclick="handleSelectAll()"
         class="hidden inline-flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 font-semibold py-2 px-4 rounded-xl transition text-sm">
-        <i class="far fa-square text-xs"></i> hapus semua
+        <i class="far fa-square text-xs"></i> Batal hapus semua
     </button>
 
             <button type="button"

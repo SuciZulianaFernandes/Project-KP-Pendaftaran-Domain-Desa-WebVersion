@@ -77,465 +77,527 @@
 
 @endphp
 
-<div class="flex flex-col lg:flex-row gap-6">
+<div class="space-y-6">
+    <div class="flex flex-col lg:flex-row gap-6">
 
-    <!-- SIDEBAR KIRI -->
-    <div class="w-full lg:w-64 flex-shrink-0 space-y-4">
+        <!-- SIDEBAR KIRI -->
+        <div class="w-full lg:w-80 flex-shrink-0 space-y-6">
 
-        <!-- STATUS DOMAIN -->
-        <div class="bg-white rounded-xl shadow border overflow-hidden">
+            <!-- STATUS DOMAIN -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800 text-xs uppercase tracking-widest">Status Domain</h3>
+                </div>
 
-            <div class="px-5 py-4 border-b bg-gray-50">
-                <h3 class="font-semibold text-gray-800">Status Domain</h3>
+                <div class="p-5 space-y-5">
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Nama Domain</p>
+                        <p class="text-[#1A85A5] font-extrabold text-xl tracking-tight">
+                            {{ $pengajuan->nama_domain }}<span class="text-slate-300 font-bold">.desa.id</span>
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3.5 rounded-xl border
+                        @if($finalStatus == 'ditinjau') bg-amber-50 border-amber-100
+                        @elseif($finalStatus == 'perlu_perbaikan') bg-rose-50 border-rose-100
+                        @elseif($finalStatus == 'diproses') bg-sky-50 border-sky-100
+                        @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-50 border-orange-100
+                        @elseif($finalStatus == 'aktif') bg-emerald-50 border-emerald-100
+                        @elseif($finalStatus == 'kadaluarsa') bg-slate-100 border-slate-200
+                        @else bg-slate-50 border-slate-100 @endif">
+                        
+                        <span class="w-3 h-3 rounded-full flex-shrink-0
+                            @if($finalStatus == 'ditinjau') bg-amber-500
+                            @elseif($finalStatus == 'perlu_perbaikan') bg-rose-500
+                            @elseif($finalStatus == 'diproses') bg-sky-500
+                            @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
+                            @elseif($finalStatus == 'aktif') bg-emerald-500
+                            @elseif($finalStatus == 'kadaluarsa') bg-slate-400
+                            @else bg-slate-300 @endif">
+                        </span>
+
+                        <span class="text-sm font-bold capitalize
+                            @if($finalStatus == 'ditinjau') text-amber-700
+                            @elseif($finalStatus == 'perlu_perbaikan') text-rose-700
+                            @elseif($finalStatus == 'diproses') text-sky-700
+                            @elseif($finalStatus == 'menunggu_aktivasi') text-orange-700
+                            @elseif($finalStatus == 'aktif') text-emerald-700
+                            @elseif($finalStatus == 'kadaluarsa') text-slate-600
+                            @else text-slate-500 @endif">
+                            {{ str_replace('_', ' ', $finalStatus) }}
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div class="p-5 text-sm">
-
-                <p class="mb-3">
-                    <strong>Domain</strong><br>
-                    {{ $pengajuan->nama_domain }}.desa.id
-                </p>
-
-                <p class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full
-                        @if($finalStatus == 'ditinjau') bg-yellow-500
-                        @elseif($finalStatus == 'perlu_perbaikan') bg-red-500
-                        @elseif($finalStatus == 'diproses') bg-blue-500
-                        @elseif($finalStatus == 'menunggu_aktivasi') bg-orange-500
-                        @elseif($finalStatus == 'aktif') bg-green-600
-                        @elseif($finalStatus == 'kadaluarsa') bg-gray-500
-                        @elseif($finalStatus == 'nonaktif') bg-gray-400
-                        @else bg-gray-400
-                        @endif">
-                    </span>
-
-                    <span class="text-gray-700">Status :</span>
-
-                    <span class="font-semibold
-                        @if($finalStatus == 'ditinjau') text-yellow-600
-                        @elseif($finalStatus == 'perlu_perbaikan') text-red-600
-                        @elseif($finalStatus == 'diproses') text-blue-600
-                        @elseif($finalStatus == 'menunggu_aktivasi') text-orange-600
-                        @elseif($finalStatus == 'aktif') text-green-600
-                        @elseif($finalStatus == 'kadaluarsa') text-gray-600
-                        @elseif($finalStatus == 'nonaktif') text-gray-500
-                        @else text-gray-500
-                        @endif">
-                        {{ ucfirst(str_replace('_', ' ', $finalStatus)) }}
-                    </span>
-                </p>
-
-            </div>
         </div>
 
-    </div>
+        <!-- CONTENT KANAN -->
+        <div class="flex-1 min-w-0">
 
-    <!-- CONTENT KANAN -->
-    <div class="flex-1">
+            <div class="bg-white p-6 md:p-8 rounded-2xl border border-slate-100 shadow-sm">
 
-        <div class="bg-white p-6 rounded-xl shadow">
-
-            <!-- HEADER -->
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-
-                <h2 class="text-xl font-bold text-gray-800">
-                    Detail Pengajuan
-                </h2>
-
-                <a href="{{ url()->previous() }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
-                    <i class="fas fa-arrow-left mr-2"></i> Kembali
-                </a>
-
-            </div>
-
-            <!-- INFORMASI INSTANSI -->
-            <h3 class="font-semibold mb-4">Informasi Instansi</h3>
-
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-x-10 gap-y-3 text-sm mb-6">
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Nama Organisasi</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->nama_desa }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Provinsi</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->provinsi }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Kabupaten</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->kota_kabupaten }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Kecamatan</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->kecamatan }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Desa</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->desa_kelurahan }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Telepon</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->telepon }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Faksimili</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->faksimili }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Kode Pos</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->kode_pos }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Email Registran</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->email }}</span>
-                </div>
-
-                <div class="flex">
-                    <span class="w-48 text-gray-600">Alamat</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->alamat }}</span>
-                </div>
-
-                <div class="flex xl:col-span-2">
-                    <span class="w-48 text-gray-600">Tanggal Pembuatan</span>
-                    <span class="w-4 text-center">:</span>
-                    <span>{{ $pengajuan->created_at->format('d M Y') }}</span>
-                </div>
-
-            </div>
-
-            {{-- ========================================== --}}
-            {{-- CATATAN ADMIN (MUNCUL JIKA PERLU PERBAIKAN) --}}
-            {{-- ========================================== --}}
-            @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && !empty($pengajuan->catatan_umum))
-            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg shadow-sm">
-                <div class="flex items-start gap-3">
-                    <div class="bg-red-100 p-1.5 rounded-full text-red-600 mt-0.5">
-                        <i class="fas fa-exclamation-triangle text-sm"></i>
-                    </div>
+                <!-- HEADER -->
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
                     <div>
-                        <p class="font-bold text-red-800 text-sm mb-1">Catatan dari Admin:</p>
-                        <p class="text-red-700 text-sm whitespace-pre-line leading-relaxed">{{ $pengajuan->catatan_umum }}</p>
+                        <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Detail Pengajuan</h2>
+                        <p class="text-sm text-slate-400 mt-1">Informasi lengkap pengajuan domain desa</p>
                     </div>
+
+                    <a href="{{ url()->previous() }}" 
+                       class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2.5 px-5 rounded-xl transition text-sm">
+                        <i class="fas fa-arrow-left text-xs"></i> Kembali
+                    </a>
                 </div>
-            </div>
-            @endif
 
-            <!-- DOKUMEN PERSYARATAN -->
-            <h3 class="font-semibold mb-4">Dokumen Persyaratan Domain</h3>
+                <!-- INFORMASI INSTANSI -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Informasi Instansi
+                    </h3>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
-                
-                @foreach($pengajuan->dokumenPersyaratan as $dok)
-                    
-                    <div class="border rounded-lg p-4 bg-white hover:shadow-sm transition flex flex-col gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-sm bg-slate-50/50 p-5 rounded-xl border border-slate-100">
                         
-                        <div class="flex justify-between items-start gap-3">
-                            <div class="flex flex-col gap-1">
-                                {{-- LABEL DOKUMEN --}}
-                                <span class="text-gray-700 font-medium">{{ $labelDokumen[$dok->jenis_dokumen] ?? $dok->jenis_dokumen }}</span>
-                                
-                                {{-- BADGE BARU DIPERBARUI --}}
-                                @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && $dok->updated_at > $pengajuan->updated_at)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 w-fit">
-                                        <svg class="mr-1.5 h-2 w-2 text-green-500" fill="currentColor" viewBox="0 0 8 8">
-                                            <circle cx="4" cy="4" r="3" />
-                                        </svg>
-                                        Baru Diperbarui
-                                    </span>
-                                @endif
-                            </div>
-
-                            <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
-                            target="_blank"
-                            class="text-red-600 text-xs whitespace-nowrap font-semibold hover:underline flex items-center gap-1">
-                                <i class="fas fa-eye"></i> Lihat
-                            </a>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Nama Organisasi</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->nama_desa }}</span>
                         </div>
 
-                        {{-- FORM UPLOAD ULANG DENGAN ALERT KONFIRMASI --}}
-                        @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Provinsi</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->provinsi }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Kabupaten</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->kota_kabupaten }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Kecamatan</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->kecamatan }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Desa</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->desa_kelurahan }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Telepon</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->telepon }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Faksimili</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->faksimili }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Kode Pos</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->kode_pos }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Email Registran</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->email }}</span>
+                        </div>
+
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Tanggal Pembuatan</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->created_at->format('d M Y') }}</span>
+                        </div>
+
+                        <div class="flex flex-col md:col-span-2">
+                            <span class="text-slate-400 text-xs font-semibold mb-0.5">Alamat</span>
+                            <span class="text-slate-700 font-medium">{{ $pengajuan->alamat }}</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- ========================================== --}}
+                {{-- CATATAN ADMIN (MUNCUL JIKA PERLU PERBAIKAN) --}}
+                {{-- ========================================== --}}
+                @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && !empty($pengajuan->catatan_umum))
+                <div class="mb-8 p-4 bg-rose-50 border border-rose-200 rounded-xl shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <div class="w-9 h-9 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 flex-shrink-0 mt-0.5">
+                            <i class="fas fa-exclamation-triangle text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-rose-800 text-sm mb-1">Catatan dari Admin:</p>
+                            <p class="text-rose-700 text-sm whitespace-pre-line leading-relaxed">{{ $pengajuan->catatan_umum }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                <!-- DOKUMEN PERSYARATAN -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Dokumen Persyaratan Domain
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         
-                        <form
-                            action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
-                            method="POST"
-                            enctype="multipart/form-data"
-                            class="mt-auto pt-3 border-t border-gray-100 space-y-2"
-                            onsubmit="return confirm('Yakin ingin mengganti dokumen ini dengan file baru?')"
-                        >
-                            @csrf
-                            @method('PUT')
+                        @foreach($pengajuan->dokumenPersyaratan as $dok)
+                        <div class="border border-slate-100 rounded-xl p-4 bg-slate-50/50 hover:border-[#109696]/30 hover:shadow-sm transition-all group flex flex-col gap-3">
+                            
+                            <div class="flex justify-between items-start gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 bg-[#109696]/10 text-[#109696] rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-[#109696] group-hover:text-white transition">
+                                        <i class="fas fa-file-alt text-sm"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-slate-700 text-sm font-medium truncate">{{ $labelDokumen[$dok->jenis_dokumen] ?? $dok->jenis_dokumen }}</p>
+                                        
+                                        @if($pengajuan->status_pengajuan == 'perlu_perbaikan' && $dok->updated_at > $pengajuan->updated_at)
+                                            <span class="inline-flex items-center gap-1 mt-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
+                                                <i class="fas fa-check-circle"></i> Diperbarui
+                                            </span>
+                                        @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan')
+                                            <p class="text-[10px] text-slate-400 mt-0.5">Update: {{ $dok->updated_at->format('d M Y, H:i') }}</p>
+                                        @endif
+                                    </div>
+                                </div>
 
-                            <input
-                                type="file"
-                                name="file"
-                                required
-                                accept="application/pdf"
-                                class="w-full text-xs border border-dashed border-gray-300 rounded p-1.5 bg-gray-50 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-red-700 file:text-white hover:file:bg-red-800 cursor-pointer"
-                            >
-
-                            <div class="flex justify-end">
-                                <button
-                                    type="submit"
-                                    class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded font-medium flex items-center gap-1"
-                                >
-                                    <i class="fas fa-upload text-[10px]"></i> Upload Ulang
-                                </button>
+                                <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
+                                target="_blank"
+                                class="text-[#109696] hover:text-white bg-[#109696]/10 hover:bg-[#109696] text-xs font-bold px-3 py-2 rounded-lg transition-all flex-shrink-0">
+                                    <i class="fas fa-eye"></i>
+                                </a>
                             </div>
 
-                        </form>
+                            {{-- FORM UPLOAD ULANG --}}
+                            @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
+                            <form
+                                action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
+                                method="POST"
+                                enctype="multipart/form-data"
+                                class="mt-auto pt-3 border-t border-slate-100 space-y-2"
+                                onsubmit="return confirm('Yakin ingin mengganti dokumen ini dengan file baru?')"
+                            >
+                                @csrf
+                                @method('PUT')
 
-                        @endif
+                                <input
+                                    type="file"
+                                    name="file"
+                                    required
+                                    accept="application/pdf"
+                                    class="w-full text-xs border border-dashed border-slate-300 rounded-lg p-2 bg-slate-50 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#109696] file:text-white hover:file:bg-[#0d7a7a] cursor-pointer"
+                                >
+
+                                <div class="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#109696] hover:bg-[#0d7a7a] text-white rounded-lg text-xs font-bold transition shadow-sm"
+                                    >
+                                        <i class="fas fa-upload text-[10px]"></i> Upload Ulang
+                                    </button>
+                                </div>
+
+                            </form>
+                            @endif
+                        </div>
+                        @endforeach
+
                     </div>
+                </div>
 
-                @endforeach
-
-            </div>
-
-            {{-- RIWAYAT DATA FAKTUR --}}
-            @if($pengajuan->faktur->isNotEmpty())
-
-            <div class="mb-6 bg-gray-50 p-4 rounded-xl border">
-
-                <div class="flex items-center justify-between mb-4">
-
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800">
+                {{-- RIWAYAT DATA FAKTUR --}}
+                @if($pengajuan->faktur->isNotEmpty())
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
                             Riwayat Data Faktur
                         </h3>
-
-                        <p class="text-sm text-gray-500">
-                            Daftar faktur yang berkaitan dengan domain ini.
-                        </p>
                     </div>
 
-                </div>
-
-                <div class="space-y-4">
-
-                    @foreach($pengajuan->faktur as $fakturItem)
-
-                    <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200">
-
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-
-                            <div class="space-y-2 text-sm">
-
-                                <div>
-                                    <p class="text-gray-500 text-xs">Nomor Invoice</p>
-                                    <p class="font-semibold text-gray-800">{{ $fakturItem->no_invoice }}</p>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-
-                                    <div>
-                                        <p class="text-gray-500 text-xs">Total Tagihan</p>
-                                        <p class="font-medium text-gray-800">
-                                            Rp {{ number_format($fakturItem->total,0,',','.') }}
-                                        </p>
+                    <div class="space-y-3">
+                        @foreach($pengajuan->faktur as $fakturItem)
+                        <div class="bg-slate-50/50 border border-slate-100 rounded-xl p-5 hover:shadow-sm transition">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 bg-[#1760C5]/10 text-[#1760C5] rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <i class="fas fa-file-invoice-dollar"></i>
                                     </div>
-
                                     <div>
-                                        <p class="text-gray-500 text-xs">Status Pembayaran</p>
-                                        <p class="font-semibold
-                                            @if($fakturItem->status == 'belum_bayar') text-yellow-600
-                                            @elseif($fakturItem->status == 'sudah_bayar') text-green-600
-                                            @elseif($fakturItem->status == 'kedaluarsa') text-red-600
-                                            @endif">
-
-                                            {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
-                                        </p>
+                                        <p class="font-bold text-slate-800">{{ $fakturItem->no_invoice }}</p>
+                                        <div class="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
+                                            <div>
+                                                <span class="text-slate-400 text-xs">Total Tagihan</span>
+                                                <p class="font-semibold text-slate-700">Rp {{ number_format($fakturItem->total, 0, ',', '.') }}</p>
+                                            </div>
+                                            <div>
+                                                <span class="text-slate-400 text-xs">Status</span>
+                                                <p class="font-bold text-xs mt-0.5
+                                                    @if($fakturItem->status == 'belum_bayar') text-amber-600
+                                                    @elseif($fakturItem->status == 'sudah_bayar') text-emerald-600
+                                                    @elseif($fakturItem->status == 'kedaluarsa') text-rose-600
+                                                    @endif">
+                                                    {{ ucfirst(str_replace('_',' ',$fakturItem->status)) }}
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-
                                 </div>
-
-                            </div>
-
-                            <div class="flex justify-start lg:justify-end">
 
                                 <a href="{{ route('desa.faktur.show', $fakturItem->id) }}"
-                                class="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold px-4 py-2 rounded-lg transition duration-200 shadow-sm">
-
-                                    <i class="fas fa-eye"></i>
-                                    Detail Faktur
+                                class="inline-flex items-center gap-2 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex-shrink-0">
+                                    <i class="fas fa-eye text-[10px]"></i> Detail Faktur
                                 </a>
-
                             </div>
-
                         </div>
-
+                        @endforeach
                     </div>
-
-                    @endforeach
-
                 </div>
+                @endif
 
-            </div>
+                <hr class="my-8 border-slate-100">
 
-            @endif
+                {{-- DIPROSES --}}
+                @if($finalStatus == 'diproses')
 
-            <!-- STATUS INFO -->
-
-            {{-- DIPROSES --}}
-            @if($finalStatus == 'diproses')
-
-                @php
-                    $sudahKonfirmasiBayar = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
-                        ->where('role_tujuan', 'admin')
-                        ->where('judul', 'Konfirmasi Pembayaran Disetujui')
-                        ->exists();
-                    
-                    $fakturDesa = $pengajuan->faktur
-                        ->where('status', 'belum_bayar')
-                        ->sortByDesc('created_at')
-                        ->first();
-
-                    $fakturPerpanjanganAda = false;
-
-                    if ($perpanjanganMsg) {
-                        $fakturPerpanjanganAda = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
-                            ->where('tipe', 'perpanjangan')
-                            ->where('created_at', '>', $perpanjanganMsg->created_at)
+                    @php
+                        $sudahKonfirmasiBayar = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+                            ->where('role_tujuan', 'admin')
+                            ->where('judul', 'Konfirmasi Pembayaran Disetujui')
                             ->exists();
-                    }
-                @endphp
-
-                                @if(!$sudahKonfirmasiBayar && !$fakturPerpanjanganAda)
-
-                    <div class="bg-blue-50 p-5 rounded border border-blue-200 mt-4">
-                        <p class="text-blue-800 font-semibold mb-4">
-                            Pengajuan sedang diproses. Pilih masa berlaku perpanjangan untuk meminta faktur.
-                        </p>
                         
-                        <!-- GANTI ROUTE MENJADI desa.ajukan.faktur -->
+                        $fakturDesa = $pengajuan->faktur
+                            ->where('status', 'belum_bayar')
+                            ->sortByDesc('created_at')
+                            ->first();
+
+                        $fakturPerpanjanganAda = false;
+
+                        if ($perpanjanganMsg) {
+                            $fakturPerpanjanganAda = \App\Models\Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
+                                ->where('tipe', 'perpanjangan')
+                                ->where('created_at', '>', $perpanjanganMsg->created_at)
+                                ->exists();
+                        }
+                        
+                        // Konstanta Harga
+                        $hargaDasarPerTahun = 50000;
+                        $ppnPersen = 11;
+                    @endphp
+
+                    @if(!$sudahKonfirmasiBayar && !$fakturPerpanjanganAda)
+
+                    <div class="bg-sky-50 p-6 rounded-xl border border-sky-100">
+                        <div class="flex items-start gap-4 mb-5">
+                            <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600 flex-shrink-0 mt-0.5">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800">Pengajuan Sedang Diproses</h4>
+                                <p class="text-sm text-slate-500 mt-1">Pilih masa berlaku perpanjangan untuk meminta faktur.</p>
+                            </div>
+                        </div>
+                        
                         <form action="{{ route('desa.ajukan.faktur', $pengajuan->id_pengajuan) }}" method="POST" id="formKonfirmasi">
                             @csrf
                             
-                            <select name="durasi_tahun" id="durasi_tahun" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm">
-    <option value="" disabled selected>-- Pilih Tahun --</option>
-    <option value="1">1 Tahun (Rp 55.500)</option>
-    <option value="2">2 Tahun (Rp 111.000)</option>
-    <option value="3">3 Tahun (Rp 166.500)</option>
-    <option value="4">4 Tahun (Rp 222.000)</option>
-    <option value="5">5 Tahun (Rp 277.500)</option>
-</select>
+                            <select name="durasi_tahun" id="durasi_tahun" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+                                <option value="" disabled selected>-- Pilih Tahun --</option>
+                                <option value="1">1 Tahun (Rp 55.500)</option>
+                                <option value="2">2 Tahun (Rp 111.000)</option>
+                                <option value="3">3 Tahun (Rp 166.500)</option>
+                                <option value="4">4 Tahun (Rp 222.000)</option>
+                                <option value="5">5 Tahun (Rp 277.500)</option>
+                            </select>
 
-<div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-    <strong><i class="fas fa-info-circle mr-1"></i>Keterangan Harga:</strong><br>
-    • Biaya per tahun: Rp 50.000<br>
-    • PPN 11%: Rp 5.500 per tahun<br>
-    • <strong>Total per tahun: Rp 55.500 (sudah termasuk PPN)</strong><br><br>
-    <strong><i class="fas fa-exclamation-triangle mr-1"></i>Disclaimer:</strong> 
-    Masa berlaku akan dihitung oleh admin mulai dari tanggal domain diaktifkan. Pastikan pilihan tahun sudah sesuai dengan kebutuhan desa.
-</div>
+                            <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                                <strong><i class="fas fa-info-circle mr-1"></i>Keterangan Harga:</strong><br>
+                                • Biaya per tahun: Rp 50.000<br>
+                                • PPN 11%: Rp 5.500 per tahun<br>
+                                • <strong>Total per tahun: Rp 55.500 (sudah termasuk PPN)</strong><br><br>
+                                <strong><i class="fas fa-exclamation-triangle mr-1"></i>Disclaimer:</strong> 
+                                Masa berlaku akan dihitung oleh admin mulai dari tanggal domain diaktifkan. Pastikan pilihan tahun sudah sesuai dengan kebutuhan desa.
+                            </div>
 
-                            <div class="flex justify-end">
+                            <div class="flex justify-end mt-4">
                                 <button type="submit" 
-                                        class="js-confirm-btn bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-6 rounded shadow transition duration-200 inline-flex items-center text-sm"
+                                        class="js-confirm-btn bg-[#109696] hover:bg-[#0d7a7a] text-white font-bold py-2.5 px-6 rounded-xl text-sm shadow-sm transition inline-flex items-center gap-2"
                                         data-confirm-message="Yakin ingin mengajukan permintaan faktur perpanjangan?">
-                                    <i class="fas fa-paper-plane mr-2"></i> Ya, Kirimkan Faktur
+                                    <i class="fas fa-paper-plane text-xs"></i> Ya, Kirimkan Faktur
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                @else
+                    @else
 
-                    <div class="bg-blue-50 p-4 rounded border border-blue-200 mt-4">
-                        <p class="text-blue-800 font-semibold mb-2">
-                            @if($hasUnpaidInvoice || $fakturPerpanjanganAda)
-                                Faktur telah diterbitkan. Silahkan upload bukti pembayaran.
-                            @else
-                                Menunggu faktur dari admin kominfo
-                            @endif
+                    <div class="bg-sky-50 p-6 rounded-xl border border-sky-100">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600 flex-shrink-0 mt-0.5">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div>
+                                <p class="text-sky-800 font-semibold text-sm">
+                                    @if($hasUnpaidInvoice || $fakturPerpanjanganAda)
+                                        Faktur telah diterbitkan. Silahkan upload bukti pembayaran.
+                                    @else
+                                        Menunggu faktur dari admin kominfo
+                                    @endif
+                                </p>
+
+                                @if($fakturDesa)
+                                    <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}" class="text-sm text-[#109696] font-semibold hover:underline mt-1 inline-block">
+                                        Lihat Detail Faktur →
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    @endif
+
+                {{-- MENUNGGU AKTIVASI --}}
+                @elseif($finalStatus == 'menunggu_aktivasi')
+
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-200 flex items-center gap-3 mt-2">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 flex-shrink-0">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <p class="text-orange-700 font-semibold text-sm">
+                            Menunggu aktivasi dari admin kominfo
                         </p>
+                    </div>
 
-                        @if($fakturDesa)
-                            <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}" class="text-sm underline hover:text-blue-700">
-                                Lihat Detail Faktur
-                            </a>
-                        @endif
+                {{-- AKTIF --}}
+                @elseif($finalStatus == 'aktif')
+
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center gap-3 mt-2">
+                        <i class="fas fa-check-circle text-emerald-500 text-lg"></i>
+                        <p class="text-emerald-700 font-semibold text-sm">Domain Sudah Aktif</p>
+                    </div>
+
+                {{-- KADALUARSA --}}
+                @elseif($finalStatus == 'kadaluarsa')
+
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 flex items-center gap-3 mt-2">
+                        <i class="fas fa-exclamation-triangle text-slate-400 text-lg"></i>
+                        <p class="text-slate-600 font-semibold text-sm">
+                            Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}.
+                        </p>
+                    </div>
+
+                {{-- NONAKTIF --}}
+                @elseif($finalStatus == 'nonaktif')
+
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 flex items-center gap-3 mt-2">
+                        <i class="fas fa-exclamation-triangle text-slate-400 text-lg"></i>
+                        <p class="text-slate-600 font-semibold text-sm">
+                            Domain saat ini dalam status nonaktif.
+                        </p>
+                    </div>
+
+                {{-- DITINJAU --}}
+                @elseif($finalStatus == 'ditinjau')
+
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-center gap-3 mt-2">
+                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 flex-shrink-0">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <p class="text-amber-700 font-semibold text-sm">
+                            Pengajuan sedang ditinjau oleh admin.
+                        </p>
+                    </div>
+
+                {{-- PERLU PERBAIKAN --}}
+                @elseif($finalStatus == 'perlu_perbaikan')
+
+                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 flex items-center gap-3 mt-2">
+                        <div class="w-9 h-9 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 flex-shrink-0 mt-0.5">
+                            <i class="fas fa-exclamation-circle text-sm"></i>
+                        </div>
+                        <p class="text-rose-700 font-semibold text-sm">
+                            Dokumen perlu diperbaiki sesuai catatan admin di atas.
+                        </p>
                     </div>
 
                 @endif
 
-            {{-- MENUNGGU AKTIVASI --}}
-            @elseif($finalStatus == 'menunggu_aktivasi')
+            </div>
+        </div>
+    </div>
+</div>
 
-                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-                    <p class="text-orange-800 font-semibold">
-                        Menunggu aktivasi dari admin kominfo
-                    </p>
-                </div>
-
-            {{-- AKTIF --}}
-            @elseif($finalStatus == 'aktif')
-
-                <div class="bg-green-50 p-4 rounded border border-green-200 mt-4">
-                    <p class="text-green-700 font-semibold">
-                        Domain sudah aktif.
-                    </p>
-                </div>
-
-            {{-- KADALUARSA --}}
-            @elseif($finalStatus == 'kadaluarsa')
-
-                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                    <p class="text-gray-700 font-semibold">
-                        Masa berlaku domain ini telah kadaluarsa pada tanggal {{ \Carbon\Carbon::parse($latestAktivasi->masa_berlaku)->format('d M Y') }}.
-                    </p>
-                </div>
-
-            {{-- NONAKTIF --}}
-            @elseif($finalStatus == 'nonaktif')
-
-                <div class="bg-gray-100 p-4 rounded border border-gray-300 mt-4">
-                    <p class="text-gray-700 font-semibold">
-                        Domain saat ini dalam status nonaktif.
-                    </p>
-                </div>
-
-            {{-- DITINJAU --}}
-            @elseif($finalStatus == 'ditinjau')
-
-                <div class="bg-orange-50 p-4 rounded border border-orange-200 mt-4">
-                    <p class="text-orange-700 font-semibold">
-                        Pengajuan sedang ditinjau oleh admin.
-                    </p>
-                </div>
-
-            {{-- PERLU PERBAIKAN --}}
-            @elseif($finalStatus == 'perlu_perbaikan')
-
-                <div class="bg-red-50 p-4 rounded border border-red-200 mt-4">
-                    <p class="text-red-700 font-semibold flex items-center gap-2">
-                        <i class="fas fa-exclamation-circle"></i>
-                        Dokumen perlu diperbaiki sesuai catatan admin di atas.
-                    </p>
-                </div>
-
-            @endif
-
+<!-- MODAL KONFIRMASI MODERN -->
+<div id="confirmationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4">
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm transform transition-all">
+        
+        <div class="p-6 text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-[#109696]/10 mb-4">
+                <i class="fas fa-question text-[#109696] text-xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">
+                Konfirmasi Aksi
+            </h3>
+            <p id="modalConfirmMessage" class="text-sm text-slate-500 leading-relaxed">
+                Apakah anda yakin?
+            </p>
+        </div>
+        
+        <div class="px-6 pb-6 flex items-center justify-center gap-3">
+            <button id="modalNoBtn"
+            class="flex-1 py-2.5 bg-slate-100 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-200 transition">
+                Batal
+            </button>
+            <button id="modalYesBtn"
+            class="flex-1 py-2.5 bg-[#109696] text-white text-sm font-semibold rounded-xl hover:bg-[#0d7a7a] transition shadow-sm">
+                Ya, Lanjutkan
+            </button>
         </div>
 
     </div>
-
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('confirmationModal');
+    const yesBtn = document.getElementById('modalYesBtn');
+    const noBtn = document.getElementById('modalNoBtn');
+    const modalMessage = document.getElementById('modalConfirmMessage');
+    const confirmBtns = document.querySelectorAll('.js-confirm-btn');
+
+    let formToSubmit = null;
+
+    confirmBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const formId = this.getAttribute('form');
+            formToSubmit = formId ? document.getElementById(formId) : this.closest('form');
+
+            const message = this.getAttribute('data-confirm-message') || 'Apakah anda yakin?';
+            modalMessage.textContent = message;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+    });
+
+    yesBtn.addEventListener('click', function() {
+        if (formToSubmit) formToSubmit.submit();
+        closeModal();
+    });
+
+    noBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        formToSubmit = null;
+    }
+});
+</script>
 @endsection
