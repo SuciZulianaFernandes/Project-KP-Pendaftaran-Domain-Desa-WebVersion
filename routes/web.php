@@ -105,6 +105,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::put('/pesan/read-all', [PesanController::class, 'markAllRead'])->name('pesan.read-all');
+
 }); // Penutup Group Admin
 // =====================================================
 // ROUTE UNTUK DESA (Memerlukan login dan role desa)
@@ -168,5 +170,7 @@ Route::post('/pengajuan/{id}/ajukan-faktur', [FakturDesaController::class, 'ajuk
         ->name('profile.update');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::put('/pesan/read-all', [PesanController::class, 'markAllReadDesa'])->name('pesan.read-all');
 
 });

@@ -11,22 +11,25 @@ use Illuminate\Http\Request;
 class PesanController extends Controller
 {
     public function index()
-    {
-       $data = Pesan::where('id_user', auth()->id())
-            ->where('role_tujuan', 'desa') 
-            ->latest()
-            ->get();
-        return view('desa.pesan.index', compact('data'));
-    }
+{
+
+    $data = Pesan::where('id_user', auth()->id())
+        ->where('role_tujuan', 'desa')
+        ->latest()
+        ->get();
+
+    return view('desa.pesan.index', compact('data'));
+}
 
     public function adminIndex()
-    {
-        $data = Pesan::where('role_tujuan', 'admin')
-            ->latest()
-            ->get();
+{
 
-        return view('admin.pesan.index', compact('data'));
-    }
+    $data = Pesan::where('role_tujuan', 'admin')
+        ->latest()
+        ->get();
+
+    return view('admin.pesan.index', compact('data'));
+}
 
         public function konfirmasiPembayaran($id)
     {
@@ -153,6 +156,40 @@ public function destroySelected(Request $request)
     }
 
     return back()->with('success', 'Pesan berhasil dihapus.');
+}
+
+public function markAllRead()
+{
+    Pesan::where('role_tujuan', 'admin')
+        ->where('is_read', 0)
+        ->update(['is_read' => 1]);
+
+    return back()->with('success', 'Semua pesan ditandai sudah dibaca');
+}
+
+public function markAllReadDesa()
+{
+    // Tandai SEMUA pesan desa sebagai dibaca
+    Pesan::where('id_user', auth()->id())
+        ->where('role_tujuan', 'desa')
+        ->where('is_read', 0)
+        ->update(['is_read' => 1]);
+
+    return back()->with('success', 'Semua pesan ditandai sudah dibaca');
+}
+
+// TAMBAHKAN FUNGSI INI
+public function notifikasiPengajuanBaru($idPengajuan)
+{
+    $pengajuan = Pengajuan::findOrFail($idPengajuan);
+
+    Pesan::create([
+        'id_user'       => User::where('role', 'admin')->value('id_user'),
+        'id_pengajuan'  => $pengajuan->id_pengajuan,
+        'judul'         => 'Pengajuan Domain Baru',
+        'isi'           => 'Desa ' . $pengajuan->nama_desa . ' mengajukan domain baru: ' . $pengajuan->nama_domain . '.desa.id. Silakan proses pengajuan.',
+        'role_tujuan'   => 'admin'
+    ]);
 }
 
 }

@@ -20,6 +20,19 @@
 .show-row .k{font-size:14px;color:var(--inv-text)}
 .show-row .v{font-size:14px;font-weight:600;color:#1e293b}
 .show-row .v.price{font-size:18px;font-weight:800;color:var(--inv-accent)}
+
+/* ✅ TAMBAHAN: Rincian Harga */
+.show-price-detail{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:0 24px 20px}
+.show-price-detail h4{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px}
+.price-row .pk{color:#64748b}
+.price-row .pv{color:#334155;font-weight:600}
+.price-row.total{border-top:2px solid #e2e8f0;margin-top:8px;padding-top:14px}
+.price-row.total .pk{font-weight:700;color:#1e293b;font-size:15px}
+.price-row.total .pv{font-weight:800;color:var(--inv-accent);font-size:20px}
+.price-row.ppn-row{color:#059669}
+.price-row.ppn-row .pv{color:#059669}
+
 .show-pay{background:#f8fafc;border:1px solid var(--inv-border);border-radius:12px;padding:20px;margin:0 24px 20px}
 .show-pay h3{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px}
 .show-pay .note{font-size:13px;color:var(--inv-text);margin-bottom:10px}
@@ -58,6 +71,25 @@
 .show-bukti img{max-width:100%;max-height:300px;border-radius:12px;border:1px solid var(--inv-border);object-fit:contain}
 </style>
 
+@php
+    // ✅ PERHITUNGAN RINCIAN HARGA
+    $durasiTahun = $faktur->durasi_tahun ?? 1;
+    $hargaPerTahun = 50000;
+    $ppnPersen = 11;
+    
+    // Jika ada field subtotal & ppn di database, gunakan itu
+    if (isset($faktur->subtotal) && isset($faktur->ppn)) {
+        $subtotal = $faktur->subtotal / 1.11; // Kembalikan ke harga dasar
+        $ppn = $faktur->ppn;
+        $totalHarga = $faktur->total;
+    } else {
+        // Fallback kalkulasi manual (untuk data lama)
+        $subtotal = $durasiTahun * $hargaPerTahun;
+        $ppn = $subtotal * ($ppnPersen / 100);
+        $totalHarga = $subtotal + $ppn;
+    }
+@endphp
+
 <div style="padding:0 24px;max-width:1200px">
     <div class="show-grid">
         <!-- Sidebar Kiri -->
@@ -91,7 +123,7 @@
                 </div>
                  <div class="show-row">
                     <span class="k">Masa Aktif</span>
-                    <span class="v">{{ $faktur->durasi_tahun ?? 1 }} Tahun</span>
+                    <span class="v">{{ $durasiTahun }} Tahun</span>
                 </div>
                 <div class="show-row">
                     <span class="k">Tipe Pembayaran</span>
@@ -101,13 +133,27 @@
                         <span class="v">Baru (Registrasi)</span>
                     @endif</span>
                 </div>
-                <div class="show-row">
-                    <span class="k">Total Pembayaran</span>
-                    <span class="v price">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
+            </div>
+
+            {{-- ✅ RINCIAN HARGA DENGAN PPN --}}
+            <div class="show-price-detail">
+                <h4><i class="fas fa-receipt mr-2"></i>Rincian Harga</h4>
+                
+                <div class="price-row">
+                    <span class="pk">Biaya Domain ({{ $durasiTahun }} tahun × Rp {{ number_format($hargaPerTahun, 0, ',', '.') }})</span>
+                    <span class="pv">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                </div>
+                
+                <div class="price-row ppn-row">
+                    <span class="pk"><i class="fas fa-percent mr-1"></i>PPN {{ $ppnPersen }}%</span>
+                    <span class="pv">Rp {{ number_format($ppn, 0, ',', '.') }}</span>
+                </div>
+                
+                <div class="price-row total">
+                    <span class="pk">Total Pembayaran</span>
+                    <span class="pv">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
                 </div>
             </div>
-                
-                
 
             <div class="show-pay">
                 <h3>Petunjuk Pembayaran</h3>
@@ -115,6 +161,7 @@
                 <div class="br"><span class="bk">Penerima</span><span class="bv">PANDI (Pengelola Nama Domain Internet Indonesia)</span></div>
                 <div class="br"><span class="bk">Bank</span><span class="bv">Bank BCA KCU Sudirman</span></div>
                 <div class="br"><span class="bk">No. Rekening</span><span class="bv">888-88-8888</span></div>
+                <div class="br"><span class="bk">Jumlah Transfer</span><span class="bv" style="color:var(--inv-accent);font-weight:800;font-size:14px">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span></div>
             </div>
 
             @if($faktur->bukti_pembayaran_path)
@@ -141,7 +188,7 @@
                     @enderror
                 </div>
                 <button type="submit" class="show-btn">
-                    <i class="fas fa-paper-plane"></i> Kirim
+                    <i class="fas fa-paper-plane"></i> Kirim Bukti Pembayaran
                 </button>
             </form>
             @endif

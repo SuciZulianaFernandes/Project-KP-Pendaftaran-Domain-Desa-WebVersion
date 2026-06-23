@@ -428,22 +428,23 @@
                         <form action="{{ route('desa.ajukan.faktur', $pengajuan->id_pengajuan) }}" method="POST" id="formKonfirmasi">
                             @csrf
                             
-                            <div class="bg-white p-4 rounded-lg border border-blue-100 mb-4">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Masa Berlaku Domain <span class="text-red-500">*</span></label>
-                                <select name="durasi_tahun" id="durasi_tahun" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm">
-                                    <option value="" disabled selected>-- Pilih Tahun --</option>
-                                    <option value="1">1 Tahun (Rp 50.000)</option>
-                                    <option value="2">2 Tahun (Rp 100.000)</option>
-                                    <option value="3">3 Tahun (Rp 150.000)</option>
-                                    <option value="4">4 Tahun (Rp 200.000)</option>
-                                    <option value="5">5 Tahun (Rp 250.000)</option>
-                                </select>
+                            <select name="durasi_tahun" id="durasi_tahun" required class="w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 text-sm">
+    <option value="" disabled selected>-- Pilih Tahun --</option>
+    <option value="1">1 Tahun (Rp 55.500)</option>
+    <option value="2">2 Tahun (Rp 111.000)</option>
+    <option value="3">3 Tahun (Rp 166.500)</option>
+    <option value="4">4 Tahun (Rp 222.000)</option>
+    <option value="5">5 Tahun (Rp 277.500)</option>
+</select>
 
-                                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                                    <strong><i class="fas fa-info-circle mr-1"></i>Disclaimer:</strong> 
-                                    Masa berlaku akan dihitung oleh admin mulai dari tanggal domain diaktifkan. Pastikan pilihan tahun sudah sesuai dengan kebutuhan desa.
-                                </div>
-                            </div>
+<div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+    <strong><i class="fas fa-info-circle mr-1"></i>Keterangan Harga:</strong><br>
+    • Biaya per tahun: Rp 50.000<br>
+    • PPN 11%: Rp 5.500 per tahun<br>
+    • <strong>Total per tahun: Rp 55.500 (sudah termasuk PPN)</strong><br><br>
+    <strong><i class="fas fa-exclamation-triangle mr-1"></i>Disclaimer:</strong> 
+    Masa berlaku akan dihitung oleh admin mulai dari tanggal domain diaktifkan. Pastikan pilihan tahun sudah sesuai dengan kebutuhan desa.
+</div>
 
                             <div class="flex justify-end">
                                 <button type="submit" 

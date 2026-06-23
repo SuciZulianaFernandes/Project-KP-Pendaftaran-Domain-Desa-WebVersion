@@ -19,6 +19,8 @@ class Faktur extends Model
         'nama_domain',
         'no_invoice',
         'total',
+        'subtotal',    // ✅ TAMBAHKAN
+    'ppn',         // ✅ TAMBAHKAN
         'status',
         'tipe',
         'tanggal_konfirmasi',

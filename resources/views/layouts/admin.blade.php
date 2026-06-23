@@ -208,13 +208,19 @@
                 Menu
             </p>
 
-            <a
-                href="{{ url('/admin/pesan') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 {{ request()->is('admin/pesan*') ? 'bg-white/15 text-white shadow-lg shadow-black/5' : 'text-white/70 hover:bg-white/10 hover:text-white' }}"
-            >
-                <i class="fas fa-envelope w-5 text-center"></i>
-                <span class="font-medium">Pesan</span>
-            </a>
+
+            <a href="{{ url('/admin/pesan') }}"
+   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 {{ request()->is('admin/pesan*') ? 'bg-white/15 text-white shadow-lg shadow-black/5' : 'text-white/70 hover:bg-white/10 hover:text-white' }}">
+   
+   <i class="fas fa-envelope w-5 text-center"></i>
+   <span class="font-medium">Pesan</span>
+   
+   @if($unreadPesan > 0)
+       <span class="ml-auto bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1.5">
+           {{ $unreadPesan > 99 ? '99+' : $unreadPesan }}
+       </span>
+   @endif
+</a>
 
             <a
                 href="{{ url('/admin/profile') }}"

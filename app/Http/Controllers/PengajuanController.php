@@ -158,6 +158,15 @@ class PengajuanController extends Controller
             }
 
             DB::commit();
+
+\App\Models\Pesan::create([
+            'id_user'       => \App\Models\User::where('role', 'admin')->value('id_user'),
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Pengajuan Domain Baru',
+            'isi'           => 'Desa ' . $pengajuan->nama_desa . ' mengajukan pendaftaran domain ' . $pengajuan->nama_domain . '.desa.id. Silakan verifikasi pengajuan.',
+            'role_tujuan'   => 'admin'
+        ]);
+
             session()->forget('pengajuan');
 
             return response()->json([
@@ -264,57 +273,54 @@ class PengajuanController extends Controller
     }
 
         public function verifikasi(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:diproses,perlu_perbaikan'
-        ]);
+{
+    $request->validate([
+        'status' => 'required|in:diproses,perlu_perbaikan'
+    ]);
 
-        $pengajuan = Pengajuan::findOrFail($id);
-        
-        $status = $request->status;
-        $catatan = $request->catatan;
+    $pengajuan = Pengajuan::findOrFail($id);
 
-        $pengajuan->status_pengajuan = $status;
-        $pengajuan->catatan_umum = $catatan;
-        $pengajuan->save();
+    $status = $request->status;
+    $catatan = $request->catatan;
 
-        if (in_array($status, ['disetujui', 'diproses', 'proses'])) {
-            
-            // CEK APAKAH INI PERPANJANGAN ATAU PENDAFTARAN PERTAMA
-            $adalahPerpanjangan = $pengajuan->pesan->where('judul', 'Permintaan Perpanjangan Domain')->isNotEmpty();
+    $pengajuan->status_pengajuan = $status;
+    $pengajuan->catatan_umum = $catatan;
+    $pengajuan->save();
 
-            if ($adalahPerpanjangan) {
-                // KIRIM NOTIFIKASI FAKTUR HANYA UNTUK PERPANJANGAN
-                \App\Models\Pesan::create([
-                    'id_user'       => $pengajuan->id_user,
-                    'id_pengajuan'  => $pengajuan->id_pengajuan,
-                    'judul'         => 'Konfirmasi Pembayaran',
-                    'isi'           => 'Pengajuan perpanjangan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui. Silakan klik tombol untuk mengirimkan bukti pembayaran.',
-                    'role_tujuan'   => 'desa'
-                ]);
-            } else {
-                // KIRIM NOTIFIKASI LANGSUNG AKTIF UNTUK PENDAFTARAN PERTAMA
-                \App\Models\Pesan::create([
-                    'id_user'       => $pengajuan->id_user,
-                    'id_pengajuan'  => $pengajuan->id_pengajuan,
-                    'judul'         => 'Pengajuan Domain Disetujui',
-                    'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id telah disetujui (Pendaftaran Pertama - Gratis). Silakan tunggu admin mengaktifkan domain Anda.',
-                    'role_tujuan'   => 'desa'
-                ]);
-            }
-        } else {
+    if ($status == 'diproses') {
+
+        // Cek duplikat: jangan buat jika sudah ada yang belum dibaca
+        $sudahAda = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+            ->where('judul', 'Konfirmasi Pembayaran')
+            ->where('role_tujuan', 'desa')
+            ->where('is_read', 0)
+            ->exists();
+
+        if (!$sudahAda) {
             \App\Models\Pesan::create([
                 'id_user'       => $pengajuan->id_user,
                 'id_pengajuan'  => $pengajuan->id_pengajuan,
-                'judul'         => 'Perlu Perbaikan',
-                'isi'           => 'Pengajuan domain '.$pengajuan->nama_domain.'.desa.id perlu perbaikan. Catatan: ' . $catatan,
-                'role_tujuan'   => 'desa'
+                'judul'         => 'Konfirmasi Pembayaran',
+                'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id telah disetujui. Silakan konfirmasi pembayaran dengan memilih masa berlaku domain di halaman detail.',
+                'role_tujuan'   => 'desa',
+                'is_read'       => 0
             ]);
         }
 
-        return redirect()->route('admin.pengajuan.index')
-            ->with('success', 'Berhasil verifikasi pengajuan');
+    } else {
+        // perlu_perbaikan
+        \App\Models\Pesan::create([
+            'id_user'       => $pengajuan->id_user,
+            'id_pengajuan'  => $pengajuan->id_pengajuan,
+            'judul'         => 'Perlu Perbaikan',
+            'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id perlu perbaikan. Catatan: ' . $catatan,
+            'role_tujuan'   => 'desa'
+        ]);
     }
+
+    return redirect()->route('admin.pengajuan.index')
+        ->with('success', 'Berhasil verifikasi pengajuan');
+}
 
     public function lihatDokumen($id)
     {

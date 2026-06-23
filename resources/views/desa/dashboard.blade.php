@@ -30,10 +30,12 @@
                 </div>
             </div>
             
-            {{-- LOGO/ILUSTRASI KANAN --}}
-            <div class="hidden lg:flex items-center justify-center ml-8">
+            {{-- LOGO DI KANAN --}}
+            <div class="hidden md:flex items-center justify-center ml-8">
                 <div class="relative">
+                    <!-- Glow effect di belakang logo -->
                     <div class="absolute inset-0 bg-white/10 rounded-3xl blur-2xl scale-110"></div>
+                    <!-- Background semi-transparan -->
                     <div class="relative bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
                         <img src="{{ asset('storage/images/logo.png') }}" alt="Logo" class="w-36 h-36 object-contain drop-shadow-lg">
                     </div>
@@ -167,7 +169,6 @@
                     <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-sm shadow-orange-500/20">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17l-5.1-5.1m0 0L11.42 4.97m-5.1 5.1H21M3 21h18"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17L6.32 10.07m0 0l5.1-5.1m-5.1 5.1H21M3 21h18"/>
                         </svg>
                     </div>
                     @if($totalPerbaikan > 0)

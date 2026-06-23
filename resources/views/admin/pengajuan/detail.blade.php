@@ -20,6 +20,18 @@
             $finalStatus = $latestAktivasi->status_akt; // nilain 'kadaluarsa' atau 'nonaktif'
         }
     }
+
+    // AMBIL DURASI TAHUN YANG DIPILIH DESA
+    $pesanDurasi = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+        ->where('judul', 'Konfirmasi Pembayaran Disetujui')
+        ->whereNotNull('durasi_tahun')
+        ->latest()
+        ->first();
+    $durasiDipilihSidebar = $pesanDurasi ? $pesanDurasi->durasi_tahun : null;
+
+    // ✅ KONSTANTA HARGA DENGAN PPN
+    $hargaDasarPerTahun = 50000;
+    $ppnPersen = 11;
 @endphp
 
 <div class="flex flex-col lg:flex-row gap-6">
@@ -71,6 +83,28 @@
                         {{ str_replace('_', ' ', $finalStatus) }}
                     </span>
                 </div>
+
+                {{-- ✅ DURASI TAHUN YANG DIPILIH DESA (SUDAH PPN) --}}
+                @if($durasiDipilihSidebar)
+                @php
+                    $subtotalSidebar = $durasiDipilihSidebar * $hargaDasarPerTahun;
+                    $ppnSidebar = $subtotalSidebar * ($ppnPersen / 100);
+                    $totalSidebar = $subtotalSidebar + $ppnSidebar;
+                @endphp
+                <div class="border-t border-slate-100 pt-5">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Durasi Dipilih Desa</p>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div class="w-10 h-10 rounded-xl bg-[#1760C5]/10 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-calendar-alt text-[#1760C5] text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-xl font-extrabold text-[#1760C5] leading-none">{{ $durasiDipilihSidebar }} <span class="text-sm font-semibold text-slate-400">Tahun</span></p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Rp {{ number_format($totalSidebar, 0, ',', '.') }} <span class="text-emerald-500">(inc. PPN)</span></p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
             </div>
         </div>
 
@@ -232,7 +266,7 @@
                                     <div class="flex flex-wrap gap-x-6 gap-y-1 mt-2 text-sm">
                                         <div>
                                             <span class="text-slate-400 text-xs">Total Tagihan</span>
-                                            <p class="font-semibold text-slate-700">Rp {{ number_format($fakturItem->total,0,',','.') }}</p>
+                                            <p class="font-semibold text-slate-700">Rp {{ number_format($fakturItem->total, 0, ',', '.') }}</p>
                                         </div>
                                         <div>
                                             <span class="text-slate-400 text-xs">Status</span>
@@ -372,8 +406,12 @@
                             ->first();
                             
                         $durasiDipilih = $pesanDurasi ? $pesanDurasi->durasi_tahun : 1;
-                        $hargaPerTahun = 50000;
-                        $totalHarga = $durasiDipilih * $hargaPerTahun;
+                        
+                        // ✅ PERHITUNGAN HARGA DENGAN PPN 11%
+                        $subtotalHarga = $durasiDipilih * $hargaDasarPerTahun;
+                        $ppnHarga = $subtotalHarga * ($ppnPersen / 100);
+                        $totalHarga = $subtotalHarga + $ppnHarga;
+                        
                         $estimasiBerlaku = \Carbon\Carbon::now()->addYears($durasiDipilih)->format('d M Y');
                     @endphp
 
@@ -385,10 +423,26 @@
                             <h4 class="font-bold text-slate-800">Desa Menyetujui Pembayaran</h4>
                             <p class="text-sm text-slate-500 mt-1">
                                 Desa memilih masa berlaku <strong class="text-[#1760C5]">{{ $durasiDipilih }} Tahun</strong> 
-                                <span class="text-slate-400">(Estimasi aktif hingga <strong>{{ $estimasiBerlaku }}</strong>)</span> 
-                                dengan total tagihan <strong class="text-[#1760C5]">Rp {{ number_format($totalHarga, 0, ',', '.') }}</strong>. 
-                                Silakan terbitkan faktur.
+                                <span class="text-slate-400">(Estimasi aktif hingga <strong>{{ $estimasiBerlaku }}</strong>)</span>
                             </p>
+                            
+                            {{-- ✅ RINCIAN HARGA DENGAN PPN --}}
+                            <div class="mt-3 p-3 bg-white rounded-lg border border-slate-200 inline-block">
+                                <div class="flex items-center gap-6 text-sm">
+                                    <div>
+                                        <span class="text-slate-400 text-xs">Biaya ({{ $durasiDipilih }} thn × Rp {{ number_format($hargaDasarPerTahun, 0, ',', '.') }})</span>
+                                        <p class="font-semibold text-slate-700">Rp {{ number_format($subtotalHarga, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-emerald-500 text-xs">PPN {{ $ppnPersen }}%</span>
+                                        <p class="font-semibold text-emerald-600">Rp {{ number_format($ppnHarga, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div class="pl-4 border-l border-slate-200">
+                                        <span class="text-[#1760C5] text-xs font-bold">TOTAL</span>
+                                        <p class="font-extrabold text-[#1760C5] text-lg">Rp {{ number_format($totalHarga, 0, ',', '.') }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -399,7 +453,7 @@
                         
                         <button type="submit" 
                                 class="js-confirm-btn bg-[#1760C5] hover:bg-[#1250a5] text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition inline-flex items-center text-sm"
-                                data-confirm-message="Terbitkan faktur {{ $durasiDipilih }} tahun senilai Rp {{ number_format($totalHarga, 0, ',', '.') }}?">
+                                data-confirm-message="Terbitkan faktur {{ $durasiDipilih }} tahun senilai Rp {{ number_format($totalHarga, 0, ',', '.') }} (sudah termasuk PPN 11%)?">
                             <i class="fas fa-print mr-2"></i> Terbitkan Faktur
                         </button>
                     </form>
@@ -441,24 +495,35 @@
                             </div>
                         </div>
                         
-                        <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                        <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm" novalidate>
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Mulai Aktif <span class="text-rose-500">*</span></label>
-                                    <input type="date" name="tgl_mulai" value="{{ date('Y-m-d') }}" required class="w-full border border-slate-200 rounded-lg text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+                                    <input type="date" name="tgl_mulai" id="inputTglMulai" value="{{ date('Y-m-d') }}" required class="w-full border border-slate-200 rounded-lg text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+                                    <p id="errTglMulai" class="text-rose-500 text-xs mt-1 hidden"><i class="fas fa-exclamation-circle mr-1"></i>Tanggal mulai wajib diisi.</p>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Berlaku Sampai <span class="text-rose-500">*</span></label>
-                                    <input type="date" name="tgl_selesai" required class="w-full border border-slate-200 rounded-lg text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+                                    <input type="date" name="tgl_selesai" id="inputTglSelesai" required class="w-full border border-slate-200 rounded-lg text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+                                    <p id="errTglSelesai" class="text-rose-500 text-xs mt-1 hidden"><i class="fas fa-exclamation-circle mr-1"></i>Tanggal berlaku sampai wajib diisi.</p>
+                                    <p id="errTglSelesaiInvalid" class="text-rose-500 text-xs mt-1 hidden"><i class="fas fa-exclamation-circle mr-1"></i>Tanggal selesai harus lebih dari tanggal mulai.</p>
                                 </div>
                             </div>
+                            {{-- Info durasi yang dipilih desa --}}
+                            @if($durasiDipilihSidebar)
+                            <div class="mt-4 flex items-center gap-2 p-3 rounded-lg bg-[#1760C5]/5 border border-[#1760C5]/10">
+                                <i class="fas fa-info-circle text-[#1760C5] text-xs"></i>
+                                <p class="text-xs text-[#1760C5] font-medium">Desa memilih durasi <strong>{{ $durasiDipilihSidebar }} tahun</strong>. Sesuaikan tanggal berlaku dengan durasi tersebut.</p>
+                            </div>
+                            @endif
                         </form>
                     </div>
 
                     <button type="submit" 
                             form="formAktivasi"
-                            class="js-confirm-btn bg-[#109696] hover:bg-[#0d7a7a] text-white font-bold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition text-sm flex-shrink-0 h-fit"
+                            id="btnAktivasiDomain"
+                            class="js-confirm-btn js-aktivasi-btn bg-[#109696] hover:bg-[#0d7a7a] text-white font-bold py-3 px-8 rounded-xl shadow-sm hover:shadow-md transition text-sm flex-shrink-0 h-fit"
                             data-confirm-message="Apakah Anda yakin ingin mengaktifkan domain ini sesuai tanggal yang diinput?">
                         <i class="fas fa-power-off mr-2"></i> Aktivasi Domain
                     </button>
@@ -482,6 +547,22 @@
             @endif
 
         </div>
+    </div>
+</div>
+
+<!-- TOAST ALERT UNTUK VALIDASI -->
+<div id="toastAlert" class="hidden fixed top-6 right-6 z-[60] animate-slide-down">
+    <div class="flex items-start gap-3 bg-white border border-rose-200 shadow-xl rounded-xl p-4 min-w-[340px] max-w-[420px]">
+        <div class="w-9 h-9 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i class="fas fa-exclamation-triangle text-rose-500 text-sm"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="font-bold text-slate-800 text-sm">Validasi Gagal</p>
+            <p id="toastMessage" class="text-slate-500 text-xs mt-1 leading-relaxed"></p>
+        </div>
+        <button onclick="document.getElementById('toastAlert').classList.add('hidden')" class="text-slate-300 hover:text-slate-500 transition flex-shrink-0 mt-0.5">
+            <i class="fas fa-times text-xs"></i>
+        </button>
     </div>
 </div>
 
@@ -515,6 +596,16 @@
     </div>
 </div>
 
+<style>
+    @keyframes slide-down {
+        from { opacity: 0; transform: translateY(-16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-down {
+        animation: slide-down 0.3s ease-out;
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('confirmationModal');
@@ -523,11 +614,108 @@ document.addEventListener('DOMContentLoaded', function() {
     const modalMessage = document.getElementById('modalConfirmMessage');
     const confirmBtns = document.querySelectorAll('.js-confirm-btn');
 
+    // Elemen validasi form aktivasi
+    const inputTglMulai = document.getElementById('inputTglMulai');
+    const inputTglSelesai = document.getElementById('inputTglSelesai');
+    const errTglMulai = document.getElementById('errTglMulai');
+    const errTglSelesai = document.getElementById('errTglSelesai');
+    const errTglSelesaiInvalid = document.getElementById('errTglSelesaiInvalid');
+    const toastAlert = document.getElementById('toastAlert');
+    const toastMessage = document.getElementById('toastMessage');
+
     let formToSubmit = null;
+
+    // Fungsi tampilkan toast alert
+    function showToast(message) {
+        toastMessage.textContent = message;
+        toastAlert.classList.remove('hidden');
+        // Auto-hide setelah 5 detik
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(function() {
+            toastAlert.classList.add('hidden');
+        }, 5000);
+    }
+
+    // Fungsi validasi form aktivasi
+    function validateAktivasiForm() {
+        if (!inputTglMulai || !inputTglSelesai) return true; // bukan halaman aktivasi
+
+        let isValid = true;
+
+        // Reset semua error
+        errTglMulai.classList.add('hidden');
+        errTglSelesai.classList.add('hidden');
+        errTglSelesaiInvalid.classList.add('hidden');
+        inputTglMulai.classList.remove('border-rose-400', 'bg-rose-50/50');
+        inputTglSelesai.classList.remove('border-rose-400', 'bg-rose-50/50');
+
+        // Cek tgl_mulai kosong
+        if (!inputTglMulai.value) {
+            errTglMulai.classList.remove('hidden');
+            inputTglMulai.classList.add('border-rose-400', 'bg-rose-50/50');
+            isValid = false;
+        }
+
+        // Cek tgl_selesai kosong
+        if (!inputTglSelesai.value) {
+            errTglSelesai.classList.remove('hidden');
+            inputTglSelesai.classList.add('border-rose-400', 'bg-rose-50/50');
+            isValid = false;
+        }
+
+        // Jika keduanya terisi, cek logika tanggal
+        if (inputTglMulai.value && inputTglSelesai.value) {
+            const tglMulai = new Date(inputTglMulai.value);
+            const tglSelesai = new Date(inputTglSelesai.value);
+
+            if (tglSelesai <= tglMulai) {
+                errTglSelesaiInvalid.classList.remove('hidden');
+                inputTglSelesai.classList.add('border-rose-400', 'bg-rose-50/50');
+                isValid = false;
+            }
+        }
+
+        // Tampilkan toast jika tidak valid
+        if (!isValid) {
+            if (!inputTglSelesai.value) {
+                showToast('Tanggal berlaku sampai wajib diisi. Domain tidak dapat diaktifkan tanpa masa berlaku.');
+            } else if (!inputTglMulai.value) {
+                showToast('Tanggal mulai aktif wajib diisi.');
+            } else {
+                showToast('Tanggal selesai harus lebih dari tanggal mulai.');
+            }
+        }
+
+        return isValid;
+    }
+
+    // Hapus error state saat user mulai mengetik
+    if (inputTglMulai) {
+        inputTglMulai.addEventListener('input', function() {
+            errTglMulai.classList.add('hidden');
+            this.classList.remove('border-rose-400', 'bg-rose-50/50');
+        });
+    }
+    if (inputTglSelesai) {
+        inputTglSelesai.addEventListener('input', function() {
+            errTglSelesai.classList.add('hidden');
+            errTglSelesaiInvalid.classList.add('hidden');
+            this.classList.remove('border-rose-400', 'bg-rose-50/50');
+        });
+    }
 
     confirmBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
+
+            // Cek apakah ini tombol aktivasi domain (ada form="formAktivasi")
+            const isAktivasiBtn = this.classList.contains('js-aktivasi-btn');
+
+            // Jika tombol aktivasi, jalankan validasi dulu
+            if (isAktivasiBtn && !validateAktivasiForm()) {
+                return; // Stop, jangan tampilkan modal konfirmasi
+            }
+
             const formId = this.getAttribute('form');
             formToSubmit = formId ? document.getElementById(formId) : this.closest('form');
 

@@ -3,6 +3,26 @@
 @section('title', 'Detail Faktur')
 
 @section('content')
+
+@php
+    // ✅ PERHITUNGAN RINCIAN HARGA
+    $durasiTahun = $faktur->durasi_tahun ?? 1;
+    $hargaPerTahun = 50000;
+    $ppnPersen = 11;
+    
+    // Jika ada field subtotal & ppn di database, gunakan itu
+    if (isset($faktur->subtotal) && isset($faktur->ppn)) {
+        $subtotal = $faktur->subtotal / 1.11; // Kembalikan ke harga dasar
+        $ppn = $faktur->ppn;
+        $totalHarga = $faktur->total;
+    } else {
+        // Fallback kalkulasi manual (untuk data lama)
+        $subtotal = $durasiTahun * $hargaPerTahun;
+        $ppn = $subtotal * ($ppnPersen / 100);
+        $totalHarga = $subtotal + $ppn;
+    }
+@endphp
+
 <div class="flex flex-col lg:flex-row gap-6">
 
     <!-- SIDEBAR KIRI -->
@@ -17,12 +37,12 @@
             <div class="p-5 space-y-4">
                 <div>
                     <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Tagihan</p>
-                    <p class="text-xl font-extrabold text-[#109696] tracking-tight">Rp {{ number_format($faktur->total, 0, ',', '.') }}</p>
+                    <p class="text-xl font-extrabold text-[#109696] tracking-tight">Rp {{ number_format($totalHarga, 0, ',', '.') }}</p>
                 </div>
                 <div class="border-t border-slate-100 pt-4 space-y-3">
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-slate-400">Masa Aktif</span>
-                        <span class="font-semibold text-slate-700">{{ $faktur->durasi_tahun ?? 1 }} Tahun</span>
+                        <span class="font-semibold text-slate-700">{{ $durasiTahun }} Tahun</span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-slate-400">Tipe</span>
@@ -92,11 +112,35 @@
                             </div>
                             <div class="flex justify-between items-center py-3.5">
                                 <span class="text-sm text-slate-400">Masa Aktif</span>
-                                <span class="text-sm font-semibold text-slate-700">{{ $faktur->durasi_tahun ?? 1 }} Tahun</span>
+                                <span class="text-sm font-semibold text-slate-700">{{ $durasiTahun }} Tahun</span>
                             </div>
-                            <div class="flex justify-between items-center py-3.5 last:pb-0">
-                                <span class="text-sm text-slate-400">Total Pembayaran</span>
-                                <span class="text-lg font-extrabold text-[#109696]">Rp {{ number_format($faktur->total, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ✅ RINCIAN HARGA DENGAN PPN --}}
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Rincian Harga
+                    </h3>
+
+                    <div class="bg-gradient-to-br from-slate-50 to-slate-100/80 p-5 rounded-xl border border-slate-200">
+                        <div class="space-y-0 divide-y divide-slate-200">
+                            <div class="flex justify-between items-center py-3.5 first:pt-0">
+                                <span class="text-sm text-slate-500">Biaya Domain ({{ $durasiTahun }} tahun × Rp {{ number_format($hargaPerTahun, 0, ',', '.') }})</span>
+                                <span class="text-sm font-semibold text-slate-700">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-emerald-600 flex items-center gap-1.5">
+                                    <i class="fas fa-percent text-[10px]"></i>
+                                    PPN {{ $ppnPersen }}%
+                                </span>
+                                <span class="text-sm font-semibold text-emerald-600">Rp {{ number_format($ppn, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-4 last:pb-0">
+                                <span class="text-base font-bold text-slate-800">Total Pembayaran</span>
+                                <span class="text-xl font-extrabold text-[#109696]">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
                             </div>
                         </div>
                     </div>

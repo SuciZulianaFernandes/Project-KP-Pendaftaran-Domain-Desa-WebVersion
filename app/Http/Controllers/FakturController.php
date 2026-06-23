@@ -8,80 +8,102 @@ use App\Models\Faktur;
 use App\Models\Pengajuan;
 use App\Models\Pesan;
 use Carbon\Carbon;
+use App\Models\Aktivasi;
 
 class FakturController extends Controller
 {
         // TAMBAHKAN Request $request
     public function store(Request $request, $id)
-    {
-        $pengajuan = Pengajuan::findOrFail($id);
+{
+    $pengajuan = Pengajuan::findOrFail($id);
 
-        // Cegah duplikat
-        if (
-            Faktur::where('id_pengajuan', $id)
-                ->where('tipe', 'baru')
-                ->where('status', 'belum_bayar')
-                ->exists()
-        ) {
-            return back()->with('error', 'Faktur aktif untuk domain ini sudah ada!');
-        }
-
-        // CEK REQUEST PERPANJANGAN
-         $requestPerpanjangan = Pesan::where('id_pengajuan', $id)
-    ->whereIn('judul', ['Permintaan Perpanjangan Domain', 'Konfirmasi Pembajuan Disetujui'])
-    ->exists();
-
-        // CEK TIPE
-        if ($requestPerpanjangan) {
-            $tipeFaktur = 'perpanjangan';
-        } else {
-            $sudahPernahBayar = Faktur::where('id_pengajuan', $id)
-                ->where('status', 'sudah_bayar')
-                ->whereNotNull('bukti_pembayaran_path')
-                ->exists();
-
-            $tipeFaktur = $sudahPernahBayar
-                ? 'perpanjangan'
-                : 'baru';
-        }
-
-        // NO INVOICE
-        $date = now()->format('Ymd');
-        $random = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
-        $noInvoice = "INV/{$date}/{$random}";
-
-        // AMBIL DURASI DARI VIEW ADMIN, JIKA TIDAK ADA DEFAULT 1 TAHUN
-        $durasiTahun = $request->durasi_tahun ?? 1;
-        $totalHarga = $request->total_bayar ?? ($durasiTahun * 50000);
-
-        Faktur::create([
-            'id_pengajuan' => $pengajuan->id_pengajuan,
-            'nama_desa'    => $pengajuan->nama_desa,
-            'nama_domain'  => $pengajuan->nama_domain,
-            'no_invoice'   => $noInvoice,
-            'total'        => $totalHarga, // GANTI MENJADI DINAMIS
-            'status'       => 'belum_bayar',
-            'tipe'         => $tipeFaktur,
-            'expired_at'   => now()->addDays(7),
-            'durasi_tahun' => $durasiTahun // SIMPAN DURASI TAHUN
-        ]);
-
-        // =========================
-        // KIRIM PESAN KE DESA
-        // =========================
-        app(PesanController::class)
-            ->notifikasiFakturDibuat(
-                $pengajuan->id_pengajuan,
-                $tipeFaktur
-            );
-
-        // SUCCESS
-        $pesanSukses = $tipeFaktur === 'perpanjangan'
-            ? 'Sistem mendeteksi perpanjangan. Faktur perpanjangan berhasil dibuat.'
-            : 'Faktur domain baru berhasil dibuat.';
-
-        return back()->with('success', $pesanSukses);
+    // Cegah duplikat faktur belum bayar
+    if (
+        Faktur::where('id_pengajuan', $id)
+            ->where('tipe', 'baru')
+            ->where('status', 'belum_bayar')
+            ->exists()
+    ) {
+        return back()->with('error', 'Faktur aktif untuk domain ini sudah ada!');
     }
+
+    // ===================================================
+    // ✅ LOGIKA BARU: PENENTUAN TIPE FAKTUR YANG BENAR
+    // ===================================================
+    
+    // 1. Cek apakah domain ini SUDAH PERNAH AKTIF sebelumnya
+    $sudahPernahAktif = Aktivasi::where('id_pengajuan', $id)
+        ->where('status_akt', 'aktif')
+        ->exists();
+    
+    // 2. Cek apakah ada pesan PERPANJANGAN untuk pengajuan INI
+    $adaPermintaanPerpanjangan = Pesan::where('id_pengajuan', $id)
+        ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
+        ->whereNotNull('durasi_tahun')
+        ->exists();
+
+    // 3. Tentukan tipe faktur
+    if ($adaPermintaanPerpanjangan || $sudahPernahAktif) {
+        // Jika ada permintaan perpanjangan ATAU domain sudah pernah aktif → Perpanjangan
+        $tipeFaktur = 'perpanjangan';
+    } else {
+        // Jika domain BELUM PERNAH AKTIF → Baru
+        $tipeFaktur = 'baru';
+    }
+
+    // ===================================================
+
+    // NO INVOICE
+    $date = now()->format('Ymd');
+    $random = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+    $noInvoice = "INV/{$date}/{$random}";
+
+    // AMBIL DURASI TAHUN
+    if ($tipeFaktur === 'perpanjangan') {
+        $pesanPerpanjangan = Pesan::where('id_pengajuan', $id)
+            ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
+            ->whereNotNull('durasi_tahun')
+            ->latest()
+            ->first();
+        
+        $durasiTahun = $pesanPerpanjangan->durasi_tahun ?? 1;
+    } else {
+        $durasiTahun = $request->durasi_tahun ?? 1;
+    }
+    
+    // PERHITUNGAN HARGA DENGAN PPN 11%
+    $hargaDasarPerTahun = 50000;
+    $ppnPersen = 0.11;
+    $subtotal = $durasiTahun * $hargaDasarPerTahun;
+    $ppn = $subtotal * $ppnPersen;
+    $totalHarga = $subtotal + $ppn;
+
+    Faktur::create([
+        'id_pengajuan' => $pengajuan->id_pengajuan,
+        'nama_desa'    => $pengajuan->nama_desa,
+        'nama_domain'  => $pengajuan->nama_domain,
+        'no_invoice'   => $noInvoice,
+        'total'        => $totalHarga,
+        'status'       => 'belum_bayar',
+        'tipe'         => $tipeFaktur,
+        'expired_at'   => now()->addDays(7),
+        'durasi_tahun' => $durasiTahun,
+        'subtotal'     => $subtotal,
+        'ppn'          => $ppn
+    ]);
+
+    app(PesanController::class)
+        ->notifikasiFakturDibuat(
+            $pengajuan->id_pengajuan,
+            $tipeFaktur
+        );
+
+    $pesanSukses = $tipeFaktur === 'perpanjangan'
+        ? "Faktur perpanjangan {$durasiTahun} tahun berhasil dibuat."
+        : 'Faktur domain baru berhasil dibuat.';
+
+    return back()->with('success', $pesanSukses);
+}
 
             public function index(Request $request)
     {
@@ -226,23 +248,27 @@ return view('admin.faktur.index', compact(
             ->with('error', 'Faktur perpanjangan untuk domain ini masih aktif.');
     }
 
-    // ========================
-    // AMBIL DURASI DARI TABEL PESAN (YANG DISIMPAN DESA)
-    // ========================
+    // ✅ HANYA CARI PESAN PERPANJANGAN (BUKAN KONFIRMASI PEMBAYARAN)
     $pesanPerpanjangan = Pesan::where('id_pengajuan', $idPengajuan)
-        ->whereIn('judul', ['Permintaan Perpanjangan Domain', 'Konfirmasi Pembayaran Disetujui'])
+        ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
+        ->whereNotNull('durasi_tahun')
         ->latest()
         ->first();
     
-    $durasiTahun = $pesanPerpanjangan->durasi_tahun ?? 1; // Default 1 jika tidak ada
-    $totalHarga = $durasiTahun * 50000; // Hitung total berdasarkan durasi
+    $durasiTahun = $pesanPerpanjangan->durasi_tahun ?? 1;
+    
+    // PERHITUNGAN HARGA DENGAN PPN 11%
+    $hargaDasarPerTahun = 50000;
+    $ppnPersen = 0.11;
+    $subtotal = $durasiTahun * $hargaDasarPerTahun;
+    $ppn = $subtotal * $ppnPersen;
+    $totalHarga = $subtotal + $ppn;
 
-    // PESAN SUDAH DIPROSES
+    // Tandai pesan sudah diproses
     Pesan::where('id_pengajuan', $idPengajuan)
-        ->where('judul', 'Permintaan Perpanjangan Domain')
-        ->update([
-            'is_read' => 1
-        ]);
+        ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
+        ->whereNotNull('durasi_tahun')
+        ->update(['is_read' => 1]);
 
     // NO INVOICE
     $date = now()->format('Ymd');
@@ -254,14 +280,15 @@ return view('admin.faktur.index', compact(
         'nama_desa'    => $pengajuan->nama_desa,
         'nama_domain'  => $pengajuan->nama_domain,
         'no_invoice'   => $noInvoice,
-        'total'        => $totalHarga,        // ✅ DINAMIS
+        'total'        => $totalHarga,
         'status'       => 'belum_bayar',
         'tipe'         => 'perpanjangan',
         'expired_at'   => now()->addDays(7),
-        'durasi_tahun' => $durasiTahun         // ✅ SIMPAN DURASI
+        'durasi_tahun' => $durasiTahun,
+        'subtotal'     => $subtotal,
+        'ppn'          => $ppn
     ]);
 
-    // KIRIM PESAN KE DESA
     app(PesanController::class)
         ->notifikasiFakturDibuat(
             $pengajuan->id_pengajuan,

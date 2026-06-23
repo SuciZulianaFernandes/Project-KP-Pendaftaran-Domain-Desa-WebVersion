@@ -21,12 +21,14 @@ class AktivasiController extends Controller
         /**
      * PROSES ADMIN: Mengaktifkan domain (BISA GRATIS UNTUK PENDAFTARAN PERTAMA)
      */
-        public function aktivasi(Request $request, $id)
+           public function aktivasi(Request $request, $id)
 {
     $pengajuan = Pengajuan::findOrFail($id);
     
-    // CEK APAKAH INI PERPANJANGAN ATAU BUKAN
-    $adalahPerpanjangan = $pengajuan->pesan->where('judul', 'Permintaan Perpanjangan Domain')->isNotEmpty();
+    // ✅ CEK APAKAH INI PERPANJANGAN ATAU BUKAN (Berdasarkan riwayat aktivasi)
+    $adalahPerpanjangan = Aktivasi::where('id_pengajuan', $id)
+        ->where('status_akt', 'aktif')
+        ->exists();
 
     if ($adalahPerpanjangan) {
         // Jika perpanjangan, wajib isi tanggal manual
@@ -50,10 +52,19 @@ class AktivasiController extends Controller
         $tglSelesai = Carbon::parse($request->tgl_selesai);
 
     } else {
-        // JIKA INI PENDAFTARAN PERTAMA (GRATIS/OTOMATIS)
-        // Set otomatis: Mulai hari ini, Selesai 1 tahun ke depan
+        // ✅ JIKA INI PENDAFTARAN PERTAMA
         $tglMulai = Carbon::now();
-        $tglSelesai = Carbon::now()->addYear(); // Otomatis 1 tahun
+        
+        // AMBIL DURASI YANG DIPILIH DESA
+        $pesanDurasi = Pesan::where('id_pengajuan', $id)
+            ->where('judul', 'Konfirmasi Pembayaran Disetujui')
+            ->whereNotNull('durasi_tahun')
+            ->latest()
+            ->first();
+        
+        $durasi = $pesanDurasi ? $pesanDurasi->durasi_tahun : 1;
+        
+        $tglSelesai = Carbon::now()->addYears($durasi);
     }
 
     // PROSES AKTIVASI
