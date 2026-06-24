@@ -24,6 +24,34 @@
         </div>
     @endif
 
+    {{-- FLASH MESSAGE ERROR SESSION --}}
+    @if(session('error'))
+        <div class="bg-rose-50 border border-rose-200 text-rose-700 px-5 py-4 rounded-xl text-sm flex items-center justify-between mt-4">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-circle text-rose-500"></i>
+                {{ session('error') }}
+            </div>
+            <button type="button" onclick="this.closest('div').remove()" class="text-rose-400 hover:text-rose-600 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    {{-- FLASH MESSAGE VALIDATION ERRORS --}}
+    @if($errors->any())
+        <div class="bg-rose-50 border border-rose-200 text-rose-700 px-5 py-4 rounded-xl text-sm mt-4">
+            <div class="flex items-center gap-2 font-bold mb-2">
+                <i class="fas fa-exclamation-triangle text-rose-500"></i>
+                Ada kesalahan dalam pengisian form:
+            </div>
+            <ul class="list-disc list-inside ml-5">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="/admin/profile" method="POST" id="profileForm">
         @csrf
         @method('PUT')
@@ -105,48 +133,63 @@
                 </div>
 
                 <div class="p-6">
-                    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
-                        <i class="fas fa-info-circle text-amber-500"></i>
-                        Kosongkan jika tidak ingin mengubah password.
-                    </div>
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl mb-5 text-sm flex items-center gap-2">
+        <i class="fas fa-info-circle text-amber-500"></i>
+        Kosongkan jika tidak ingin mengubah password.
+    </div>
 
-                    <div class="bg-slate-50/50 p-5 rounded-xl border border-slate-100 space-y-5">
-                        <div class="flex flex-col">
-                            <label class="text-slate-400 text-xs font-semibold mb-1.5">Password Lama</label>
-                            <input
-                                type="password"
-                                name="password_lama"
-                                placeholder="Masukkan password lama"
-                                class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
-                            >
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="text-slate-400 text-xs font-semibold mb-1.5">Password Baru</label>
-                            <input
-                                type="password"
-                                name="password_baru"
-                                id="password_baru"
-                                placeholder="Minimal 8 karakter"
-                                minlength="8"
-                                class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
-                            >
-                        </div>
-
-                        <div class="flex flex-col">
-                            <label class="text-slate-400 text-xs font-semibold mb-1.5">Konfirmasi Password Baru</label>
-                            <input
-                                type="password"
-                                name="password_baru_confirmation"
-                                id="password_baru_confirmation"
-                                placeholder="Ulangi password baru"
-                                minlength="8"
-                                class="w-full border border-slate-200 rounded-lg text-sm p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
-                            >
-                        </div>
-                    </div>
-                </div>
+    <div class="bg-slate-50/50 p-5 rounded-xl border border-slate-100 space-y-5">
+        <div class="flex flex-col">
+            <label class="text-slate-400 text-xs font-semibold mb-1.5">Password Lama</label>
+            <div class="relative">
+                <input
+                    type="password"
+                    name="password_lama"
+                    id="password_lama"
+                    placeholder="Masukkan password lama"
+                    class="w-full border border-slate-200 rounded-lg text-sm p-2.5 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                >
+                <button type="button" onclick="togglePassword('password_lama', 'eye_lama')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                    <i id="eye_lama" class="fas fa-eye"></i>
+                </button>
             </div>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-slate-400 text-xs font-semibold mb-1.5">Password Baru</label>
+            <div class="relative">
+                <input
+                    type="password"
+                    name="password_baru"
+                    id="password_baru"
+                    placeholder="Minimal 8 karakter"
+                    minlength="8"
+                    class="w-full border border-slate-200 rounded-lg text-sm p-2.5 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                >
+                <button type="button" onclick="togglePassword('password_baru', 'eye_baru')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                    <i id="eye_baru" class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-slate-400 text-xs font-semibold mb-1.5">Konfirmasi Password Baru</label>
+            <div class="relative">
+                <input
+                    type="password"
+                    name="password_baru_confirmation"
+                    id="password_baru_confirmation"
+                    placeholder="Ulangi password baru"
+                    minlength="8"
+                    class="w-full border border-slate-200 rounded-lg text-sm p-2.5 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition"
+                >
+                <button type="button" onclick="togglePassword('password_baru_confirmation', 'eye_confirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none">
+                    <i id="eye_confirm" class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
         </div>
 
@@ -185,6 +228,23 @@
 </div>
 
 <script>
+
+// Fungsi toggle lihat password
+function togglePassword(inputId, iconId) {
+    const passwordInput = document.getElementById(inputId);
+    const eyeIcon = document.getElementById(iconId);
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
 
     // Validasi konfirmasi password

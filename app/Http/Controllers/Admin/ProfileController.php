@@ -17,29 +17,43 @@ return view('admin.profile');
 
 public function update(Request $request)
 {
+    $user = Auth::user();
 
-$user = Auth::user();
+    // 1. Validasi data diri utama
+    $request->validate([
+        'name' => 'required|string|max:255',
+        // Tambahkan pengecualian id_user saat ini biar nggak error unique saat save data sendiri
+        'username' => 'required|string|max:255|unique:users,username,' . $user->id_user . ',id_user',
+        'email' => 'required|email|max:255|unique:users,email,' . $user->id_user . ',id_user',
+        'no_hp' => 'nullable|string|max:15',
+        'password_baru' => 'nullable|min:8|confirmed'
+    ]);
 
-$request->validate([
-'username'=>'required',
-'password_lama'=>'required',
-'password_baru'=>'nullable|confirmed'
-]);
+    // 2. Logika jika mau ganti password
+    if ($request->filled('password_baru')) {
+        // Cek dulu apakah password lama diisi
+        if (!$request->filled('password_lama')) {
+            return back()->with('error', 'Password lama wajib diisi jika ingin mengganti password baru.');
+        }
 
-if(!Hash::check($request->password_lama,$user->password)){
-return back()->with('error','Password lama salah');
-}
+        // Cek apakah password lama yang dimasukkan sesuai dengan di database
+        if (!Hash::check($request->password_lama, $user->password)) {
+            return back()->with('error', 'Password lama salah.');
+        }
 
-$user->username = $request->username;
+        // Kalau aman, timpa password-nya
+        $user->password = Hash::make($request->password_baru);
+    }
 
-if($request->password_baru){
-$user->password = Hash::make($request->password_baru);
-}
+    // 3. Update data diri
+    $user->name = $request->name;
+    $user->username = $request->username;
+    $user->email = $request->email;
+    $user->no_hp = $request->no_hp;
 
-$user->save();
+    $user->save();
 
-return back()->with('success','Profil berhasil diperbarui');
-
+    return back()->with('success', 'Profil berhasil diperbarui');
 }
 
 }

@@ -3,222 +3,309 @@
 @section('title', 'Invoice')
 
 @section('content')
-@include('components.inv-styles')
-
-<style>
-.show-grid{display:grid;grid-template-columns:1fr;gap:24px}
-@media(min-width:1024px){.show-grid{grid-template-columns:280px 1fr}}
-.show-card{background:#fff;border-radius:14px;border:1px solid var(--inv-border);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.show-header{padding:22px 24px;background:linear-gradient(135deg,#1e293b,#334155);color:#fff}
-.show-header .lbl{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.6px}
-.show-header .num{font-size:20px;font-weight:800;margin-top:2px}
-.show-meta{padding:0 24px 16px}
-.show-meta p{font-size:15px;font-weight:700;color:#1e293b}
-.show-body{padding:0 24px 20px}
-.show-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #f1f5f9}
-.show-row:last-child{border-bottom:none}
-.show-row .k{font-size:14px;color:var(--inv-text)}
-.show-row .v{font-size:14px;font-weight:600;color:#1e293b}
-.show-row .v.price{font-size:18px;font-weight:800;color:var(--inv-accent)}
-
-/* ✅ TAMBAHAN: Rincian Harga */
-.show-price-detail{background:linear-gradient(135deg,#f8fafc,#f1f5f9);border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:0 24px 20px}
-.show-price-detail h4{font-size:13px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
-.price-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px}
-.price-row .pk{color:#64748b}
-.price-row .pv{color:#334155;font-weight:600}
-.price-row.total{border-top:2px solid #e2e8f0;margin-top:8px;padding-top:14px}
-.price-row.total .pk{font-weight:700;color:#1e293b;font-size:15px}
-.price-row.total .pv{font-weight:800;color:var(--inv-accent);font-size:20px}
-.price-row.ppn-row{color:#059669}
-.price-row.ppn-row .pv{color:#059669}
-
-.show-pay{background:#f8fafc;border:1px solid var(--inv-border);border-radius:12px;padding:20px;margin:0 24px 20px}
-.show-pay h3{font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px}
-.show-pay .note{font-size:13px;color:var(--inv-text);margin-bottom:10px}
-.show-pay .br{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
-.show-pay .br .bk{color:var(--inv-text)}
-.show-pay .br .bv{font-weight:600;color:#1e293b;text-align:right;max-width:60%}
-.show-upload{margin:0 24px 20px}
-.show-upload label{display:block;font-size:14px;font-weight:600;color:#1e293b;margin-bottom:8px}
-.drop-zone{border:2px dashed #cbd5e1;border-radius:12px;padding:30px 20px;text-align:center;cursor:pointer;transition:.2s;background:#fafbfc}
-.drop-zone:hover{border-color:var(--inv-accent);background:#fffbeb}
-.drop-zone.has-file{border-color:var(--inv-green,#10b981);background:#ecfdf5}
-.drop-zone i{font-size:28px;color:#94a3b8;display:block;margin-bottom:8px}
-.drop-zone p{font-size:13px;color:var(--inv-text)}
-.drop-zone .hint{font-size:11px;color:#94a3b8;margin-top:4px}
-.drop-zone input{display:none}
-.fname{font-size:13px;font-weight:600;color:#1e293b;margin-top:8px;display:none}
-.err-msg{font-size:12px;color:var(--inv-red);margin-top:6px}
-.show-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:calc(100% - 48px);margin:0 24px 24px;padding:14px;background:var(--inv-accent);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;transition:.2s}
-.show-btn:hover{background:var(--inv-accent-hover);box-shadow:0 4px 12px rgba(245,158,11,.3);transform:translateY(-1px)}
-
-/* Modal Pop-up */
-.inv-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;animation:invFadeIn .2s ease}
-.inv-modal{background:#fff;border-radius:20px;padding:40px 36px 28px;text-align:center;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.15);animation:invPopIn .3s ease}
-.inv-modal .ic{width:64px;height:64px;border-radius:50%;background:#ecfdf5;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.inv-modal .ic i{font-size:28px;color:#10b981}
-.inv-modal h3{font-size:20px;font-weight:800;color:#1e293b;margin:0 0 8px}
-.inv-modal p{font-size:14px;color:var(--inv-text);margin:0 0 24px;line-height:1.5}
-.inv-modal button{width:100%;padding:12px;background:var(--inv-accent);color:#fff;font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;transition:.2s}
-.inv-modal button:hover{background:var(--inv-accent-hover);box-shadow:0 4px 12px rgba(245,158,11,.3)}
-@keyframes invFadeIn{from{opacity:0}to{opacity:1}}
-@keyframes invPopIn{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-
-/* Bukti Pembayaran */
-.show-bukti{margin:0 24px 24px}
-.show-bukti .lbl{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--inv-text);margin-bottom:10px}
-.show-bukti img{max-width:100%;max-height:300px;border-radius:12px;border:1px solid var(--inv-border);object-fit:contain}
-</style>
 
 @php
-    // ✅ PERHITUNGAN RINCIAN HARGA
     $durasiTahun = $faktur->durasi_tahun ?? 1;
     $hargaPerTahun = 50000;
     $ppnPersen = 11;
     
-    // Jika ada field subtotal & ppn di database, gunakan itu
     if (isset($faktur->subtotal) && isset($faktur->ppn)) {
-        $subtotal = $faktur->subtotal / 1.11; // Kembalikan ke harga dasar
+        $subtotal = $faktur->subtotal / 1.11;
         $ppn = $faktur->ppn;
         $totalHarga = $faktur->total;
     } else {
-        // Fallback kalkulasi manual (untuk data lama)
         $subtotal = $durasiTahun * $hargaPerTahun;
         $ppn = $subtotal * ($ppnPersen / 100);
         $totalHarga = $subtotal + $ppn;
     }
 @endphp
 
-<div style="padding:0 24px;max-width:1200px">
-    <div class="show-grid">
-        <!-- Sidebar Kiri -->
-        <div>
-            <!-- 1. Card Status Domain -->
-            <x-status-domain :status="$faktur->status" />
-        </div>
+<div class="flex flex-col lg:flex-row gap-6">
 
-        <!-- Konten Utama -->
-        <div class="show-card">
-            <a href="{{ url()->previous() }}"
-   class=" text-black font-bold py-2 px-4 rounded inline-flex items-center justify-center">
-    <i class="fas fa-arrow-left mr-2"></i> Kembali
-</a>
-            <div class="show-header">
-                <div class="lbl">Invoice</div>
-                <div class="num">INV-#{{ $faktur->no_invoice }}</div>
-            </div>
-            <div class="show-meta">
-                <p>{{ $faktur->nama_desa }}</p>
-            </div>
+    <!-- SIDEBAR KIRI -->
+    <div class="w-full lg:w-80 flex-shrink-0 space-y-4">
+        <x-status-domain :status="$faktur->status" />
 
-            <div class="show-body">
-                <div class="show-row">
-                    <span class="k">Domain</span>
-                    <span class="v">{{ $faktur->nama_domain }}.desa.id</span>
-                </div>
-                <div class="show-row">
-                    <span class="k">No. Invoice</span>
-                    <span class="v">{{ $faktur->no_invoice }}</span>
-                </div>
-                 <div class="show-row">
-                    <span class="k">Masa Aktif</span>
-                    <span class="v">{{ $durasiTahun }} Tahun</span>
-                </div>
-                <div class="show-row">
-                    <span class="k">Tipe Pembayaran</span>
-                    <span class="v"> @if($faktur->tipe == 'perpanjangan')
-                        <span class="v">Perpanjangan</span>
-                    @else
-                        <span class="v">Baru (Registrasi)</span>
-                    @endif</span>
-                </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="font-bold text-slate-800 text-xs uppercase tracking-widest">Ringkasan</h3>
             </div>
-
-            {{-- ✅ RINCIAN HARGA DENGAN PPN --}}
-            <div class="show-price-detail">
-                <h4><i class="fas fa-receipt mr-2"></i>Rincian Harga</h4>
-                
-                <div class="price-row">
-                    <span class="pk">Biaya Domain ({{ $durasiTahun }} tahun × Rp {{ number_format($hargaPerTahun, 0, ',', '.') }})</span>
-                    <span class="pv">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+            <div class="p-5 space-y-4">
+                <div>
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Tagihan</p>
+                    <p class="text-xl font-extrabold text-[#109696] tracking-tight">Rp {{ number_format($totalHarga, 0, ',', '.') }}</p>
                 </div>
-                
-                <div class="price-row ppn-row">
-                    <span class="pk"><i class="fas fa-percent mr-1"></i>PPN {{ $ppnPersen }}%</span>
-                    <span class="pv">Rp {{ number_format($ppn, 0, ',', '.') }}</span>
-                </div>
-                
-                <div class="price-row total">
-                    <span class="pk">Total Pembayaran</span>
-                    <span class="pv">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
-                </div>
-            </div>
-
-            <div class="show-pay">
-                <h3>Petunjuk Pembayaran</h3>
-                <p class="note">Silakan lakukan pembayaran ke rekening berikut:</p>
-                <div class="br"><span class="bk">Penerima</span><span class="bv">PANDI (Pengelola Nama Domain Internet Indonesia)</span></div>
-                <div class="br"><span class="bk">Bank</span><span class="bv">Bank BCA KCU Sudirman</span></div>
-                <div class="br"><span class="bk">No. Rekening</span><span class="bv">888-88-8888</span></div>
-                <div class="br"><span class="bk">Jumlah Transfer</span><span class="bv" style="color:var(--inv-accent);font-weight:800;font-size:14px">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span></div>
-            </div>
-
-            @if($faktur->bukti_pembayaran_path)
-            <div class="show-bukti">
-                <div class="lbl">Bukti Pembayaran</div>
-                <img src="{{ Storage::url($faktur->bukti_pembayaran_path) }}" alt="Bukti Pembayaran">
-            </div>
-            @endif
-
-            @if($faktur->status == 'belum_bayar')
-            <form action="{{ route('desa.faktur.konfirmasi', $faktur->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="show-upload">
-                    <label>Bukti Pembayaran *</label>
-                    <div class="drop-zone" id="dropZone" onclick="document.getElementById('bukti').click()">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Klik atau seret file ke sini</p>
-                        <p class="hint">JPG, PNG maks. 2MB</p>
-                        <input type="file" name="bukti_pembayaran" id="bukti" required accept="image/*">
+                <div class="border-t border-slate-100 pt-4 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-400">Masa Aktif</span>
+                        <span class="font-semibold text-slate-700">{{ $durasiTahun }} Tahun</span>
                     </div>
-                    <div class="fname" id="fname"></div>
-                    @error('bukti_pembayaran')
-                        <p class="err-msg">{{ $message }}</p>
-                    @enderror
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-slate-400">Tipe</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                            {{ $faktur->tipe == 'perpanjangan' ? 'bg-purple-50 text-purple-700' : 'bg-sky-50 text-sky-700' }}">
+                            {{ $faktur->tipe == 'perpanjangan' ? 'Perpanjangan' : 'Baru' }}
+                        </span>
+                    </div>
                 </div>
-                <button type="submit" class="show-btn">
-                    <i class="fas fa-paper-plane"></i> Kirim Bukti Pembayaran
-                </button>
-            </form>
-            @endif
+                <div class="border-t border-slate-100 pt-4">
+                    <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">Batas Pembayaran</p>
+                    <p class="text-sm font-semibold text-slate-700">{{ $faktur->expired_at->format('d M Y') }}</p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-{{-- Pop-up Sukses --}}
-@if(session('success'))
-<div class="inv-overlay" id="successModal">
-    <div class="inv-modal">
-        <div class="ic"><i class="fas fa-check"></i></div>
-        <h3>Sukses</h3>
-        <p>{{ session('success') }}</p>
-        <button onclick="document.getElementById('successModal').remove()">OK</button>
+    <!-- KONTEN UTAMA -->
+    <div class="flex-1 min-w-0">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
+            <!-- HEADER INVOICE -->
+            <div class="px-6 md:px-8 py-6 bg-gradient-to-br from-slate-800 to-slate-900 relative">
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div>
+                        <p class="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Invoice</p>
+                        <h2 class="text-2xl font-extrabold text-white tracking-tight mt-1">INV-#{{ $faktur->no_invoice }}</h2>
+                        <p class="text-slate-300 text-sm font-medium mt-1">{{ $faktur->nama_desa }}</p>
+                    </div>
+                    <a href="{{ url()->previous() }}"
+                       class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 px-5 rounded-xl transition text-sm backdrop-blur-sm">
+                        <i class="fas fa-arrow-left text-xs"></i> Kembali
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6 md:p-8 space-y-8">
+
+                <!-- DETAIL FAKTUR -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Detail Faktur
+                    </h3>
+
+                    <div class="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                        <div class="space-y-0 divide-y divide-slate-100">
+                            <div class="flex justify-between items-center py-3.5 first:pt-0">
+                                <span class="text-sm text-slate-400">No. Invoice</span>
+                                <span class="text-sm font-semibold text-slate-700 font-mono">{{ $faktur->no_invoice }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-slate-400">Nama Desa</span>
+                                <span class="text-sm font-semibold text-slate-700">{{ $faktur->nama_desa }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-slate-400">Domain</span>
+                                <span class="text-sm font-semibold text-[#1A85A5]">{{ $faktur->nama_domain }}<span class="text-slate-300 font-medium">.desa.id</span></span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-slate-400">Tipe Pembayaran</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                    {{ $faktur->tipe == 'perpanjangan' ? 'bg-purple-50 text-purple-700' : 'bg-sky-50 text-sky-700' }}">
+                                    {{ $faktur->tipe == 'perpanjangan' ? 'Perpanjangan' : 'Baru (Registrasi)' }}
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5 last:pb-0">
+                                <span class="text-sm text-slate-400">Masa Aktif</span>
+                                <span class="text-sm font-semibold text-slate-700">{{ $durasiTahun }} Tahun</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RINCIAN HARGA -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Rincian Harga
+                    </h3>
+
+                    <div class="bg-gradient-to-br from-slate-50 to-slate-100/80 p-5 rounded-xl border border-slate-200">
+                        <div class="space-y-0 divide-y divide-slate-200">
+                            <div class="flex justify-between items-center py-3.5 first:pt-0">
+                                <span class="text-sm text-slate-500">Biaya Domain ({{ $durasiTahun }} tahun × Rp {{ number_format($hargaPerTahun, 0, ',', '.') }})</span>
+                                <span class="text-sm font-semibold text-slate-700">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-emerald-600 flex items-center gap-1.5">
+                                    <i class="fas fa-percent text-[10px]"></i>
+                                    PPN {{ $ppnPersen }}%
+                                </span>
+                                <span class="text-sm font-semibold text-emerald-600">Rp {{ number_format($ppn, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-4 last:pb-0">
+                                <span class="text-base font-bold text-slate-800">Total Pembayaran</span>
+                                <span class="text-xl font-extrabold text-[#109696]">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PETUNJUK PEMBAYARAN -->
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Petunjuk Pembayaran
+                    </h3>
+
+                    <div class="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+                        <p class="text-sm text-slate-500 mb-4">Silakan lakukan pembayaran ke rekening berikut:</p>
+                        <div class="space-y-0 divide-y divide-slate-100">
+                            <div class="flex justify-between items-center py-3.5 first:pt-0">
+                                <span class="text-sm text-slate-400">Penerima</span>
+                                <span class="text-sm font-semibold text-slate-700 text-right max-w-[60%]">PANDI (Pengelola Nama Domain Internet Indonesia)</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-slate-400">Bank</span>
+                                <span class="text-sm font-semibold text-slate-700">Bank BCA KCU Sudirman</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5">
+                                <span class="text-sm text-slate-400">No. Rekening</span>
+                                <span class="text-sm font-semibold text-slate-700 font-mono">888-88-8888</span>
+                            </div>
+                            <div class="flex justify-between items-center py-3.5 last:pb-0">
+                                <span class="text-sm text-slate-400">Jumlah Transfer</span>
+                                <span class="text-sm font-extrabold text-[#109696]">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUKTI PEMBAYARAN (JIKA SUDAH ADA) -->
+@if($faktur->bukti_pembayaran_path)
+<div>
+    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+        Bukti Pembayaran
+    </h3>
+
+    <div class="bg-slate-50/50 p-5 rounded-xl border border-slate-100">
+        <img src="{{ Storage::url($faktur->bukti_pembayaran_path) }}"
+             alt="Bukti Pembayaran"
+             class="max-w-full max-h-96 rounded-xl border border-slate-200 object-contain mb-4">
+
+        <a href="{{ Storage::url($faktur->bukti_pembayaran_path) }}"
+           download
+           class="inline-flex items-center gap-2 bg-[#1760C5] hover:bg-[#1250a5] text-white text-sm font-bold px-5 py-2.5 rounded-xl transition shadow-sm shadow-[#1760C5]/20 hover:shadow-md hover:-translate-y-0.5">
+            <i class="fas fa-download text-xs"></i> Download Bukti Pembayaran
+        </a>
     </div>
 </div>
 @endif
 
+                <!-- FORM UPLOAD (HANYA BELUM BAYAR) -->
+                @if($faktur->status == 'belum_bayar')
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <span class="w-1.5 h-5 bg-gradient-to-b from-[#109696] to-[#1760C5] rounded-full"></span>
+                        Upload Bukti Pembayaran
+                    </h3>
+
+                    <form action="{{ route('desa.faktur.konfirmasi', $faktur->id) }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center cursor-pointer transition-all duration-200 hover:border-[#109696] hover:bg-[#109696]/5"
+                             id="dropZone" onclick="document.getElementById('bukti').click()">
+                            <div class="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-3 transition-colors duration-200" id="dropIcon">
+                                <i class="fas fa-cloud-upload-alt text-xl text-slate-400"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-600" id="dropText">Klik atau seret file ke sini</p>
+                            <p class="text-xs text-slate-400 mt-1">JPG, PNG maks. 2MB</p>
+                            <input type="file" name="bukti_pembayaran" id="bukti" required accept="image/*" class="hidden">
+                        </div>
+                        <p class="text-sm font-semibold text-[#109696] mt-3 hidden" id="fname"></p>
+                        @error('bukti_pembayaran')
+                            <p class="text-xs text-rose-500 mt-2 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle text-[10px]"></i>
+                                {{ $message }}
+                            </p>
+                        @enderror
+
+                        <button type="submit"
+                                class="mt-5 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#109696] to-[#1A85A5] hover:from-[#0e7e7e] hover:to-[#157090] text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-[#109696]/20 hover:shadow-lg hover:shadow-[#109696]/30 hover:-translate-y-0.5">
+                            <i class="fas fa-paper-plane text-sm"></i>
+                            Kirim Bukti Pembayaran
+                        </button>
+                    </form>
+                </div>
+                @endif
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- MODAL SUKSES --}}
+@if(session('success'))
+<div class="fixed inset-0 bg-black/45 z-[9999] flex items-center justify-center" id="successModal">
+    <div class="bg-white rounded-2xl p-10 text-center max-w-sm w-[90%] shadow-2xl" style="animation: invPopIn .3s ease">
+        <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-check text-2xl text-emerald-500"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-slate-800 mb-2">Sukses</h3>
+        <p class="text-sm text-slate-500 leading-relaxed mb-6">{{ session('success') }}</p>
+        <button onclick="document.getElementById('successModal').remove()"
+                class="w-full py-3 bg-gradient-to-r from-[#109696] to-[#1A85A5] hover:from-[#0e7e7e] hover:to-[#157090] text-white font-bold rounded-xl transition-all duration-200 shadow-md shadow-[#109696]/20">
+            OK
+        </button>
+    </div>
+</div>
+<style>
+@keyframes invPopIn{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+</style>
+@endif
+
 @if($faktur->status == 'belum_bayar')
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-    var fi=document.getElementById('bukti'),dz=document.getElementById('dropZone'),fn=document.getElementById('fname');
-    fi.addEventListener('change',function(){
-        if(this.files.length){fn.textContent=this.files[0].name;fn.style.display='block';dz.classList.add('has-file')}
-        else{fn.style.display='none';dz.classList.remove('has-file')}
+document.addEventListener('DOMContentLoaded', function() {
+    var fi = document.getElementById('bukti'),
+        dz = document.getElementById('dropZone'),
+        fn = document.getElementById('fname'),
+        di = document.getElementById('dropIcon'),
+        dt = document.getElementById('dropText');
+
+    fi.addEventListener('change', function() {
+        if (this.files.length) {
+            fn.textContent = this.files[0].name;
+            fn.classList.remove('hidden');
+            dz.classList.remove('border-slate-200');
+            dz.classList.add('border-emerald-300', 'bg-emerald-50/50');
+            di.classList.remove('bg-slate-100');
+            di.classList.add('bg-emerald-100');
+            di.querySelector('i').classList.remove('text-slate-400');
+            di.querySelector('i').classList.add('text-emerald-500');
+            dt.textContent = 'File siap diunggah';
+            dt.classList.remove('text-slate-600');
+            dt.classList.add('text-emerald-700');
+        } else {
+            resetDrop();
+        }
     });
-    dz.addEventListener('dragover',function(e){e.preventDefault();this.style.borderColor='var(--inv-accent)';this.style.background='#fffbeb'});
-    dz.addEventListener('dragleave',function(){if(!fi.files.length){this.style.borderColor='';this.style.background=''}});
-    dz.addEventListener('drop',function(e){e.preventDefault();fi.files=e.dataTransfer.files;fi.dispatchEvent(new Event('change'))});
+
+    dz.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-slate-200');
+        this.classList.add('border-[#109696]', 'bg-[#109696]/5');
+    });
+    dz.addEventListener('dragleave', function() {
+        if (!fi.files.length) resetDrop();
+    });
+    dz.addEventListener('drop', function(e) {
+        e.preventDefault();
+        fi.files = e.dataTransfer.files;
+        fi.dispatchEvent(new Event('change'));
+    });
+
+    function resetDrop() {
+        dz.classList.add('border-slate-200');
+        dz.classList.remove('border-emerald-300', 'bg-emerald-50/50', 'border-[#109696]', 'bg-[#109696]/5');
+        di.classList.add('bg-slate-100');
+        di.classList.remove('bg-emerald-100');
+        di.querySelector('i').classList.add('text-slate-400');
+        di.querySelector('i').classList.remove('text-emerald-500');
+        dt.textContent = 'Klik atau seret file ke sini';
+        dt.classList.add('text-slate-600');
+        dt.classList.remove('text-emerald-700');
+    }
 });
 </script>
 @endif

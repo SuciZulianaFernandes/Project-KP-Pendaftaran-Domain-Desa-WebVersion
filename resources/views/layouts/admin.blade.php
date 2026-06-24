@@ -61,15 +61,15 @@
     >
 
         <!-- LOGO -->
-        <div class="p-6 border-b border-white/10 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                    <i class="fas fa-network-wired text-white/90"></i>
-                </div>
-                <span class="text-lg font-extrabold tracking-wide uppercase">
-                    DISKOMINFO
-                </span>
-            </div>
+<div class="p-6 border-b border-white/10 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20 overflow-hidden">
+            <img src="{{ asset('storage/images/logo1.png') }}" alt="Logo" class="w-full h-full object-contain">
+        </div>
+        <span class="text-lg font-extrabold tracking-wide uppercase">
+            DISKOMINFO
+        </span>
+    </div>
 
             <button
                 @click="sidebarOpen = false"
