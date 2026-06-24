@@ -184,22 +184,33 @@ class PengajuanController extends Controller
     }
 
     // --- BAGIAN DESA: DAFTAR PENGAJUAN ---
-    public function daftar(Request $request)
-    {
-        $search = $request->get('search');
+    // --- BAGIAN DESA: DAFTAR PENGAJUAN ---
+public function daftar(Request $request)
+{
+    $search = $request->get('search');
+    $status = $request->get('status'); // 1. Tangkap inputan status dari filter desa
 
-        $query = Pengajuan::where('id_user', auth()->id())
-            ->where('status_pengajuan', '!=', 'aktif');
+    $query = Pengajuan::where('id_user', auth()->id())
+        ->where('status_pengajuan', '!=', 'aktif');
 
-        if (!empty($search)) {
-            $query->where('nama_domain', 'like', "%$search%");
-        }
-
-        $data = $query->latest()->paginate(10);
-        $data->appends(['search' => $search]);
-
-        return view('desa.verifikasi.daftar', compact('data', 'search'));
+    // 2. Logika pencarian berdasarkan keyword nama domain
+    if (!empty($search)) {
+        $query->where('nama_domain', 'like', "%$search%");
     }
+
+    // 3. Logika filter berdasarkan status pengajuan
+    if (!empty($status)) {
+        $query->where('status_pengajuan', $status);
+    }
+
+    $data = $query->latest()->paginate(10);
+    
+    // 4. Pastikan status & search tetap terbawa saat ganti halaman pagination
+    $data->appends(['search' => $search, 'status' => $status]);
+
+    // 5. Kirim variabel $status ke view blade desa
+    return view('desa.verifikasi.daftar', compact('data', 'search', 'status'));
+}
 
     public function show($id)
     {

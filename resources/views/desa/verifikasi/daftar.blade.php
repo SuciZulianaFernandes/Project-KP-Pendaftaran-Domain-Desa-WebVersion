@@ -34,33 +34,33 @@
 
         <!-- FORM SEARCH & FILTER -->
         <form action="{{ route('desa.verifikasi.daftar') }}" method="GET" class="p-6 border-b border-slate-100">
-            <div class="flex flex-col md:flex-row gap-4">
-                
-                <div class="relative flex-1">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" name="search" placeholder="Cari berdasarkan nama domain..." value="{{ request('search') }}"
-                        class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
-                </div>
-                
-                <button type="submit"
-                    class="bg-[#109696] hover:bg-[#0d7a7a] text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition shadow-sm shadow-[#109696]/20 flex items-center justify-center gap-2">
-                    <i class="fas fa-search text-xs"></i> Cari
-                </button>
+    <div class="flex flex-col md:flex-row gap-4">
+        
+        <div class="relative flex-1">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" name="search" placeholder="Cari berdasarkan nama domain..." value="{{ request('search') }}"
+                class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
+        </div>
+        
+        <button type="submit"
+            class="bg-[#109696] hover:bg-[#0d7a7a] text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition shadow-sm shadow-[#109696]/20 flex items-center justify-center gap-2">
+            <i class="fas fa-search text-xs"></i> Cari
+        </button>
 
-                <div class="relative">
-                    <select name="status" 
-                        class="appearance-none pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition w-full md:w-52 cursor-pointer">
-                        <option value="">Semua Status</option>
-                        <option value="ditinjau" {{ request('status') == 'ditinjau' ? 'selected' : '' }}>Ditinjau</option>
-                        <option value="perlu_perbaikan" {{ request('status') == 'perlu_perbaikan' ? 'selected' : '' }}>Perlu Perbaikan</option>
-                        <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>Diproses</option>
-                        <option value="menunggu_aktivasi" {{ request('status') == 'menunggu_aktivasi' ? 'selected' : '' }}>Menunggu Aktivasi</option>
-                        <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                    </select>
-                    <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
-                </div>
-            </div>
-        </form>
+        <div class="relative">
+            <select name="status" onchange="this.form.submit()" 
+                class="appearance-none pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition w-full md:w-52 cursor-pointer">
+                <option value="">Semua Status</option>
+                <option value="ditinjau" {{ request('status') == 'ditinjau' ? 'selected' : '' }}>Ditinjau</option>
+                <option value="perlu_perbaikan" {{ request('status') == 'perlu_perbaikan' ? 'selected' : '' }}>Perlu Perbaikan</option>
+                <option value="diproses" {{ request('status') == 'diproses' ? 'selected' : '' }}>Diproses</option>
+                <option value="menunggu_aktivasi" {{ request('status') == 'menunggu_aktivasi' ? 'selected' : '' }}>Menunggu Aktivasi</option>
+                {{-- Opsi 'aktif' dihapus karena di-query controller mengecualikan status aktif --}}
+            </select>
+            <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+        </div>
+    </div>
+</form>
 
         <!-- TABLE -->
         <div class="overflow-x-auto">
