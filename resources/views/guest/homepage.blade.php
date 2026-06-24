@@ -317,6 +317,140 @@
         .policy-list h5 { font-weight: 800; color: var(--text-dark); font-size: 1.05rem; margin-bottom: 6px; }
         .policy-list p { color: var(--text-body); font-size: 0.9rem; line-height: 1.7; margin: 0; }
 
+        /* ===== TEMPLATE DOKUMEN LINKS ===== */
+        .template-doc-links {
+            margin-top: 52px;
+            max-width: 850px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .template-doc-links-title {
+            font-weight: 800;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .template-doc-links-title i {
+            color: var(--teal-1);
+            font-size: 1.1rem;
+        }
+        .template-doc-links-title .title-line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--border-light), transparent);
+        }
+        .template-doc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .template-doc-item {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 18px;
+            padding: 28px 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            transition: all 0.35s ease;
+            box-shadow: var(--shadow-sm);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .template-doc-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--teal-1), var(--blue-1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .template-doc-item:hover {
+            border-color: rgba(16, 150, 150, 0.3);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        .template-doc-item:hover::before { opacity: 1; }
+        .template-doc-icon {
+            flex-shrink: 0;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(29, 78, 216, 0.1));
+            border: 1px solid rgba(37, 99, 235, 0.12);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            font-size: 1.3rem;
+            transition: all 0.35s ease;
+        }
+        .template-doc-item:hover .template-doc-icon {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+        .template-doc-info { flex: 1; min-width: 0; }
+        .template-doc-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+        .template-doc-item:hover .template-doc-name { color: var(--teal-1); }
+        .template-doc-format {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .template-doc-format .format-badge {
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .template-doc-arrow {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(16, 150, 150, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            transition: all 0.35s ease;
+        }
+        .template-doc-item:hover .template-doc-arrow {
+            background: var(--teal-1);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        @media (max-width: 576px) {
+            .template-doc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* ===== FOOTER ===== */
         .footer { background: #F8FAFC; color: var(--text-body); padding: 80px 0 30px; position: relative; border-top: 1px solid var(--border-light); }
         
@@ -381,6 +515,9 @@
             .policy-list li { padding: 22px 20px; gap: 16px; }
             .navbar-brand span { font-size: 1.2rem; }
             .navbar-brand img { height: 36px; }
+            .template-doc-item { padding: 20px 18px; gap: 14px; }
+            .template-doc-icon { width: 46px; height: 46px; font-size: 1.1rem; }
+            .template-doc-name { font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -630,11 +767,11 @@
     </section>
 
     <!-- Persyaratan & Biaya Section -->
-    <section class="feature-section" id="persyaratan" style="background: var(--bg-soft);">
+    <section class="feature-section" id="persyaratan" style="background: var(--bg-soft); padding-bottom: 0;">
         <div class="container">
             <div class="text-center mb-5">
                 <div class="section-label fade-up"><span class="line"></span>PERSYARATAN & BIAYA<span class="line"></span></div>
-                <h2 class="section-title fade-up delay-1">Ketentuan & Biaya Layanan</h2>
+                <h2 class="section-title fade-up delay-1">Persyaratan & Biaya Layanan</h2>
                 <p class="section-desc fade-up delay-2">Informasi mengenai persyaratan pendaftaran dan biaya pengelolaan nama domain.</p>
             </div>
 
@@ -660,6 +797,47 @@
                     <div><p>Biaya per tahun sebesar Rp 50.000,- (ditambah PPN 11%). Khusus nama domain desa.id dibebaskan untuk tahun pertama.</p></div>
                 </li>
             </ul>
+
+            <!-- Template Dokumen Persyaratan -->
+            <div class="template-doc-links fade-up">
+                <div class="template-doc-links-title">
+                    <i class="fas fa-file-signature"></i>
+                    <span>Template Dokumen Persyaratan</span>
+                    <span class="title-line"></span>
+                </div>
+                <div class="template-doc-grid">
+                    <a href="https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fdomain.go.id%2Fdoc%2FSurat%2520Permohonan%2520Domain%2520Desa.docx&wdOrigin=BROWSELINK" target="_blank" rel="noopener noreferrer" class="template-doc-item">
+                        <div class="template-doc-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <div class="template-doc-info">
+                            <div class="template-doc-name">Surat Permohonan Domain Desa</div>
+                            <div class="template-doc-format">
+                                <span class="format-badge">DOCX</span>
+                                <span>Template resmi</span>
+                            </div>
+                        </div>
+                        <div class="template-doc-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    <a href="https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fdomain.go.id%2Fdoc%2FSurat%2520Kuasa%2520Domain%2520Desa.docx&wdOrigin=BROWSELINK" target="_blank" rel="noopener noreferrer" class="template-doc-item">
+                        <div class="template-doc-icon">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <div class="template-doc-info">
+                            <div class="template-doc-name">Surat Kuasa Domain Desa</div>
+                            <div class="template-doc-format">
+                                <span class="format-badge">DOCX</span>
+                                <span>Template resmi</span>
+                            </div>
+                        </div>
+                        <div class="template-doc-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -764,75 +942,49 @@
         });
 
         // ===== SCROLL REVEAL ANIMATIONS =====
-        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -40px 0px' };
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
                 }
             });
         }, observerOptions);
 
-        document.querySelectorAll('.fade-up, .fade-right, .scale-in').forEach(el => {
-            observer.observe(el);
-        });
+        document.querySelectorAll('.fade-up, .fade-right, .scale-in').forEach(el => observer.observe(el));
 
-        // ===== COUNTER ANIMATION =====
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const counter = entry.target;
-                    const target = parseFloat(counter.getAttribute('data-target'));
-                    const isDecimal = target % 1 !== 0;
-                    const duration = 2000;
-                    const startTime = performance.now();
+        // ===== ACTIVE NAV LINK ON SCROLL =====
+        const sections = document.querySelectorAll('section[id], footer[id]');
+        const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
 
-                    function updateCounter(currentTime) {
-                        const elapsed = currentTime - startTime;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const easeOut = 1 - Math.pow(1 - progress, 3);
-                        const current = easeOut * target;
-
-                        if (isDecimal) {
-                            counter.textContent = current.toFixed(1);
-                        } else {
-                            counter.textContent = Math.floor(current);
-                        }
-
-                        if (progress < 1) {
-                            requestAnimationFrame(updateCounter);
-                        } else {
-                            if (isDecimal) {
-                                counter.textContent = target.toFixed(1);
-                            } else {
-                                counter.textContent = target;
-                            }
-                        }
-                    }
-                    requestAnimationFrame(updateCounter);
-                    counterObserver.unobserve(counter);
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                if (window.scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
                 }
             });
-        }, { threshold: 0.5 });
-
-        document.querySelectorAll('.stat-number').forEach(el => {
-            counterObserver.observe(el);
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
         });
 
         // ===== SMOOTH SCROLL FOR NAV LINKS =====
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth' });
-                    // Close mobile menu if open
-                    const navbarCollapse = document.getElementById('navbarNav');
-                    if (navbarCollapse.classList.contains('show')) {
-                        new bootstrap.Collapse(navbarCollapse).hide();
-                    }
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    // Close mobile nav if open
+                    const navCollapse = document.getElementById('navbarNav');
+                    const bsCollapse = bootstrap.Collapse.getInstance(navCollapse);
+                    if (bsCollapse) bsCollapse.hide();
                 }
             });
         });
