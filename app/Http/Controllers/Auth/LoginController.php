@@ -21,8 +21,8 @@ class LoginController extends Controller
             {
                 return redirect('/desa/dashboard');
             }
-        return view('auth.login');
         }
+        return view('auth.login');
     }
 
     public function login(Request $request)
