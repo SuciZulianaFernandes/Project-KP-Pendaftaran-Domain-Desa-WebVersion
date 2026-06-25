@@ -11,7 +11,17 @@ class LoginController extends Controller
 
     public function showLogin()
     {
-        return view('auth.login');
+        if(Auth::check()){
+            if(Auth::user()->role == 'admin')
+            {
+                return redirect('/admin/dashboard');
+            }
+
+            if(Auth::user()->role == 'desa')
+            {
+                return redirect('/desa/dashboard');
+            }
+        }
     }
 
     public function login(Request $request)
@@ -42,12 +52,12 @@ class LoginController extends Controller
     }
 
     public function logout(Request $request)
-{
-    Auth::logout();
+    {
+        Auth::logout();
 
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-    return redirect('/');
-}
+        return redirect('/');
+    }
 }
