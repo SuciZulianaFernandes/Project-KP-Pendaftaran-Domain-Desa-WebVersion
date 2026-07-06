@@ -1,0 +1,20 @@
+# Hardening tambahan untuk hosting yang mengarahkan document root ke folder
+# project (bukan ke /public). Blokir akses langsung ke file & folder sensitif.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} ^/(storage|bootstrap/cache|database|vendor|app|config|resources|routes|tests)(/|$) [NC]
+    RewriteRule ^ - [F,L]
+
+    RewriteRule ^cgi-bin/?$ - [F,L]
+    RewriteRule ^cgi-sys/?$ - [F,L]
+</IfModule>
+
+<FilesMatch "\.(log|env|sql|sqlite|lock)$">
+    Require all denied
+</FilesMatch>
+
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>

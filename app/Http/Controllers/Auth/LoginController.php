@@ -11,15 +11,14 @@ class LoginController extends Controller
 
     public function showLogin()
     {
-        if(Auth::check()){
-            if(Auth::user()->role == 'admin')
-            {
-                return redirect('/admin/dashboard');
+        if (Auth::check()) {
+    
+            if (Auth::user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
             }
-
-            if(Auth::user()->role == 'desa')
-            {
-                return redirect('/desa/dashboard');
+    
+            if (Auth::user()->role === 'desa') {
+                return redirect()->route('desa.dashboard');
             }
         }
         return view('auth.login');

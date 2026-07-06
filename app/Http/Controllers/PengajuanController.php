@@ -27,7 +27,7 @@ class PengajuanController extends Controller
         }
         
         if (!session('pengajuan.nama_domain')) {
-            return redirect()->route('pengajuan.index');
+            return redirect()->route('desa.pengajuan.index');
         }
         
         $data_desa = session('pengajuan.data_desa', []);
@@ -48,6 +48,8 @@ class PengajuanController extends Controller
             'kode_pos' => 'required|string|max:10',
         ]);
 
+        $data['nama_desa'] = strip_tags(trim($data['nama_desa']));
+
         session(['pengajuan.data_desa' => $data]);
         return redirect()->route('desa.pengajuan.dokumen');
     }
@@ -55,7 +57,7 @@ class PengajuanController extends Controller
     public function showDokumenForm()
     {
         if (!session('pengajuan.data_desa')) {
-            return redirect()->route('pengajuan.informasi');
+            return redirect()->route('desa.pengajuan.informasi');
         }
         return view('desa.pengajuan.index3');
     }
@@ -283,55 +285,55 @@ public function daftar(Request $request)
         return view('admin.pengajuan.detail', compact('pengajuan'));
     }
 
-        public function verifikasi(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:diproses,perlu_perbaikan'
-    ]);
+    public function verifikasi(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:diproses,perlu_perbaikan'
+        ]);
 
-    $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::findOrFail($id);
 
-    $status = $request->status;
-    $catatan = $request->catatan;
+        $status = $request->status;
+        $catatan = $request->catatan;
 
-    $pengajuan->status_pengajuan = $status;
-    $pengajuan->catatan_umum = $catatan;
-    $pengajuan->save();
+        $pengajuan->status_pengajuan = $status;
+        $pengajuan->catatan_umum = $catatan;
+        $pengajuan->save();
 
-    if ($status == 'diproses') {
+        if ($status == 'diproses') {
 
-        // Cek duplikat: jangan buat jika sudah ada yang belum dibaca
-        $sudahAda = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
-            ->where('judul', 'Konfirmasi Pembayaran')
-            ->where('role_tujuan', 'desa')
-            ->where('is_read', 0)
-            ->exists();
+            // Cek duplikat: jangan buat jika sudah ada yang belum dibaca
+            $sudahAda = \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
+                ->where('judul', 'Konfirmasi Pembayaran')
+                ->where('role_tujuan', 'desa')
+                ->where('is_read', 0)
+                ->exists();
 
-        if (!$sudahAda) {
+            if (!$sudahAda) {
+                \App\Models\Pesan::create([
+                    'id_user'       => $pengajuan->id_user,
+                    'id_pengajuan'  => $pengajuan->id_pengajuan,
+                    'judul'         => 'Konfirmasi Pembayaran',
+                    'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id telah disetujui. Silakan konfirmasi pembayaran dengan memilih masa berlaku domain di halaman detail.',
+                    'role_tujuan'   => 'desa',
+                    'is_read'       => 0
+                ]);
+            }
+
+        } else {
+            // perlu_perbaikan
             \App\Models\Pesan::create([
                 'id_user'       => $pengajuan->id_user,
                 'id_pengajuan'  => $pengajuan->id_pengajuan,
-                'judul'         => 'Konfirmasi Pembayaran',
-                'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id telah disetujui. Silakan konfirmasi pembayaran dengan memilih masa berlaku domain di halaman detail.',
-                'role_tujuan'   => 'desa',
-                'is_read'       => 0
+                'judul'         => 'Perlu Perbaikan',
+                'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id perlu perbaikan. Catatan: ' . $catatan,
+                'role_tujuan'   => 'desa'
             ]);
         }
 
-    } else {
-        // perlu_perbaikan
-        \App\Models\Pesan::create([
-            'id_user'       => $pengajuan->id_user,
-            'id_pengajuan'  => $pengajuan->id_pengajuan,
-            'judul'         => 'Perlu Perbaikan',
-            'isi'           => 'Pengajuan domain ' . $pengajuan->nama_domain . '.desa.id perlu perbaikan. Catatan: ' . $catatan,
-            'role_tujuan'   => 'desa'
-        ]);
+        return redirect()->route('admin.pengajuan.index')
+            ->with('success', 'Berhasil verifikasi pengajuan');
     }
-
-    return redirect()->route('admin.pengajuan.index')
-        ->with('success', 'Berhasil verifikasi pengajuan');
-}
 
     public function lihatDokumen($id)
     {

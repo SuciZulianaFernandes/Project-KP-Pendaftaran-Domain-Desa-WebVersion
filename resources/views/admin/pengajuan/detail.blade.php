@@ -184,7 +184,7 @@
 
                     <div class="flex flex-col">
                         <span class="text-slate-400 text-xs font-semibold mb-0.5">Tanggal Pembuatan</span>
-                        <span class="text-slate-700 font-medium">{{ $pengajuan->created_at->format('d M Y') }}</span>
+                        <span class="text-slate-700 font-medium">{{ optional($pengajuan->created_at)->format('d M Y') ?? '-' }}</span>
                     </div>
 
                     <div class="flex flex-col md:col-span-2">

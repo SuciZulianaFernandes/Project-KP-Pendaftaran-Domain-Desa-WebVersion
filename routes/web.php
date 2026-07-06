@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\UserController;
@@ -19,13 +21,24 @@ Route::get('/', function () {
 });
 
 // Route Autentikasi Web
-Route::middleware('guest')->group(function (){
-    Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
-    // Route::get('/register', [RegisterController::class, 'showRegister']);
-    // Route::post('/register', [RegisterController::class, 'register'])->name('register');
-});
+Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,15');
+// Route::get('/register', [RegisterController::class, 'showRegister']);
+// Route::post('/register', [RegisterController::class, 'register'])->name('register');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Route Lupa/Reset Password
+Route::get('/lupa-password', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->middleware('throttle:5,1')
+    ->name('password.request');
+Route::post('/lupa-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->middleware('throttle:5,1')
+    ->name('password.email');
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
+    ->middleware('throttle:5,1')
+    ->name('password.update');
 
 // Route dokumen untuk semua user yang sudah login
 Route::middleware('auth')->group(function () {

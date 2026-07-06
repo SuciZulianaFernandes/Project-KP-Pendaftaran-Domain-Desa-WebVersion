@@ -53,8 +53,8 @@ class ProfileDesaController extends Controller
         $desa->id_user = $user->id_user;
     }
 
-    $desa->nama_desa = $request->nama_desa;
-    $desa->nama_kepala_desa = $request->nama_kepala_desa;
+    $desa->nama_desa = strip_tags(trim($request->nama_desa));
+    $desa->nama_kepala_desa = strip_tags(trim((string) $request->nama_kepala_desa));
     $desa->nip_kepala_desa = $request->nip_kepala_desa;
     $desa->alamat = $request->alamat;
     $desa->id_prov = $request->id_prov;
