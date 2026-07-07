@@ -9,7 +9,7 @@ return new class extends Migration
     {
         Schema::create('pengajuan', function (Blueprint $table) {
     $table->id('id_pengajuan');
-    $table->unsignedBigInteger('id_desa');
+    $table->unsignedBigInteger('id_user');
     $table->string('nama_domain',100);
     $table->enum('status_pengajuan',['ditinjau','draft','diproses','perlu_perbaikan','menunggu_aktivasi','aktif']);
     $table->text('catatan_umum')->nullable();

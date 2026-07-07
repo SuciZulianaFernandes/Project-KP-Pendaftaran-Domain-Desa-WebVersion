@@ -142,7 +142,7 @@ class PengajuanController extends Controller
                 'tgl_pengajuan' => now(),
                 'nama_desa' => $allData['data_desa']['nama_desa'],
                 'telepon' => $allData['data_desa']['Telepon'],
-                'faksimili' => $allData['data_desa']['Faksimili'],
+                'faksimili' => $allData['data_desa']['Faksimili'] ?? null,
                 'alamat' => $allData['data_desa']['alamat'],
                 'provinsi' => $allData['data_desa']['provinsi'],
                 'kota_kabupaten' => $allData['data_desa']['kota_kabupaten'],
@@ -242,6 +242,33 @@ public function daftar(Request $request)
             ]);
         }
         return back()->with('success', 'Dokumen berhasil diperbarui');
+    }
+
+    public function kirimUlang($id)
+    {
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        if ($pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($pengajuan->status_pengajuan !== 'perlu_perbaikan') {
+            return back()->with('error', 'Pengajuan ini bukan dalam status perlu perbaikan.');
+        }
+
+        $pengajuan->status_pengajuan = 'ditinjau';
+        $pengajuan->save();
+
+        \App\Models\Pesan::create([
+            'id_user'      => \App\Models\User::where('role', 'admin')->value('id_user'),
+            'id_pengajuan' => $pengajuan->id_pengajuan,
+            'judul'        => 'Perbaikan Dokumen Selesai',
+            'isi'          => 'Desa ' . $pengajuan->nama_desa . ' telah memperbaiki dokumen untuk pengajuan domain ' . $pengajuan->nama_domain . '.desa.id. Silakan verifikasi ulang.',
+            'role_tujuan'  => 'admin',
+        ]);
+
+        return redirect()->route('desa.verifikasi.detail', $pengajuan->id_pengajuan)
+            ->with('success', 'Pengajuan berhasil dikirim ulang untuk ditinjau admin.');
     }
 
     // --- BAGIAN ADMIN: DAFTAR PENGAJUAN ---

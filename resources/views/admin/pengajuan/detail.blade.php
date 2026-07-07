@@ -296,7 +296,7 @@
             <hr class="my-8 border-slate-100">
 
             <!-- VERIFIKASI & AKSI -->
-            @if(in_array($pengajuan->status_pengajuan, ['ditinjau', 'perlu_perbaikan']))
+            @if($pengajuan->status_pengajuan == 'ditinjau')
 
             @php
                 $pernahDaftarSebelumnya = \App\Models\Pengajuan::where('id_user', $pengajuan->id_user)
@@ -387,8 +387,19 @@
                 });
             </script>
 
+            @elseif($pengajuan->status_pengajuan == 'perlu_perbaikan')
+
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 flex items-center gap-3 mt-2">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 flex-shrink-0">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <p class="text-amber-700 font-semibold text-sm">
+                    Menunggu perbaikan dokumen dari desa. Verifikasi akan tersedia kembali setelah desa mengirim ulang.
+                </p>
+            </div>
+
             @elseif($pengajuan->status_pengajuan == 'diproses')
-            
+
             @php
                 $adaKonfirmasiDesa = $pengajuan->pesan->where('judul', 'Konfirmasi Pembayaran Disetujui')->isNotEmpty();
                 $fakturSudahAda = $pengajuan->faktur->where('tipe', 'perpanjangan')->isNotEmpty();

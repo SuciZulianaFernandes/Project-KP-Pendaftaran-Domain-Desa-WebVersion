@@ -33,7 +33,10 @@ return new class extends Migration
         'sudah_bayar',
         'kedaluarsa'
     ])->default('belum_bayar');
-    $table->string('bukti_pembayaran_path')->nullable()->after('status');
+    $table->string('tipe')->default('baru');
+    $table->string('bukti_pembayaran_path')->nullable();
+    $table->text('catatan')->nullable();
+    $table->unsignedTinyInteger('durasi_tahun')->nullable();
 
     $table->timestamp('tanggal_konfirmasi')->nullable();
     $table->timestamp('expired_at')->nullable();

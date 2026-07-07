@@ -16,6 +16,7 @@ return new class extends Migration
         $table->unsignedBigInteger('id_pengajuan');
         $table->enum('status_akt', ['nonaktif', 'aktif', 'kadaluarsa'])->default('nonaktif');
         $table->dateTime('tgl_aktivasi')->nullable();
+        $table->dateTime('masa_berlaku')->nullable();
         $table->timestamps();
 
         $table->foreign('id_pengajuan')->references('id_pengajuan')->on('pengajuan')->onDelete('cascade');

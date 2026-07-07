@@ -17,6 +17,8 @@ return new class extends Migration
     $table->foreignId('id_pengajuan');
     $table->string('judul');
     $table->text('isi');
+    $table->string('role_tujuan')->nullable();
+    $table->unsignedTinyInteger('durasi_tahun')->nullable();
     $table->boolean('is_read')->default(false);
     $table->timestamps();
 });

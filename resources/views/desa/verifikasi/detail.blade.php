@@ -77,6 +77,18 @@
 
 @endphp
 
+@if(session('success'))
+<div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 rounded-lg" role="alert">
+    {{ session('success') }}
+</div>
+@endif
+
+@if(session('error'))
+<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg" role="alert">
+    {{ session('error') }}
+</div>
+@endif
+
 <div class="space-y-6">
     <div class="flex flex-col lg:flex-row gap-6">
 
@@ -514,7 +526,7 @@
                 {{-- PERLU PERBAIKAN --}}
                 @elseif($finalStatus == 'perlu_perbaikan')
 
-                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 flex items-center gap-3 mt-2">
+                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-200 flex items-center gap-3 mt-2 mb-4">
                         <div class="w-9 h-9 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600 flex-shrink-0 mt-0.5">
                             <i class="fas fa-exclamation-circle text-sm"></i>
                         </div>
@@ -522,6 +534,18 @@
                             Dokumen perlu diperbaiki sesuai catatan admin di atas.
                         </p>
                     </div>
+
+                    <form action="{{ route('desa.verifikasi.kirimUlang', $pengajuan->id_pengajuan) }}" method="POST"
+                        onsubmit="return confirm('Pastikan semua dokumen yang perlu diperbaiki sudah diupload ulang. Kirim untuk ditinjau ulang oleh admin?')">
+                        @csrf
+                        @method('PUT')
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 bg-[#109696] hover:bg-[#0d7a7a] text-white font-bold py-2.5 px-6 rounded-xl text-sm shadow-sm transition">
+                                <i class="fas fa-paper-plane text-xs"></i> Simpan &amp; Kirim Ulang
+                            </button>
+                        </div>
+                    </form>
 
                 @endif
 

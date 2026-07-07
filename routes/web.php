@@ -156,7 +156,8 @@ Route::middleware(['auth', 'role:desa'])->prefix('desa')->name('desa.')->group(f
         Route::delete('/{id}', [PengajuanController::class, 'destroy'])->name('destroy');
     });
     
-    Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])->name('verifikasi.updateDokumen');   
+    Route::put('/verifikasi/dokumen/{id}', [PengajuanController::class, 'updateDokumen'])->name('verifikasi.updateDokumen');
+    Route::put('/verifikasi/{id}/kirim-ulang', [PengajuanController::class, 'kirimUlang'])->name('verifikasi.kirimUlang');
 
     // Faktur & Pesan
     Route::get('/pesan', [PesanController::class, 'index'])->name('pesan.index');
