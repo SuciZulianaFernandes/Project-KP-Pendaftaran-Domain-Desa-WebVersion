@@ -374,6 +374,12 @@ public function daftar(Request $request)
         $file = storage_path('app/private/' . $dokumen->path_file);
         abort_unless(file_exists($file), 404);
 
-        return response()->file($file);
+        $response = response()->file($file);
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(
+            \Symfony\Component\HttpFoundation\ResponseHeaderBag::DISPOSITION_INLINE,
+            $dokumen->nama_file
+        ));
+
+        return $response;
     }
 }

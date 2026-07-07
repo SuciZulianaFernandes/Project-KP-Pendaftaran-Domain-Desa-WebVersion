@@ -43,7 +43,7 @@ Route::post('/reset-password', [ResetPasswordController::class, 'reset'])
 // Route dokumen untuk semua user yang sudah login
 Route::middleware('auth')->group(function () {
 
-    Route::get('/dokumen/{id}', [PengajuanController::class, 'lihatDokumen'])
+    Route::get('/dokumen/{id}/{filename?}', [PengajuanController::class, 'lihatDokumen'])
         ->name('dokumen.lihat');
 
 });

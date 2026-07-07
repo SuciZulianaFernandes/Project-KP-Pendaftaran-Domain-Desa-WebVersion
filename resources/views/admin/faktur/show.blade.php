@@ -12,7 +12,7 @@
     
     // Jika ada field subtotal & ppn di database, gunakan itu
     if (isset($faktur->subtotal) && isset($faktur->ppn)) {
-        $subtotal = $faktur->subtotal / 1.11; // Kembalikan ke harga dasar
+        $subtotal = $faktur->subtotal; // Sudah berupa harga dasar (sebelum PPN)
         $ppn = $faktur->ppn;
         $totalHarga = $faktur->total;
     } else {

@@ -276,7 +276,7 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('dokumen.lihat', $dok->id_dokumen) }}"
+                                <a href="{{ route('dokumen.lihat', [$dok->id_dokumen, $dok->nama_file]) }}"
                                 target="_blank"
                                 class="text-[#109696] hover:text-white bg-[#109696]/10 hover:bg-[#109696] text-xs font-bold px-3 py-2 rounded-lg transition-all flex-shrink-0">
                                     <i class="fas fa-eye"></i>

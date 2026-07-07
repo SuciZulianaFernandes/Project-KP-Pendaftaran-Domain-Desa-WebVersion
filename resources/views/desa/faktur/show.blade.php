@@ -10,7 +10,7 @@
     $ppnPersen = 11;
     
     if (isset($faktur->subtotal) && isset($faktur->ppn)) {
-        $subtotal = $faktur->subtotal / 1.11;
+        $subtotal = $faktur->subtotal;
         $ppn = $faktur->ppn;
         $totalHarga = $faktur->total;
     } else {
