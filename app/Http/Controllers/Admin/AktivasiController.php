@@ -23,10 +23,10 @@ class AktivasiController extends Controller
      */
            public function aktivasi(Request $request, $id)
 {
-    $pengajuan = Pengajuan::findOrFail($id);
-    
+    $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
+
     // ✅ CEK APAKAH INI PERPANJANGAN ATAU BUKAN (Berdasarkan riwayat aktivasi)
-    $adalahPerpanjangan = Aktivasi::where('id_pengajuan', $id)
+    $adalahPerpanjangan = Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('status_akt', 'aktif')
         ->exists();
 
@@ -37,9 +37,9 @@ class AktivasiController extends Controller
             'tgl_selesai'  => 'required|date|after:tgl_mulai'
         ]);
 
-        $faktur = Faktur::where('id_pengajuan', $id)->where('status', 'sudah_bayar')->latest()->first();
+        $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)->where('status', 'sudah_bayar')->latest()->first();
         if (!$faktur) {
-            $faktur = Faktur::where('id_pengajuan', $id)->latest()->first();
+            $faktur = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)->latest()->first();
         }
         if (!$faktur) {
             return back()->with('error', 'Data Faktur tidak ditemukan.');
@@ -54,9 +54,9 @@ class AktivasiController extends Controller
     } else {
         // ✅ JIKA INI PENDAFTARAN PERTAMA
         $tglMulai = Carbon::now();
-        
+
         // AMBIL DURASI YANG DIPILIH DESA
-        $pesanDurasi = Pesan::where('id_pengajuan', $id)
+        $pesanDurasi = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('judul', 'Konfirmasi Pembayaran Disetujui')
             ->whereNotNull('durasi_tahun')
             ->latest()
@@ -205,23 +205,23 @@ class AktivasiController extends Controller
         public function ajukanPerpanjang(Request $request)
     {
         $request->validate([
-            'id_pengajuan' => 'required|exists:pengajuan,id_pengajuan',
+            'id_pengajuan' => 'required|exists:pengajuan,uuid',
             'durasi_tahun' => 'required|integer|min:1|max:5'
         ]);
 
         $id = $request->id_pengajuan;
-        $pengajuan = Pengajuan::where('id_pengajuan', $id)
+        $pengajuan = Pengajuan::where('uuid', $id)
             ->where('id_user', auth()->id())
             ->firstOrFail();
 
         // 1. KUNCI jika ada pesan permintaan yang belum direspon faktur oleh admin
-        $latestPesan = Pesan::where('id_pengajuan', $id)
+        $latestPesan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('judul', 'Permintaan Perpanjangan Domain')
             ->latest()
             ->first();
 
         if ($latestPesan) {
-            $fakturRespons = Faktur::where('id_pengajuan', $id)
+            $fakturRespons = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
                 ->where('tipe', 'perpanjangan')
                 ->where('created_at', '>', $latestPesan->created_at)
                 ->exists();
@@ -238,7 +238,7 @@ class AktivasiController extends Controller
         }
 
         // Ambil data faktur perpanjangan paling terakhir
-        $fakturTerakhir = Faktur::where('id_pengajuan', $id)
+        $fakturTerakhir = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'perpanjangan')
             ->latest()
             ->first();
@@ -378,12 +378,12 @@ class AktivasiController extends Controller
 
     public function adminPerpanjangDetail($id)
     {
-        $pengajuan = Pengajuan::find($id);
+        $pengajuan = Pengajuan::where('uuid', $id)->first();
 
         if ($pengajuan) {
             $faktur = $pengajuan->faktur()->where('tipe', 'perpanjangan')->latest()->first();
         } else {
-            $faktur = Faktur::find($id);
+            $faktur = Faktur::where('uuid', $id)->first();
             if ($faktur) {
                 $pengajuan = $faktur->pengajuan;
             } else {

@@ -233,7 +233,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('dokumen.lihat', [$dok->id_dokumen, $dok->nama_file]) }}"
+                        <a href="{{ route('dokumen.lihat', [$dok->uuid, $dok->nama_file]) }}"
                         target="_blank"
                         class="ml-4 text-[#109696] hover:text-white bg-[#109696]/10 hover:bg-[#109696] text-xs font-bold px-3 py-2 rounded-lg transition-all flex-shrink-0">
                             <i class="fas fa-eye"></i>
@@ -282,7 +282,7 @@
                                 </div>
                             </div>
 
-                            <a href="{{ route('admin.faktur.show', $fakturItem->id) }}"
+                            <a href="{{ route('admin.faktur.show', $fakturItem->uuid) }}"
                             class="inline-flex items-center gap-2 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex-shrink-0">
                                 <i class="fas fa-eye text-[10px]"></i> Detail Faktur
                             </a>
@@ -321,7 +321,7 @@
                         </div>
                         <span class="font-medium">Ini adalah <strong>pendaftaran pertama kali</strong> oleh desa ini. Langsung aktifkan atau kembalikan jika perlu perbaikan.</span>
                     </div>
-                    <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" class="flex-shrink-0">
+                    <form action="/admin/aktivasi/proses/{{ $pengajuan->uuid }}" method="POST" class="flex-shrink-0">
                         @csrf
                         <button type="submit" 
                                 class="js-confirm-btn bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-sm transition inline-flex items-center text-sm"
@@ -333,7 +333,7 @@
             @endif
 
             {{-- FORM VERIFIKASI --}}
-            <form action="{{ route('admin.verifikasi.proses', $pengajuan->id_pengajuan) }}" method="POST" id="formVerifikasi" class="bg-slate-50 p-5 rounded-xl border border-slate-100">
+            <form action="{{ route('admin.verifikasi.proses', $pengajuan->uuid) }}" method="POST" id="formVerifikasi" class="bg-slate-50 p-5 rounded-xl border border-slate-100">
                 @csrf
                 @method('PUT')
 
@@ -457,7 +457,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('admin.faktur.store', $pengajuan->id_pengajuan) }}" method="POST" class="flex justify-end">
+                    <form action="{{ route('admin.faktur.store', $pengajuan->uuid) }}" method="POST" class="flex justify-end">
                         @csrf
                         <input type="hidden" name="durasi_tahun" value="{{ $durasiDipilih }}">
                         <input type="hidden" name="total_bayar" value="{{ $totalHarga }}">
@@ -506,7 +506,7 @@
                             </div>
                         </div>
                         
-                        <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm" novalidate>
+                        <form action="/admin/aktivasi/proses/{{ $pengajuan->uuid }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm" novalidate>
                             @csrf
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>

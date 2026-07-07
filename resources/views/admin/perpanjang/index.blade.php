@@ -116,7 +116,7 @@
                                 </td>
 
                                 <td class="px-5 py-4 text-center">
-                                    <a href="{{ route('admin.perpanjang.show', $row['pengajuan']->id_pengajuan) }}" 
+                                    <a href="{{ route('admin.perpanjang.show', $row['pengajuan']->uuid) }}" 
                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#109696]/10 text-[#109696] rounded-lg text-xs font-semibold hover:bg-[#109696] hover:text-white transition-all duration-200">
                                         <i class="fas fa-eye text-[10px]"></i> Detail
                                     </a>
@@ -197,7 +197,7 @@
                                 </td>
 
                                 <td class="px-5 py-4 text-center">
-                                    <a href="{{ route('admin.perpanjang.show', $fakturItem->id) }}" 
+                                    <a href="{{ route('admin.perpanjang.show', $fakturItem->uuid) }}" 
                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#109696]/10 text-[#109696] rounded-lg text-xs font-semibold hover:bg-[#109696] hover:text-white transition-all duration-200">
                                         <i class="fas fa-eye text-[10px]"></i> Detail
                                     </a>

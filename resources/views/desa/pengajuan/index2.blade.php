@@ -92,28 +92,18 @@
                 <!-- KABUPATEN -->
                 <div>
 
-                    <label for="kota_kabupaten"
-                           class="block text-sm font-semibold text-gray-700 mb-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
                         Kabupaten
                         <span class="text-red-600">*</span>
                     </label>
 
-                    <select id="kota_kabupaten"
-                            name="kota_kabupaten"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#1A85A5] focus:border-[#1A85A5] transition duration-150 bg-white"
-                            required>
+                    <div class="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 flex items-center shadow-sm">
+                        Kabupaten Bengkalis
+                    </div>
 
-                        <option value="">
-                            -- Pilih Kabupaten --
-                        </option>
-
-                    </select>
-
-                    @error('kota_kabupaten')
-                        <p class="text-red-500 text-xs mt-1">
-                            {{ $message }}
-                        </p>
-                    @enderror
+                    <input type="hidden"
+                           name="kota_kabupaten"
+                           value="Kabupaten Bengkalis">
 
                 </div>
 
@@ -266,10 +256,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const PROVINSI_RIAU_ID = '14';
+    const KABUPATEN_BENGKALIS_ID = '1408';
     const API_URL = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
-    const kotaSelect = document.getElementById('kota_kabupaten');
     const kecamatanSelect = document.getElementById('kecamatan');
     const desaSelect = document.getElementById('desa_kelurahan');
 
@@ -291,48 +280,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return null;
 
         }
-
-    }
-
-    // LOAD KABUPATEN
-    async function loadKabupaten() {
-
-        kotaSelect.innerHTML =
-            '<option value="">Memuat data Kabupaten...</option>';
-
-        const allRegencies =
-            await fetchData(`/regencies/${PROVINSI_RIAU_ID}.json`);
-
-        if (!allRegencies) {
-
-            kotaSelect.innerHTML =
-                '<option value="">Gagal memuat data</option>';
-
-            return;
-        }
-
-        const kabupatenOnly =
-            allRegencies.filter(item => !item.name.includes('Kota'));
-
-        kotaSelect.innerHTML =
-            '<option value="">-- Pilih Kabupaten --</option>';
-
-        kabupatenOnly.forEach(kab => {
-
-            const option = document.createElement('option');
-
-            // DISIMPAN KE DATABASE
-            option.value = kab.name;
-
-            // UNTUK API
-            option.dataset.id = kab.id;
-
-            // TAMPILAN
-            option.textContent = kab.name;
-
-            kotaSelect.appendChild(option);
-
-        });
 
     }
 
@@ -433,24 +380,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-    // EVENT KABUPATEN
-    kotaSelect.addEventListener('change', function() {
-
-        const selectedOption =
-            this.options[this.selectedIndex];
-
-        const kabId =
-            selectedOption.dataset.id;
-
-        loadKecamatan(kabId);
-
-        desaSelect.innerHTML =
-            '<option value="">-- Pilih Desa --</option>';
-
-        desaSelect.disabled = true;
-
-    });
-
     // EVENT KECAMATAN
     kecamatanSelect.addEventListener('change', function() {
 
@@ -464,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-    loadKabupaten();
+    loadKecamatan(KABUPATEN_BENGKALIS_ID);
 
 });
 </script>

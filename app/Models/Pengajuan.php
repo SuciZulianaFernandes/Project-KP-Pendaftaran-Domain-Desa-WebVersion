@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasUuidRouteKey;
 
 class Pengajuan extends Model
 {
+    use HasUuidRouteKey;
+
     protected $table = 'pengajuan';
     protected $primaryKey = 'id_pengajuan';
 

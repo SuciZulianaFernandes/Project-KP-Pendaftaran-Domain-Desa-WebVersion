@@ -276,7 +276,7 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('dokumen.lihat', [$dok->id_dokumen, $dok->nama_file]) }}"
+                                <a href="{{ route('dokumen.lihat', [$dok->uuid, $dok->nama_file]) }}"
                                 target="_blank"
                                 class="text-[#109696] hover:text-white bg-[#109696]/10 hover:bg-[#109696] text-xs font-bold px-3 py-2 rounded-lg transition-all flex-shrink-0">
                                     <i class="fas fa-eye"></i>
@@ -286,7 +286,7 @@
                             {{-- FORM UPLOAD ULANG --}}
                             @if($pengajuan->status_pengajuan == 'perlu_perbaikan')
                             <form
-                                action="{{ route('desa.verifikasi.updateDokumen', $dok->id_dokumen) }}"
+                                action="{{ route('desa.verifikasi.updateDokumen', $dok->uuid) }}"
                                 method="POST"
                                 enctype="multipart/form-data"
                                 class="mt-auto pt-3 border-t border-slate-100 space-y-2"
@@ -359,7 +359,7 @@
                                     </div>
                                 </div>
 
-                                <a href="{{ route('desa.faktur.show', $fakturItem->id) }}"
+                                <a href="{{ route('desa.faktur.show', $fakturItem->uuid) }}"
                                 class="inline-flex items-center gap-2 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all flex-shrink-0">
                                     <i class="fas fa-eye text-[10px]"></i> Detail Faktur
                                 </a>
@@ -413,7 +413,7 @@
                             </div>
                         </div>
                         
-                        <form action="{{ route('desa.ajukan.faktur', $pengajuan->id_pengajuan) }}" method="POST" id="formKonfirmasi">
+                        <form action="{{ route('desa.ajukan.faktur', $pengajuan->uuid) }}" method="POST" id="formKonfirmasi">
                             @csrf
                             
                             <select name="durasi_tahun" id="durasi_tahun" required class="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#109696]/20 focus:border-[#109696] transition">
@@ -461,7 +461,7 @@
                                 </p>
 
                                 @if($fakturDesa)
-                                    <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}" class="text-sm text-[#109696] font-semibold hover:underline mt-1 inline-block">
+                                    <a href="{{ route('desa.faktur.show', $fakturDesa->uuid) }}" class="text-sm text-[#109696] font-semibold hover:underline mt-1 inline-block">
                                         Lihat Detail Faktur →
                                     </a>
                                 @endif
@@ -535,7 +535,7 @@
                         </p>
                     </div>
 
-                    <form action="{{ route('desa.verifikasi.kirimUlang', $pengajuan->id_pengajuan) }}" method="POST"
+                    <form action="{{ route('desa.verifikasi.kirimUlang', $pengajuan->uuid) }}" method="POST"
                         onsubmit="return confirm('Pastikan semua dokumen yang perlu diperbaiki sudah diupload ulang. Kirim untuk ditinjau ulang oleh admin?')">
                         @csrf
                         @method('PUT')

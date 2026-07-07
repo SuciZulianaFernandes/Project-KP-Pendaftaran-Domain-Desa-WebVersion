@@ -106,7 +106,7 @@
                             <h3 class="font-bold text-slate-800">Desa Menyetujui Pembayaran</h3>
                             <p class="text-sm text-slate-500 mt-1 mb-4">Desa telah mengkonfirmasi kesiapan pembayaran. Silakan terbitkan faktur perpanjangan.</p>
                             
-                            <form action="{{ route('admin.faktur.storePerpanjangan', $pengajuan->id_pengajuan) }}" method="POST" style="display:inline">
+                            <form action="{{ route('admin.faktur.storePerpanjangan', $pengajuan->uuid) }}" method="POST" style="display:inline">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center gap-2 bg-gradient-to-br from-[#109696] to-[#1A85A5] hover:shadow-md text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm js-confirm-print">
                                     <i class="fas fa-print text-xs"></i> Cetak Faktur Perpanjangan
@@ -275,7 +275,7 @@
                                 </div>
 
                                 <div class="flex justify-start lg:justify-end flex-shrink-0">
-                                    <a href="{{ route('admin.faktur.show', $fakturItem->id) }}"
+                                    <a href="{{ route('admin.faktur.show', $fakturItem->uuid) }}"
                                        class="inline-flex items-center gap-2 bg-[#109696]/10 text-[#109696] hover:bg-[#109696] hover:text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all duration-200">
                                         <i class="fas fa-eye text-xs"></i> Detail Faktur
                                     </a>
@@ -338,7 +338,7 @@
                             </div>
 
                             <!-- Form Input Tanggal -->
-                            <form action="/admin/aktivasi/proses/{{ $pengajuan->id_pengajuan }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm" novalidate>
+                            <form action="/admin/aktivasi/proses/{{ $pengajuan->uuid }}" method="POST" id="formAktivasi" class="bg-white rounded-xl p-4 border border-slate-100 shadow-sm" novalidate>
                                 @csrf
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>

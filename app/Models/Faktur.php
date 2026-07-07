@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\HasUuidRouteKey;
 
 class Faktur extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuidRouteKey;
 
     public $incrementing = true;
 

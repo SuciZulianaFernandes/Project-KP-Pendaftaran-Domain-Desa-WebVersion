@@ -81,7 +81,7 @@
                         <div class="relative {{ $row->is_read == 0 ? 'bg-teal-50 border-teal-300 border-l-4' : 'bg-teal-50/50 border border-teal-100' }} p-4 rounded-xl">
 
                             <div class="hidden delete-checkbox absolute top-3 right-3">
-                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                             </div>
 
                             @if($row->is_read == 0)
@@ -95,7 +95,7 @@
                             <p class="text-xs text-slate-400 mt-3">{{ $row->created_at->format('d M Y, H:i') }}</p>
 
                             <div class="mt-3">
-                                <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}"
+                                <a href="{{ route('admin.pengajuan.detail', $row->uuid) }}"
                                     class="inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-sm">
                                     <i class="fas fa-eye text-[10px]"></i> Detail Pengajuan
                                 </a>
@@ -134,7 +134,7 @@
                         <div class="relative {{ $row->is_read == 0 ? 'bg-sky-50 border-sky-300 border-l-4' : 'bg-sky-50/50 border border-sky-100' }} p-4 rounded-xl">
 
                             <div class="hidden delete-checkbox absolute top-3 right-3">
-                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                             </div>
 
                             @if($row->is_read == 0)
@@ -148,7 +148,7 @@
                             <p class="text-xs text-slate-400 mt-3">{{ $row->created_at->format('d M Y, H:i') }}</p>
 
                             <div class="mt-3">
-                                <a href="{{ route('admin.pengajuan.detail', $row->id_pengajuan) }}"
+                                <a href="{{ route('admin.pengajuan.detail', $row->uuid) }}"
                                     class="inline-flex items-center gap-1.5 bg-[#1760C5] hover:bg-[#1250a5] text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-sm">
                                     <i class="fas fa-eye text-[10px]"></i> Detail Pengajuan
                                 </a>
@@ -187,7 +187,7 @@
                         <div class="relative {{ $row->is_read == 0 ? 'bg-amber-50 border-amber-300 border-l-4' : 'bg-amber-50/50 border border-amber-100' }} p-4 rounded-xl">
 
                             <div class="hidden delete-checkbox absolute top-3 right-3">
-                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                             </div>
 
                             @if($row->is_read == 0)
@@ -233,7 +233,7 @@
                         <div class="relative {{ $row->is_read == 0 ? 'bg-purple-50 border-purple-300 border-l-4' : 'bg-purple-50/50 border border-purple-100' }} p-4 rounded-xl">
 
                             <div class="hidden delete-checkbox absolute top-3 right-3">
-                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                                <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                             </div>
 
                             @if($row->is_read == 0)

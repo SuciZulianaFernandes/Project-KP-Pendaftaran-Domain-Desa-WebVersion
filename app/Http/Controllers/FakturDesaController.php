@@ -48,7 +48,7 @@ class FakturDesaController extends Controller
             'durasi_tahun' => 'required|integer|min:1|max:5'
         ]);
 
-        $pengajuan = Pengajuan::where('id_pengajuan', $id)
+        $pengajuan = Pengajuan::where('uuid', $id)
             ->where('id_user', auth()->id())
             ->firstOrFail();
 
@@ -72,7 +72,7 @@ class FakturDesaController extends Controller
         $user = Auth::user();
         $pengajuanIds = Pengajuan::where('id_user', $user->id_user)->pluck('id_pengajuan');
 
-        $faktur = Faktur::where('id', $id)
+        $faktur = Faktur::where('uuid', $id)
             ->whereIn('id_pengajuan', $pengajuanIds)
             ->firstOrFail();
 
@@ -85,7 +85,13 @@ class FakturDesaController extends Controller
             'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $faktur = Faktur::findOrFail($id);
+        $user = Auth::user();
+        $pengajuanIds = Pengajuan::where('id_user', $user->id_user)->pluck('id_pengajuan');
+
+        $faktur = Faktur::where('uuid', $id)
+            ->whereIn('id_pengajuan', $pengajuanIds)
+            ->firstOrFail();
+
         $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
 
         $faktur->bukti_pembayaran_path = $path;

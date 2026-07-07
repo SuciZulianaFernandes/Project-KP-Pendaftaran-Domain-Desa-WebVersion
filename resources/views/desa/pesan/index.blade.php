@@ -76,7 +76,7 @@
                     <div class="relative {{ $row->is_read == 0 ? 'bg-emerald-50 border-emerald-400 border-l-4' : 'bg-emerald-50/50 border border-emerald-100' }} p-4 rounded-xl">
                         
                         <div class="hidden delete-checkbox absolute top-3 right-3">
-                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                         </div>
 
                         @if($row->is_read == 0)
@@ -136,7 +136,7 @@
                     <div class="relative {{ $row->is_read == 0 ? 'bg-amber-50 border-amber-400 border-l-4' : 'bg-amber-50/50 border border-amber-100' }} p-4 rounded-xl">
                         
                         <div class="hidden delete-checkbox absolute top-3 right-3">
-                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                         </div>
 
                         @if($row->is_read == 0)
@@ -157,12 +157,12 @@
 
                         <div class="mt-3">
     @if($row->is_read == 0)
-        <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}"
+        <a href="{{ route('desa.verifikasi.detail', $row->uuid) }}"
            class="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-sm">
             <i class="fas fa-check text-[10px]"></i> Detail Pengajuan
         </a>
     @else
-        <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}"
+        <a href="{{ route('desa.verifikasi.detail', $row->uuid) }}"
            class="inline-flex items-center gap-1.5 bg-slate-500 hover:bg-slate-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow-sm">
             <i class="fas fa-eye text-[10px]"></i> Lihat Detail
         </a>
@@ -210,7 +210,7 @@
                     <div class="relative {{ $row->is_read == 0 ? 'bg-rose-50 border-rose-400 border-l-4' : 'bg-rose-50/50 border border-rose-100' }} p-4 rounded-xl">
                         
                         <div class="hidden delete-checkbox absolute top-3 right-3">
-                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->id }}" class="w-4 h-4 accent-rose-500 rounded">
+                            <input type="checkbox" name="pesan_ids[]" value="{{ $row->uuid }}" class="w-4 h-4 accent-rose-500 rounded">
                         </div>
 
                         @if($row->is_read == 0)

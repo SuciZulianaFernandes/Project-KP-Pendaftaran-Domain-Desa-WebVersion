@@ -157,7 +157,7 @@
                                             ->exists();
                                     @endphp
                                     @if($isRequested)
-                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.faktur.store', $row->uuid) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="js-confirm-print inline-flex items-center gap-1.5 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
                                                 <i class="fas fa-plus text-[10px]"></i> Cetak Faktur
@@ -199,7 +199,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        <a href="{{ route('admin.faktur.show', $fakturItem->id) }}" class="inline-flex items-center gap-1.5 bg-[#1760C5]/10 hover:bg-[#1760C5] text-[#1760C5] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                                        <a href="{{ route('admin.faktur.show', $fakturItem->uuid) }}" class="inline-flex items-center gap-1.5 bg-[#1760C5]/10 hover:bg-[#1760C5] text-[#1760C5] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
                                             <i class="fas fa-eye text-[10px]"></i> Detail
                                         </a>
                                     </td>
@@ -222,7 +222,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        <form action="{{ route('admin.faktur.store', $row->id_pengajuan) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.faktur.store', $row->uuid) }}" method="POST" class="inline">
                                             @csrf
                                             <button type="submit" class="js-confirm-print inline-flex items-center gap-1.5 bg-[#109696]/10 hover:bg-[#109696] text-[#109696] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
                                                 <i class="fas fa-plus text-[10px]"></i> Buat Faktur

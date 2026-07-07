@@ -33,11 +33,15 @@ class PesanController extends Controller
 
         public function konfirmasiPembayaran($id)
     {
-        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
+
+        if ($pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
 
         // Tandai pesan "Konfirmasi Pembayaran" dari admin sebagai sudah dibaca oleh desa
         // SEKALIGUS ubah isi pesannya sesuai permintaan
-        \App\Models\Pesan::where('id_pengajuan', $id)
+        \App\Models\Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('id_user', auth()->id())
             ->where('judul', 'Konfirmasi Pembayaran')
             ->update([
@@ -118,7 +122,7 @@ class PesanController extends Controller
 }
 public function destroy($id)
 {
-    $pesan = Pesan::findOrFail($id);
+    $pesan = Pesan::where('uuid', $id)->firstOrFail();
 
     // KEAMANAN:
     // Desa hanya boleh hapus pesan miliknya
@@ -145,14 +149,14 @@ public function destroySelected(Request $request)
     // Desa hanya boleh hapus miliknya
     if (auth()->user()->role == 'desa') {
 
-        Pesan::whereIn('id', $ids)
+        Pesan::whereIn('uuid', $ids)
             ->where('id_user', auth()->id())
             ->delete();
 
     } else {
 
         // Admin
-        Pesan::whereIn('id', $ids)->delete();
+        Pesan::whereIn('uuid', $ids)->delete();
     }
 
     return back()->with('success', 'Pesan berhasil dihapus.');

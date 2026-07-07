@@ -103,7 +103,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <a href="{{ route('desa.faktur.show', $fakturDesa->id) }}" class="inline-flex items-center gap-1.5 bg-[#1760C5]/10 hover:bg-[#1760C5] text-[#1760C5] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
+                                <a href="{{ route('desa.faktur.show', $fakturDesa->uuid) }}" class="inline-flex items-center gap-1.5 bg-[#1760C5]/10 hover:bg-[#1760C5] text-[#1760C5] hover:text-white text-xs font-bold px-3 py-2 rounded-lg transition-all">
                                     <i class="fas fa-eye text-[10px]"></i> Detail
                                 </a>
                             </td>

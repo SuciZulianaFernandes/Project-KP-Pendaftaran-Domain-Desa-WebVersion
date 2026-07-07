@@ -113,7 +113,7 @@
 
                             // Ambil ID Faktur Belum Bayar
                             $fakturBelumBayar = $row->faktur->where('status', 'belum_bayar')->first();
-                            $idFakturBelumBayar = $fakturBelumBayar ? $fakturBelumBayar->id : null;
+                            $idFakturBelumBayar = $fakturBelumBayar ? $fakturBelumBayar->uuid : null;
 
                             // Tentukan Data Status untuk Filter JS
                             $dataStatus = 'aktif';
@@ -180,7 +180,7 @@
                                 <div class="flex items-center justify-center gap-2">
 
                                     <!-- DETAIL -->
-                                    <a href="{{ route('desa.verifikasi.detail', $row->id_pengajuan) }}" 
+                                    <a href="{{ route('desa.verifikasi.detail', $row->uuid) }}" 
                                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#109696]/10 text-[#109696] rounded-lg text-xs font-semibold hover:bg-[#109696] hover:text-white transition-all duration-200">
                                         <i class="fas fa-eye text-[10px]"></i> Lihat
                                     </a>
@@ -209,7 +209,7 @@
                                     @elseif($bisaPerpanjang)
                                         <a href="#" 
                                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-[#109696]/10 text-[#109696] rounded-lg text-xs font-semibold hover:bg-[#109696] hover:text-white transition-all duration-200"
-                                           onclick="event.preventDefault(); openPerpanjangModal('{{ $row->id_pengajuan }}', '{{ $aktivasi ? $aktivasi->tgl_aktivasi->format('d M Y') : '-' }}', '{{ $aktivasi ? $aktivasi->masa_berlaku->format('d M Y') : '-' }}')">
+                                           onclick="event.preventDefault(); openPerpanjangModal('{{ $row->uuid }}', '{{ $aktivasi ? $aktivasi->tgl_aktivasi->format('d M Y') : '-' }}', '{{ $aktivasi ? $aktivasi->masa_berlaku->format('d M Y') : '-' }}')">
                                            <i class="fas fa-redo text-[10px]"></i> Ajukan Perpanjang
                                         </a>
 

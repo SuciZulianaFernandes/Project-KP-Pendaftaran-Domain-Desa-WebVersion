@@ -201,7 +201,7 @@
                         Upload Bukti Pembayaran
                     </h3>
 
-                    <form action="{{ route('desa.faktur.konfirmasi', $faktur->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('desa.faktur.konfirmasi', $faktur->uuid) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center cursor-pointer transition-all duration-200 hover:border-[#109696] hover:bg-[#109696]/5"
                              id="dropZone" onclick="document.getElementById('bukti').click()">

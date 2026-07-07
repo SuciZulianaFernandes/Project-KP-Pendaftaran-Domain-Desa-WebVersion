@@ -216,13 +216,23 @@ public function daftar(Request $request)
 
     public function show($id)
     {
-        $pengajuan = Pengajuan::with('dokumenPersyaratan')->findOrFail($id);
+        $pengajuan = Pengajuan::with('dokumenPersyaratan')->where('uuid', $id)->firstOrFail();
+
+        if ($pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
+
         return view('desa.verifikasi.detail', compact('pengajuan'));
     }
 
     public function destroy($id)
     {
-        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
+
+        if ($pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
+
         foreach ($pengajuan->dokumenPersyaratan as $dok) {
             Storage::disk('local')->delete($dok->path_file);
         }
@@ -232,7 +242,12 @@ public function daftar(Request $request)
 
     public function updateDokumen(Request $request, $id)
     {
-        $dok = DokumenPersyaratan::findOrFail($id);
+        $dok = DokumenPersyaratan::with('pengajuan')->where('uuid', $id)->firstOrFail();
+
+        if ($dok->pengajuan->id_user !== auth()->id()) {
+            abort(403);
+        }
+
         if ($request->hasFile('file')) {
             \Storage::disk('public')->delete($dok->path_file);
             $path = $request->file('file')->store('/pengajuan/dokumen');
@@ -246,7 +261,7 @@ public function daftar(Request $request)
 
     public function kirimUlang($id)
     {
-        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
 
         if ($pengajuan->id_user !== auth()->id()) {
             abort(403);
@@ -267,7 +282,7 @@ public function daftar(Request $request)
             'role_tujuan'  => 'admin',
         ]);
 
-        return redirect()->route('desa.verifikasi.detail', $pengajuan->id_pengajuan)
+        return redirect()->route('desa.verifikasi.detail', $pengajuan->uuid)
             ->with('success', 'Pengajuan berhasil dikirim ulang untuk ditinjau admin.');
     }
 
@@ -308,7 +323,7 @@ public function daftar(Request $request)
 
     public function adminDetail($id)
     {
-        $pengajuan = Pengajuan::with('dokumenPersyaratan', 'pesan', 'faktur')->findOrFail($id);
+        $pengajuan = Pengajuan::with('dokumenPersyaratan', 'pesan', 'faktur')->where('uuid', $id)->firstOrFail();
         return view('admin.pengajuan.detail', compact('pengajuan'));
     }
 
@@ -318,7 +333,7 @@ public function daftar(Request $request)
             'status' => 'required|in:diproses,perlu_perbaikan'
         ]);
 
-        $pengajuan = Pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
 
         $status = $request->status;
         $catatan = $request->catatan;
@@ -364,7 +379,7 @@ public function daftar(Request $request)
 
     public function lihatDokumen($id)
     {
-        $dokumen = DokumenPersyaratan::findOrFail($id);
+        $dokumen = DokumenPersyaratan::where('uuid', $id)->firstOrFail();
         $pengajuan = $dokumen->pengajuan;
 
         if (auth()->user()->role !== 'admin' && $pengajuan->id_user !== auth()->id()) {

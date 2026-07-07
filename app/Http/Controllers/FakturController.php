@@ -15,11 +15,11 @@ class FakturController extends Controller
         // TAMBAHKAN Request $request
     public function store(Request $request, $id)
 {
-    $pengajuan = Pengajuan::findOrFail($id);
+    $pengajuan = Pengajuan::where('uuid', $id)->firstOrFail();
 
     // Cegah duplikat faktur belum bayar
     if (
-        Faktur::where('id_pengajuan', $id)
+        Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('tipe', 'baru')
             ->where('status', 'belum_bayar')
             ->exists()
@@ -30,14 +30,14 @@ class FakturController extends Controller
     // ===================================================
     // ✅ LOGIKA BARU: PENENTUAN TIPE FAKTUR YANG BENAR
     // ===================================================
-    
+
     // 1. Cek apakah domain ini SUDAH PERNAH AKTIF sebelumnya
-    $sudahPernahAktif = Aktivasi::where('id_pengajuan', $id)
+    $sudahPernahAktif = Aktivasi::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('status_akt', 'aktif')
         ->exists();
-    
+
     // 2. Cek apakah ada pesan PERPANJANGAN untuk pengajuan INI
-    $adaPermintaanPerpanjangan = Pesan::where('id_pengajuan', $id)
+    $adaPermintaanPerpanjangan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
         ->whereNotNull('durasi_tahun')
         ->exists();
@@ -60,7 +60,7 @@ class FakturController extends Controller
 
     // AMBIL DURASI TAHUN
     if ($tipeFaktur === 'perpanjangan') {
-        $pesanPerpanjangan = Pesan::where('id_pengajuan', $id)
+        $pesanPerpanjangan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
             ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
             ->whereNotNull('durasi_tahun')
             ->latest()
@@ -228,16 +228,16 @@ return view('admin.faktur.index', compact(
 
     public function show($id)
     {
-        $faktur = Faktur::findOrFail($id);
+        $faktur = Faktur::where('uuid', $id)->firstOrFail();
 
         return view('admin.faktur.show', compact('faktur'));
     }
 
     public function storePerpanjangan(Request $request, $idPengajuan)
 {
-    $pengajuan = Pengajuan::findOrFail($idPengajuan);
+    $pengajuan = Pengajuan::where('uuid', $idPengajuan)->firstOrFail();
 
-    $fakturAktif = Faktur::where('id_pengajuan', $idPengajuan)
+    $fakturAktif = Faktur::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('tipe', 'perpanjangan')
         ->where('status', 'belum_bayar')
         ->exists();
@@ -249,14 +249,14 @@ return view('admin.faktur.index', compact(
     }
 
     // ✅ HANYA CARI PESAN PERPANJANGAN (BUKAN KONFIRMASI PEMBAYARAN)
-    $pesanPerpanjangan = Pesan::where('id_pengajuan', $idPengajuan)
+    $pesanPerpanjangan = Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
         ->whereNotNull('durasi_tahun')
         ->latest()
         ->first();
-    
+
     $durasiTahun = $pesanPerpanjangan->durasi_tahun ?? 1;
-    
+
     // PERHITUNGAN HARGA DENGAN PPN 11%
     $hargaDasarPerTahun = 50000;
     $ppnPersen = 0.11;
@@ -265,7 +265,7 @@ return view('admin.faktur.index', compact(
     $totalHarga = $subtotal + $ppn;
 
     // Tandai pesan sudah diproses
-    Pesan::where('id_pengajuan', $idPengajuan)
+    Pesan::where('id_pengajuan', $pengajuan->id_pengajuan)
         ->where('judul', 'Permintaan Perpanjangan Domain')  // ✅ HANYA INI
         ->whereNotNull('durasi_tahun')
         ->update(['is_read' => 1]);
